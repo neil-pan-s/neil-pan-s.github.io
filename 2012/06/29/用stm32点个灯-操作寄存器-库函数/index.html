@@ -178,7 +178,7 @@
 <li><p>1个32位的置位/复位寄存器BSRR；</p>
 </li>
 <li>1个16位的复位寄存器BRR;</li>
-<li><p>1个32位的锁存寄存器LCKR；<div> </div><div>GPIO口的时钟在APB2总线上，改时钟总线寄存器APB2ENR各位描述为：</div><div><img src="/uploads/2012/06/4283833512.png" alt="apb2.png"></div><div> </div><div>操作寄存器方法代码：（sys.h 代码参照&nbsp;<a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a>）</div><div></div></p>
+<li><p>1个32位的锁存寄存器LCKR；<div> </div><div>GPIO口的时钟在APB2总线上，改时钟总线寄存器APB2ENR各位描述为：</div><div><img src="/uploads/2012/06/4283833512.png" alt="apb2.png"></div><div> </div><div>操作寄存器方法代码：（sys.h 代码参照&nbsp;<a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a>）</div><div></div></p>
 <p>#include “stm32f10x_lib.h”<br>#include “system.h”</p>
 <p>//LED端口定义<br>#define LED0 PAout(4)// PA4</p>
 <p>void Gpio_Init(void);           </p>
@@ -391,7 +391,7 @@ GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');

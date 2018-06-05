@@ -212,7 +212,7 @@ PWR-&amp;gt;CSR |= 1&amp;lt;&amp;lt;8;                  //允许写入RTC和BKP�
 WFI_SET();                         //执行WFI指令         
 </code></pre><p>}    </p>
 <p>//系统软复位</p>
-<p>void Sys_Soft_Reset(void)<br>{<br>    SCB-&gt;AIRCR =0X05FA0000|(u32)0x04;<br>} <div>代码如下：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;    </pre></div></p>
+<p>void Sys_Soft_Reset(void)<br>{<br>    SCB-&gt;AIRCR =0X05FA0000|(u32)0x04;<br>} <div>代码如下：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;    </pre></div></p>
 <p>#include “system.h”     </p>
 <p>#include “wdg.h” </p>
 <p>#include “exti.h” </p>
@@ -546,7 +546,7 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');

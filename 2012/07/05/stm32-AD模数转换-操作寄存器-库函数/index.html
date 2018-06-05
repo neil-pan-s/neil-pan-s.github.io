@@ -147,7 +147,7 @@
 </li>
 <li>001：7.5周期 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 101：55.5周期</li>
 <li>010：13.5周期 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 110：71.5周期</li>
-<li>011：28.5周期 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;111：239.5周期<div>采样时间算法为:&nbsp;(采样周期+12.5)/分频后的时钟</div><div> </div><div>ADC采样得到的只是一个相对值，将 转换值/4096*参考电压 即可得到采样电压 这里的4096是因为stm32的adc为12位精度，表示参考电压时即为 2^12=4096</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “usart.h”<br>#include “adc.h”<br>#include “stdio.h”    </pre></div></li>
+<li>011：28.5周期 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;111：239.5周期<div>采样时间算法为:&nbsp;(采样周期+12.5)/分频后的时钟</div><div> </div><div>ADC采样得到的只是一个相对值，将 转换值/4096*参考电压 即可得到采样电压 这里的4096是因为stm32的adc为12位精度，表示参考电压时即为 2^12=4096</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “usart.h”<br>#include “adc.h”<br>#include “stdio.h”    </pre></div></li>
 </ul>
 <p>#define LED1 PAout(4)</p>
 <p>#define LED2 PAout(5)</p>
@@ -473,7 +473,7 @@ USART_Init(USART1,&amp;amp;USART_InitStructure);
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');

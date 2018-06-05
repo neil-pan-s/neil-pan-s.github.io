@@ -158,7 +158,7 @@
 </li>
 <li><p>00: CK计时器时钟(PCLK1除以4096)除以1&nbsp;&nbsp;&nbsp;&nbsp; 01: CK计时器时钟(PCLK1除以4096)除以2</p>
 </li>
-<li>10: CK计时器时钟(PCLK1除以4096)除以4 &nbsp;&nbsp;&nbsp;&nbsp;11: CK计时器时钟(PCLK1除以4096)除以8<div>低7位[6:0]:为窗口值。</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">&nbsp;&nbsp;</span><span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “wdg.h”     </pre></div></li>
+<li>10: CK计时器时钟(PCLK1除以4096)除以4 &nbsp;&nbsp;&nbsp;&nbsp;11: CK计时器时钟(PCLK1除以4096)除以8<div>低7位[6:0]:为窗口值。</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">&nbsp;&nbsp;</span><span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “wdg.h”     </pre></div></li>
 </ul>
 <p>#define LED1 PAout(4)</p>
 <p>//选择测试模式，一次置1一个测试</p>
@@ -204,7 +204,7 @@ GPIOA-&amp;gt;CRL|=0x33334444;
 <p>extern void Wwdg_Feed(void);</p>
 <p>void WWDG_IRQHandler(void)<br>{<br>    //必须判断 计数值小于 窗口值之后才可以喂狗,不加此判断直接喂狗会导致复位，原因不详<br>    if((WWDG-&gt;CR&amp;0x7F) &lt; (WWDG -&gt; CFR&amp;0x7F)){<br>        Wwdg_Feed();<br>    }</p>
 <pre><code>WWDG-&amp;gt;SR = 0x00;  //清除中断标志位
-</code></pre><p>} <div style="text-align: left;">Library/src/wdg.c 和 &nbsp;Library/inc/wdg.h 参见&nbsp;<a href="http://www.ichanging.org/stm32-iwdg.html">stm32 独立看门狗[操作寄存器+库函数]</a></div><div> </div><div>在中断函数 stm32f10x_it.c WWDG_IRQChannel（）中&nbsp;必须判断 计数值小于 窗口值之后才可以喂狗,不加此判断直接喂狗会导致复位，原因不详。</div><div> </div><div>此中断是在计数器计数到0x40时触发，必然会小于窗口设定值 ，除非是此中断不止在此条件下触发，启动WWDG计数器可能也会导致中断。猜测一下而已 。。。</div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”</pre></div></p>
+</code></pre><p>} <div style="text-align: left;">Library/src/wdg.c 和 &nbsp;Library/inc/wdg.h 参见&nbsp;<a href="http://www.ichanging.org/stm32-iwdg.html" target="_blank" rel="external">stm32 独立看门狗[操作寄存器+库函数]</a></div><div> </div><div>在中断函数 stm32f10x_it.c WWDG_IRQChannel（）中&nbsp;必须判断 计数值小于 窗口值之后才可以喂狗,不加此判断直接喂狗会导致复位，原因不详。</div><div> </div><div>此中断是在计数器计数到0x40时触发，必然会小于窗口设定值 ，除非是此中断不止在此条件下触发，启动WWDG计数器可能也会导致中断。猜测一下而已 。。。</div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”</pre></div></p>
 <p>#include “stdio.h”</p>
 <p>#define     PRINTF_ON  1</p>
 <p>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void NVIC_Configuration(void);<br>void USART_Configuration(void);<br>void WWDG_Configuration(void);<br>void EXTI_Configuration(void);</p>
@@ -440,7 +440,7 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');

@@ -153,7 +153,7 @@
 <li>011: 预分频因子=32 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 111: 预分频因子=256<div></div></li>
 </ul>
 <a id="more"></a>
-<p><strong>重装载寄存器：(IWDG_RLR)</strong><br><div>低12位有效，RL[11:0]。用于定义看门狗计数器的重装载值。</div><div>每当向IWDG_KR寄存器写入0xAAAA时，重装载值会被传送到计数器中。随后计数器从这个值开始递减计数。看门狗超时周期可通过此重装载值和时钟预分频值来计算。 只有当IWDG_SR寄存器中的RVU位为0时，才能对此寄存器进行修改。&nbsp;</div><div> </div><div><strong>状态寄存器：(IWDG_SR)</strong></div><div>只有低两位有效。都由硬件置’1’和 清’0’。</div><div>RVU[1]: 看门狗计数器重装载值更新</div><div>PVU[0]: 看门狗预分频值更新</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;     </pre></div></p>
+<p><strong>重装载寄存器：(IWDG_RLR)</strong><br><div>低12位有效，RL[11:0]。用于定义看门狗计数器的重装载值。</div><div>每当向IWDG_KR寄存器写入0xAAAA时，重装载值会被传送到计数器中。随后计数器从这个值开始递减计数。看门狗超时周期可通过此重装载值和时钟预分频值来计算。 只有当IWDG_SR寄存器中的RVU位为0时，才能对此寄存器进行修改。&nbsp;</div><div> </div><div><strong>状态寄存器：(IWDG_SR)</strong></div><div>只有低两位有效。都由硬件置’1’和 清’0’。</div><div>RVU[1]: 看门狗计数器重装载值更新</div><div>PVU[0]: 看门狗预分频值更新</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;     </pre></div></p>
 <p>#include “system.h” </p>
 <p>#include “wdg.h”     </p>
 <p>#define LED1 PAout(4)</p>
@@ -450,7 +450,7 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');

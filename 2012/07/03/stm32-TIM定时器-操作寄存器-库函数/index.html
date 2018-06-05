@@ -164,7 +164,7 @@
 </li>
 <li><p>若TIMx_CR1寄存器的UDIS=0、URS=0，当TIMx_EGR寄存器的UG=1时产生更新事件(软件对计数器CNT重新初始化)；</p>
 </li>
-<li>&nbsp;若TIMx_CR1寄存器的UDIS=0、URS=0，当计数器CNT被触发事件重初始化时产生更新事件。<div> </div><div>CC1IF~CC4IF：捕获/比较1~4 中断标记 (Capture/Compare 1 interrupt flag)</div><div> </div><div>TIF：触发器中断标记 (Trigger interrupt flag) &nbsp;</div><div>当发生触发事件(当从模式控制器处于除门控模式外的其它模式时，在TRGI输入端检测到有效边沿，或门控模式下的任一边沿)时由硬件对该位置’1’。它由软件清’0’。</div><div> </div><div>代码如下：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div> </div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “tim.h”     </pre></div></li>
+<li>&nbsp;若TIMx_CR1寄存器的UDIS=0、URS=0，当计数器CNT被触发事件重初始化时产生更新事件。<div> </div><div>CC1IF~CC4IF：捕获/比较1~4 中断标记 (Capture/Compare 1 interrupt flag)</div><div> </div><div>TIF：触发器中断标记 (Trigger interrupt flag) &nbsp;</div><div>当发生触发事件(当从模式控制器处于除门控模式外的其它模式时，在TRGI输入端检测到有效边沿，或门控模式下的任一边沿)时由硬件对该位置’1’。它由软件清’0’。</div><div> </div><div>代码如下：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="external">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div> </div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “tim.h”     </pre></div></li>
 </ul>
 <p>void Gpio_Init(void);</p>
 <p>int main(void)<br>{                  </p>
@@ -581,7 +581,7 @@ RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
 <!-- Disqus Comments -->
 
     <script type="text/javascript">
-        var disqus_shortname = 'neil_pan_s';
+        var disqus_shortname = 'neil-pan';
 
         (function(){
             var dsq = document.createElement('script');
