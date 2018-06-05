@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="操作stm32 有使用官方库函数（参见 stm32 开发环境MDK+库文件配置&amp;nbsp;）和 直接操作寄存器的方法直接操作寄存器的方法 &amp;nbsp;会比库函数的方法效率更高 &amp;nbsp;而且代码量会比较少 &amp;nbsp; 例如 在库函数下 配置一个GPIO口 需要 &amp;nbsp;&amp;nbsp;GPIO_InitTypeDef &amp;nbsp; &amp;nbsp;GPIO_InitStructure; &amp;nbsp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 直接操作寄存器开发环境配置">
+<meta property="og:url" content="http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="操作stm32 有使用官方库函数（参见 stm32 开发环境MDK+库文件配置&amp;nbsp;）和 直接操作寄存器的方法直接操作寄存器的方法 &amp;nbsp;会比库函数的方法效率更高 &amp;nbsp;而且代码量会比较少 &amp;nbsp; 例如 在库函数下 配置一个GPIO口 需要 &amp;nbsp;&amp;nbsp;GPIO_InitTypeDef &amp;nbsp; &amp;nbsp;GPIO_InitStructure; &amp;nbsp">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/2442186229.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/310069959.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/826191248.png">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 直接操作寄存器开发环境配置">
+<meta name="twitter:description" content="操作stm32 有使用官方库函数（参见 stm32 开发环境MDK+库文件配置&amp;nbsp;）和 直接操作寄存器的方法直接操作寄存器的方法 &amp;nbsp;会比库函数的方法效率更高 &amp;nbsp;而且代码量会比较少 &amp;nbsp; 例如 在库函数下 配置一个GPIO口 需要 &amp;nbsp;&amp;nbsp;GPIO_InitTypeDef &amp;nbsp; &amp;nbsp;GPIO_InitStructure; &amp;nbsp">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/2442186229.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 直接操作寄存器开发环境配置</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/06/29/用stm32点个灯-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&text=stm32 直接操作寄存器开发环境配置"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&is_video=false&description=stm32 直接操作寄存器开发环境配置"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 直接操作寄存器开发环境配置&body=Check out this article: http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&name=stm32 直接操作寄存器开发环境配置&description=&lt;div&gt;操作stm32 有使用官方库函数（参见 &lt;a href=&quot;http://www.ichanging.org/mdk-stm32lib-set.html&quot;&gt;stm32 开发环境MDK+库文件配置&lt;/a&gt;&amp;nbsp;）和 直接操作寄存器的方法&lt;/div&gt;&lt;div&gt;直接操作寄存器的方法 &amp;nbsp;会比库函数的方法效率更高 &amp;nbsp;而且代码量会比较少 &amp;nbsp; 例如 在库函数下 配置一个GPIO口 需要 &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIO_InitTypeDef &amp;nbsp; &amp;nbsp;GPIO_InitStructure; &amp;nbsp; &amp;nbsp; //结构体 初始化&lt;/div&gt;&lt;div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;&lt;/div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;&lt;/div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure);&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;五行代码 &amp;nbsp; 而直接操作寄存器只需要：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;RCC-&amp;gt;APB2ENR|=1&amp;lt;&amp;lt;2; &amp;nbsp; &amp;nbsp;//使能PORTA时钟&lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space: pre; &quot;&gt;&lt;/span&gt; &amp;nbsp; &lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space: pre; &quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;GPIOA-&amp;gt;CRL&amp;amp;=0XFFF0FFFF;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIOA-&amp;gt;CRL|=0X00030000;//PA4 推挽输出 &amp;nbsp; &lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space:pre&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;三行代码 而且实际上这三行代码可以配置8个GPIO口 &amp;nbsp; &amp;nbsp;可以看出直接操作寄存器也是比较方便的&lt;/div&gt;&lt;div&gt;使用直接操作寄存器的方法操作stm32 &amp;nbsp;环境配置和库函数类似 &amp;nbsp;相关MDK设置可以参考&amp;nbsp;&lt;a href=&quot;http://www.ichanging.org/mdk-stm32lib-set.html&quot;&gt;stm32 开发环境MDK+库文件配置&lt;/a&gt;&amp;nbsp; 直接操作寄存器需要的文件结构 会少得多&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;span style=&quot;text-align: left; &quot;&gt;STM32 直接操作寄存器 keil工程结构&lt;/span&gt;&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/2442186229.png&quot; alt=&quot;base-list.png&quot;&gt;&lt;span style=&quot;text-align: left; &quot;&gt;Startup 包含的是stm32的 启动文件,与芯片Flash容量有关&lt;/span&gt;&lt;/div&gt;
+
+&lt;p&gt;Library 下有两个文件夹，src文件夹用于放置&amp;nbsp;标准外设库驱动源文件（&lt;em&gt;.c）&amp;nbsp;和 inc文件夹用于放置标准外设库驱动头文件(&lt;/em&gt;.h)&lt;/p&gt;
+&lt;p&gt;User中包含的是项目的代码 和中断代码&lt;/p&gt;
+&lt;p&gt;Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息&lt;/p&gt;
+&lt;p&gt;需要说明的是 Startup里的启动文件需要根据不同的芯片选择不同的启动文件，这些启动文件在MDK的安装文件夹下可以找到 &amp;nbsp; &amp;nbsp;在MDK新建工程是选择了stm32的芯片型号后 MDK也会询问是否将启动文件添加到工程里 &amp;nbsp;&lt;/p&gt;
+&lt;p&gt;在MDk安装路径\ARM\Startup\ST\STM32F10x的所有启动文件：&lt;img src=&quot;/uploads/2012/06/310069959.png&quot; alt=&quot;startup.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;小容量产品&lt;/strong&gt;是指闪存存储器容量在16K至32K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。 选择 startup_stm32f10x_ld.s。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;中容量产品&lt;/strong&gt;是指闪存存储器容量在64K至128K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。&amp;nbsp;选择 startup_stm32f10x_md.s。&amp;nbsp;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;大容量产品&lt;/strong&gt;是指闪存存储器容量在256K至512K字节之间的STM32F101xx和STM32F103xx微控制器。&amp;nbsp;选择 startup_stm32f10x_hd.s。&lt;/p&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 直接操作寄存器开发环境配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-06-29T06:01:52.000Z" itemprop="datePublished">2012-06-29</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <div>操作stm32 有使用官方库函数（参见 <a href="http://www.ichanging.org/mdk-stm32lib-set.html">stm32 开发环境MDK+库文件配置</a>&nbsp;）和 直接操作寄存器的方法</div><div>直接操作寄存器的方法 &nbsp;会比库函数的方法效率更高 &nbsp;而且代码量会比较少 &nbsp; 例如 在库函数下 配置一个GPIO口 需要 &nbsp;&nbsp;</div><div>GPIO_InitTypeDef &nbsp; &nbsp;GPIO_InitStructure; &nbsp; &nbsp; //结构体 初始化</div><div><div>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;</div><div>GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</div><div>GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; &nbsp;&nbsp;</div><div>GPIO_Init(GPIOA , &amp;GPIO_InitStructure);</div><div> </div><div>五行代码 &nbsp; 而直接操作寄存器只需要：</div><div> </div><div>RCC-&gt;APB2ENR|=1&lt;&lt;2; &nbsp; &nbsp;//使能PORTA时钟<span class="Apple-tab-span" style="white-space: pre; "></span> &nbsp; <span class="Apple-tab-span" style="white-space: pre; "></span></div><div><div>GPIOA-&gt;CRL&amp;=0XFFF0FFFF;&nbsp;</div><div>GPIOA-&gt;CRL|=0X00030000;//PA4 推挽输出 &nbsp; <span class="Apple-tab-span" style="white-space:pre"></span></div><div> </div><div>三行代码 而且实际上这三行代码可以配置8个GPIO口 &nbsp; &nbsp;可以看出直接操作寄存器也是比较方便的</div><div>使用直接操作寄存器的方法操作stm32 &nbsp;环境配置和库函数类似 &nbsp;相关MDK设置可以参考&nbsp;<a href="http://www.ichanging.org/mdk-stm32lib-set.html">stm32 开发环境MDK+库文件配置</a>&nbsp; 直接操作寄存器需要的文件结构 会少得多&nbsp;</div><div> </div><div><strong><span style="text-align: left; ">STM32 直接操作寄存器 keil工程结构</span></strong></div><div> </div><div><img src="/uploads/2012/07/2442186229.png" alt="base-list.png"><span style="text-align: left; ">Startup 包含的是stm32的 启动文件,与芯片Flash容量有关</span></div>
+
+<p>Library 下有两个文件夹，src文件夹用于放置&nbsp;标准外设库驱动源文件（<em>.c）&nbsp;和 inc文件夹用于放置标准外设库驱动头文件(</em>.h)</p>
+<p>User中包含的是项目的代码 和中断代码</p>
+<p>Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息</p>
+<p>需要说明的是 Startup里的启动文件需要根据不同的芯片选择不同的启动文件，这些启动文件在MDK的安装文件夹下可以找到 &nbsp; &nbsp;在MDK新建工程是选择了stm32的芯片型号后 MDK也会询问是否将启动文件添加到工程里 &nbsp;</p>
+<p>在MDk安装路径\ARM\Startup\ST\STM32F10x的所有启动文件：<img src="/uploads/2012/06/310069959.png" alt="startup.png"></p>
+<p><strong>小容量产品</strong>是指闪存存储器容量在16K至32K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。 选择 startup_stm32f10x_ld.s。</p>
+<p><strong>中容量产品</strong>是指闪存存储器容量在64K至128K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。&nbsp;选择 startup_stm32f10x_md.s。&nbsp;&nbsp;</p>
+<p><strong>大容量产品</strong>是指闪存存储器容量在256K至512K字节之间的STM32F101xx和STM32F103xx微控制器。&nbsp;选择 startup_stm32f10x_hd.s。</p>
+<a id="more"></a>
+<p>容量大小可以通过芯片型号得知：</p>
+<p><img src="/uploads/2012/06/826191248.png" alt="flash.png"></p>
+<p>还需要说明的一点是在&nbsp;MDk安装路径\ARM\Startup\ST\下有一个 STM32F10x.s的启动文件</p>
+<p><strong>STM32F10x.s 可以作为大部分stm32型号的芯片的启动文件，但是并不能适用所有的STM32型号。&nbsp;</strong></p>
+<p>STM32F10x.s是MDK提供的启动代码，从其里面的内容看来，里面定义了STM32的堆栈大小以及各种</p>
+<p>中断的名字及入口函数名称，还有启动相关的汇编代码。它只定义了3个串口，4个定时器。</p>
+<p>实际上STM32的系列产品有5个串口的型号，也只有有2个串口的型号，定时器也是，做多的有8个定时</p>
+<p>器。</p>
+<p>比如，如果你用的STM32F103ZET6，而启动文件用的是STM32F10x.s的话，你可以正常使用串口</p>
+<p>1~3的中断，而串口4和5的中断，则无法正常使用。又比如，你TIM1~4的中断可以正常使用，而5~8</p>
+<p>的，则无法使用。</p>
+<p>和库函数操作类似 &nbsp;直接操作寄存器方法也需要先配置RCC时钟 配置中断等操作 这里提供一个配置函数,后面的例子中都会调用这个文件)</p>
+<p><span style="text-align: left; ">Library/src/</span>system.c</p>
+<pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;         
+#include "system.h"
+
+/**********************************************************
+ *
+ * 系统函数
+ *
+ * 功能：实现中断的初始化、RCC时钟初始化、Systick 初始化 以及 延时函数等
+ *
+ **********************************************************/
+
+//设置向量表偏移地址
+//NVIC_VectTab:基址
+//Offset:偏移量
+
+void Nvic_SetVectorTable(u32 NVIC_VectTab, u32 Offset)     
+{ 
+      //检查参数合法性
+    assert_param(IS_NVIC_VECTTAB(NVIC_VectTab));
+    assert_param(IS_NVIC_OFFSET(Offset));       
+    SCB-&gt;VTOR = NVIC_VectTab|(Offset &amp; (u32)0x1FFFFF80);//设置NVIC的向量表偏移寄存器
+    //用于标识向量表是在CODE区还是在RAM区
+
+}
+
+//设置NVIC分组
+//NVIC_Group:NVIC分组 0~4 总共5组 
+
+void Nvic_PriorityGroupConfig(u8 NVIC_Group)     
+{ 
+    u32 temp,temp1;      
+
+      //配置向量表                  
+    #ifdef  VECT_TAB_RAM
+        Nvic_SetVectorTable(NVIC_VectTab_RAM, 0x0);
+    #else   
+        Nvic_SetVectorTable(NVIC_VectTab_FLASH, 0x0);
+    #endif
+
+    temp1=(~NVIC_Group)&amp;0x07;//取后三位
+    temp1&lt;&lt;=8;
+    temp=SCB-&gt;AIRCR;  //读取先前的设置
+    temp&amp;=0X0000F8FF; //清空先前分组
+    temp|=0X05FA0000; //写入钥匙
+    temp|=temp1;       
+    SCB-&gt;AIRCR=temp;  //设置分组   
+}
+
+//设置NVIC 
+//NVIC_PreemptionPriority:抢占优先级
+//NVIC_SubPriority       :响应优先级
+//NVIC_Channel           :中断编号
+//NVIC_Group             :中断分组 0~4
+//注意优先级不能超过设定的组的范围!否则会有意想不到的错误
+//组划分:
+//组0:0位抢占优先级,4位响应优先级
+//组1:1位抢占优先级,3位响应优先级
+//组2:2位抢占优先级,2位响应优先级
+//组3:3位抢占优先级,1位响应优先级
+//组4:4位抢占优先级,0位响应优先级
+//NVIC_SubPriority和NVIC_PreemptionPriority的原则是,数值越小,越优先
+
+void Nvic_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel,u8 NVIC_Group)     
+{ 
+
+    u32 temp;    
+
+    u8 IPRADDR=NVIC_Channel/4;  //每组只能存4个,得到组地址 
+    u8 IPROFFSET=NVIC_Channel%4;//在组内的偏移
+    IPROFFSET=IPROFFSET*8+4;    //得到偏移的确切位置
+    Nvic_PriorityGroupConfig(NVIC_Group);//设置分组
+    temp=NVIC_PreemptionPriority&lt;&lt;(4-NVIC_Group);      
+    temp|=NVIC_SubPriority&amp;(0x0f&gt;&gt;NVIC_Group);
+    temp&amp;=0xf;//取低四位
+
+    if(NVIC_Channel&lt;32)NVIC-&gt;ISER[0]|=1&lt;&lt;NVIC_Channel;//使能中断位(要清除的话,相反操作就OK)
+    else NVIC-&gt;ISER[1]|=1&lt;&lt;(NVIC_Channel-32);    
+    NVIC-&gt;IPR[IPRADDR]|=temp&lt;&lt;IPROFFSET;//设置响应优先级和抢断优先级                                    
+}
+
+//所有时钟寄存器复位
+void Rcc_DeInit(void)
+{                                                                 
+    RCC-&gt;APB1RSTR = 0x00000000;//复位结束             
+    RCC-&gt;APB2RSTR = 0x00000000; 
+
+      RCC-&gt;AHBENR = 0x00000014;  //睡眠模式闪存和SRAM时钟使能.其他关闭.      
+      RCC-&gt;APB2ENR = 0x00000000; //外设时钟关闭.               
+      RCC-&gt;APB1ENR = 0x00000000;   
+    RCC-&gt;CR |= 0x00000001;     //使能内部高速时钟HSION                                                                  
+    RCC-&gt;CFGR &amp;= 0xF8FF0000;   //复位SW[1:0],HPRE[3:0],PPRE1[2:0],PPRE2[2:0],ADCPRE[1:0],MCO[2:0]                     
+    RCC-&gt;CR &amp;= 0xFEF6FFFF;     //复位HSEON,CSSON,PLLON
+    RCC-&gt;CR &amp;= 0xFFFBFFFF;     //复位HSEBYP             
+    RCC-&gt;CFGR &amp;= 0xFF80FFFF;   //复位PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE 
+    RCC-&gt;CIR = 0x00000000;     //关闭所有中断
+}
+
+//THUMB指令不支持汇编内联
+//采用如下方法实现执行汇编指令WFI
+__asm void WFI_SET(void)
+{
+    WFI;    
+}
+
+//进入待机模式     
+
+void Sys_Standby(void)
+{
+    SCB-&gt;SCR|=1&lt;&lt;2;//使能SLEEPDEEP位 (SYS-&gt;CTRL)       
+      RCC-&gt;APB1ENR|=1&lt;&lt;28;     //使能电源时钟        
+     PWR-&gt;CSR|=1&lt;&lt;8;          //设置WKUP用于唤醒
+    PWR-&gt;CR|=1&lt;&lt;2;           //清除Wake-up 标志
+    PWR-&gt;CR|=1&lt;&lt;1;           //PDDS置位          
+    WFI_SET();                 //执行WFI指令         
+}    
+
+//系统软复位
+
+void Sys_Soft_Reset(void)
+{   
+    SCB-&gt;AIRCR =0X05FA0000|(u32)0x04;      
+} 
+
+//JTAG模式设置,用于设置JTAG的模式
+//mode:jtag,swd模式设置;00,全使能;01,使能SWD;10,全关闭;
+
+void JTAG_Set(u8 mode)
+{
+    u32 temp;
+    temp=mode;
+    temp&lt;&lt;=25;
+    RCC-&gt;APB2ENR|=1&lt;&lt;0;     //开启辅助时钟       
+    AFIO-&gt;MAPR&amp;=0XF8FFFFFF; //清除MAPR的[26:24]
+    AFIO-&gt;MAPR|=temp;       //设置jtag模式
+} 
+
+//系统时钟初始化函数
+//pll:选择的倍频数，从2开始，最大值为16    
+
+void Rcc_Init(u8 PLL)
+{
+    unsigned char temp=0; 
+    Rcc_DeInit();          //复位并配置向量表
+    RCC-&gt;CR|=0x00010000;  //外部高速时钟使能HSEON
+    while(!(RCC-&gt;CR&gt;&gt;17));//等待外部时钟就绪
+    RCC-&gt;CFGR=0X00000400; //APB1=DIV2;APB2=DIV1;AHB=DIV1;
+    PLL-=2;//抵消2个单位
+    RCC-&gt;CFGR|=PLL&lt;&lt;18;   //设置PLL值 2~16
+    RCC-&gt;CFGR|=1&lt;&lt;16;      //PLLSRC ON 
+    FLASH-&gt;ACR|=0x32;      //FLASH 2个延时周期
+
+    RCC-&gt;CR|=0x01000000;  //PLLON
+    while(!(RCC-&gt;CR&gt;&gt;25));//等待PLL锁定
+    RCC-&gt;CFGR|=0x00000002;//PLL作为系统时钟     
+    while(temp!=0x02)     //等待PLL作为系统时钟设置成功
+    {   
+        temp=RCC-&gt;CFGR&gt;&gt;2;
+        temp&amp;=0x03;
+    }    
+}            
+
+//初始化化SysTick定时器
+//无中断处理接口函数 SysTick_Handler(),待开发..
+void SysTick_Init(u32 us)
+{      
+
+    u8 us_radix=72/8;//us延时倍乘数  SYSTICk的时钟固定为HCLK时钟的1/8，这里使用系统时钟72MHz
+
+    SysTick-&gt;CTRL&amp;=0xfffffffb;//bit2清空,选择外部时钟  HCLK/8
+    SysTick-&gt;LOAD=us*us_radix; //时间加载            
+    SysTick-&gt;VAL=0x00;        //清空计数器
+    SysTick-&gt;CTRL=0x01;      //开始倒数      
+
+    //SysTick-&gt;CTRL=0x00;       //关闭计数器
+    //SysTick-&gt;VAL =0X00;       //清空计数器 
+}
+
+//延时函数
+void delay(u32 us)       //vu32 1us一次
+{
+    u32 time=100*us/7;     
+    while(--time);         
+}
+</pre>
+
+<p>Library/inc/system.h</p>
+<pre class="brush:cpp;">#ifndef __SYS_H
+#define __SYS_H     
+#include &lt;stm32f10x_lib.h&gt;
+
+//位带操作,实现51类似的GPIO控制功能
+//具体实现思想,参考&lt;&lt;CM3权威指南&gt;&gt;第五章(87页~92页).
+//IO口操作宏定义
+#define BITBAND(addr, bitnum) ((addr &amp; 0xF0000000)+0x2000000+((addr &amp;0xFFFFF)&lt;&lt;5)+(bitnum&lt;&lt;2)) 
+#define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
+#define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
+//IO口地址映射
+#define GPIOA_ODR_Addr    (GPIOA_BASE+12) //0x4001080C 
+#define GPIOB_ODR_Addr    (GPIOB_BASE+12) //0x40010C0C 
+#define GPIOC_ODR_Addr    (GPIOC_BASE+12) //0x4001100C 
+#define GPIOD_ODR_Addr    (GPIOD_BASE+12) //0x4001140C 
+#define GPIOE_ODR_Addr    (GPIOE_BASE+12) //0x4001180C 
+#define GPIOF_ODR_Addr    (GPIOF_BASE+12) //0x40011A0C    
+#define GPIOG_ODR_Addr    (GPIOG_BASE+12) //0x40011E0C    
+
+#define GPIOA_IDR_Addr    (GPIOA_BASE+8) //0x40010808 
+#define GPIOB_IDR_Addr    (GPIOB_BASE+8) //0x40010C08 
+#define GPIOC_IDR_Addr    (GPIOC_BASE+8) //0x40011008 
+#define GPIOD_IDR_Addr    (GPIOD_BASE+8) //0x40011408 
+#define GPIOE_IDR_Addr    (GPIOE_BASE+8) //0x40011808 
+#define GPIOF_IDR_Addr    (GPIOF_BASE+8) //0x40011A08 
+#define GPIOG_IDR_Addr    (GPIOG_BASE+8) //0x40011E08 
+
+//IO口操作,只对单一的IO口!
+//确保n的值小于16!
+#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出 
+#define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //输入 
+
+#define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //输出 
+#define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //输入 
+
+#define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //输出 
+#define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //输入 
+
+#define PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  //输出 
+#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //输入 
+
+#define PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  //输出 
+#define PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  //输入
+
+#define PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  //输出 
+#define PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  //输入
+
+#define PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  //输出 
+#define PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  //输入
+/////////////////////////////////////////////////////////////////
+//Ex_NVIC_Config专用定义
+#define GPIO_A 0
+#define GPIO_B 1
+#define GPIO_C 2
+#define GPIO_D 3
+#define GPIO_E 4
+#define GPIO_F 5
+#define GPIO_G 6 
+#define FTIR   1  //下降沿触发
+#define RTIR   2  //上升沿触发
+/////////////////////////////////////////////////////////////////
+//JTAG模式设置定义
+#define JTAG_SWD_DISABLE   0X02
+#define SWD_ENABLE         0X01
+#define JTAG_SWD_ENABLE    0X00    
+
+/////////////////////////////////////////////////////////////////  
+void Rcc_Init(u8 PLL);  //时钟初始化  
+void Sys_Soft_Reset(void);      //系统软复位
+void Sys_Standby(void);         //待机模式     
+void Nvic_SetVectorTable(u32 NVIC_VectTab, u32 Offset);//设置偏移地址
+void Nvic_PriorityGroupConfig(u8 NVIC_Group);//设置NVIC分组
+void Nvic_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel,u8 NVIC_Group);//设置中断
+void JTAG_Set(u8 mode);
+
+void SysTick_Init(u32 us);
+void delay(u32 us);
+#endif</pre>
+
+<p>stm32中有很多中断处理接口函数，在User目录下新建一个文档，专门处理接口函数</p>
+<p>User/stm32f10x_it.c：</p>
+<pre class="brush:cpp;">#include "stm32f10x_it.h"
+
+void USART1_IRQHandler(void)
+
+{
+
+    ... ...
+
+}</pre>
+
+<p>User/stm32f10x_it.h</p>
+<pre class="brush:cpp;">/******************** (C) COPYRIGHT 2008 STMicroelectronics ********************
+* File Name          : stm32f10x_it.h
+* Author             : MCD Application Team
+* Version            : V2.0.1
+* Date               : 06/13/2008
+* Description        : This file contains the headers of the interrupt handlers.
+********************************************************************************
+* THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+* WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.
+* AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
+* INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
+* CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
+* INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+*******************************************************************************/
+
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __STM32F10x_IT_H
+#define __STM32F10x_IT_H
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f10x_lib.h"
+
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
+/* Exported macro ------------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
+
+/*void NMI_Handler(void)        __attribute__ ((alias("NMIException")));
+void HardFault_Handler(void)  __attribute__ ((alias("HardFaultException")));
+void MemManage_Handler(void)  __attribute__ ((alias("MemManageException")));
+void BusFault_Handler(void)   __attribute__ ((alias("BusFaultException")));
+void UsageFault_Handler(void) __attribute__ ((alias("UsageFaultException")));
+void DebugMon_Handler(void)   __attribute__ ((alias("DebugMonitor")));
+void SVC_Handler(void)        __attribute__ ((alias("SVCHandler")));
+void PendSV_Handler(void)     __attribute__ ((alias("PendSVC")));
+void SysTick_Handler(void)    __attribute__ ((alias("SysTickHandler")));*/
+
+void NMIException(void);
+void HardFaultException(void);
+void MemManageException(void);
+void BusFaultException(void);
+void UsageFaultException(void);
+void DebugMonitor(void);
+void SVCHandler(void);
+void PendSVC(void);
+void SysTickHandler(void);
+void WWDG_IRQHandler(void);
+void PVD_IRQHandler(void);
+void TAMPER_IRQHandler(void);
+void RTC_IRQHandler(void);
+void FLASH_IRQHandler(void);
+void RCC_IRQHandler(void);
+void EXTI0_IRQHandler(void);
+void EXTI1_IRQHandler(void);
+void EXTI2_IRQHandler(void);
+void EXTI3_IRQHandler(void);
+void EXTI4_IRQHandler(void);
+void DMA1_Channel1_IRQHandler(void);
+void DMA1_Channel2_IRQHandler(void);
+void DMA1_Channel3_IRQHandler(void);
+void DMA1_Channel4_IRQHandler(void);
+void DMA1_Channel5_IRQHandler(void);
+void DMA1_Channel6_IRQHandler(void);
+void DMA1_Channel7_IRQHandler(void);
+void ADC1_2_IRQHandler(void);
+void USB_HP_CAN_TX_IRQHandler(void);
+void USB_LP_CAN_RX0_IRQHandler(void);
+void CAN_RX1_IRQHandler(void);
+void CAN_SCE_IRQHandler(void);
+void EXTI9_5_IRQHandler(void);
+void TIM1_BRK_IRQHandler(void);
+void TIM1_UP_IRQHandler(void);
+void TIM1_TRG_COM_IRQHandler(void);
+void TIM1_CC_IRQHandler(void);
+void TIM2_IRQHandler(void);
+void TIM3_IRQHandler(void);
+void TIM4_IRQHandler(void);
+void I2C1_EV_IRQHandler(void);
+void I2C1_ER_IRQHandler(void);
+void I2C2_EV_IRQHandler(void);
+void I2C2_ER_IRQHandler(void);
+void SPI1_IRQHandler(void);
+void SPI2_IRQHandler(void);
+void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
+void USART3_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
+void RTCAlarm_IRQHandler(void);
+void USBWakeUp_IRQHandler(void);
+void TIM8_BRK_IRQHandler(void);
+void TIM8_UP_IRQHandler(void);
+void TIM8_TRG_COM_IRQHandler(void);
+void TIM8_CC_IRQHandler(void);
+void ADC3_IRQHandler(void);
+void FSMC_IRQHandler(void);
+void SDIO_IRQHandler(void);
+void TIM5_IRQHandler(void);
+void SPI3_IRQHandler(void);
+void UART4_IRQHandler(void);
+void UART5_IRQHandler(void);
+void TIM6_IRQHandler(void);
+void TIM7_IRQHandler(void);
+void DMA2_Channel1_IRQHandler(void);
+void DMA2_Channel2_IRQHandler(void);
+void DMA2_Channel3_IRQHandler(void);
+void DMA2_Channel4_5_IRQHandler(void);
+
+#endif /* __STM32F10x_IT_H */
+
+/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
+</pre>
+
+<p>在User/main.c 中调用配置函数 就可以直接进行寄存器操作：</p>
+<p><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;</pre></p>
+<p>#include “stm32f10x_it.h”</p>
+<p>#include “system.h” </p>
+<p>int main(void) { </p>
+<pre><code>Rcc_Init(9); //系统时钟设置 
+delay(72); //延时初始化 
+while(1) {
+          .... ...
+ }
+</code></pre><p> }<br><pre class="brush:cpp;"></pre></p></div></div><p></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&text=stm32 直接操作寄存器开发环境配置"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&is_video=false&description=stm32 直接操作寄存器开发环境配置"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 直接操作寄存器开发环境配置&body=Check out this article: http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&title=stm32 直接操作寄存器开发环境配置"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/29/stm32-直接操作寄存器开发环境配置/&name=stm32 直接操作寄存器开发环境配置&description=&lt;div&gt;操作stm32 有使用官方库函数（参见 &lt;a href=&quot;http://www.ichanging.org/mdk-stm32lib-set.html&quot;&gt;stm32 开发环境MDK+库文件配置&lt;/a&gt;&amp;nbsp;）和 直接操作寄存器的方法&lt;/div&gt;&lt;div&gt;直接操作寄存器的方法 &amp;nbsp;会比库函数的方法效率更高 &amp;nbsp;而且代码量会比较少 &amp;nbsp; 例如 在库函数下 配置一个GPIO口 需要 &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIO_InitTypeDef &amp;nbsp; &amp;nbsp;GPIO_InitStructure; &amp;nbsp; &amp;nbsp; //结构体 初始化&lt;/div&gt;&lt;div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;&lt;/div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;&lt;/div&gt;&lt;div&gt;GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure);&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;五行代码 &amp;nbsp; 而直接操作寄存器只需要：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;RCC-&amp;gt;APB2ENR|=1&amp;lt;&amp;lt;2; &amp;nbsp; &amp;nbsp;//使能PORTA时钟&lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space: pre; &quot;&gt;&lt;/span&gt; &amp;nbsp; &lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space: pre; &quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;GPIOA-&amp;gt;CRL&amp;amp;=0XFFF0FFFF;&amp;nbsp;&lt;/div&gt;&lt;div&gt;GPIOA-&amp;gt;CRL|=0X00030000;//PA4 推挽输出 &amp;nbsp; &lt;span class=&quot;Apple-tab-span&quot; style=&quot;white-space:pre&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;三行代码 而且实际上这三行代码可以配置8个GPIO口 &amp;nbsp; &amp;nbsp;可以看出直接操作寄存器也是比较方便的&lt;/div&gt;&lt;div&gt;使用直接操作寄存器的方法操作stm32 &amp;nbsp;环境配置和库函数类似 &amp;nbsp;相关MDK设置可以参考&amp;nbsp;&lt;a href=&quot;http://www.ichanging.org/mdk-stm32lib-set.html&quot;&gt;stm32 开发环境MDK+库文件配置&lt;/a&gt;&amp;nbsp; 直接操作寄存器需要的文件结构 会少得多&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;span style=&quot;text-align: left; &quot;&gt;STM32 直接操作寄存器 keil工程结构&lt;/span&gt;&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/2442186229.png&quot; alt=&quot;base-list.png&quot;&gt;&lt;span style=&quot;text-align: left; &quot;&gt;Startup 包含的是stm32的 启动文件,与芯片Flash容量有关&lt;/span&gt;&lt;/div&gt;
+
+&lt;p&gt;Library 下有两个文件夹，src文件夹用于放置&amp;nbsp;标准外设库驱动源文件（&lt;em&gt;.c）&amp;nbsp;和 inc文件夹用于放置标准外设库驱动头文件(&lt;/em&gt;.h)&lt;/p&gt;
+&lt;p&gt;User中包含的是项目的代码 和中断代码&lt;/p&gt;
+&lt;p&gt;Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息&lt;/p&gt;
+&lt;p&gt;需要说明的是 Startup里的启动文件需要根据不同的芯片选择不同的启动文件，这些启动文件在MDK的安装文件夹下可以找到 &amp;nbsp; &amp;nbsp;在MDK新建工程是选择了stm32的芯片型号后 MDK也会询问是否将启动文件添加到工程里 &amp;nbsp;&lt;/p&gt;
+&lt;p&gt;在MDk安装路径\ARM\Startup\ST\STM32F10x的所有启动文件：&lt;img src=&quot;/uploads/2012/06/310069959.png&quot; alt=&quot;startup.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;小容量产品&lt;/strong&gt;是指闪存存储器容量在16K至32K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。 选择 startup_stm32f10x_ld.s。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;中容量产品&lt;/strong&gt;是指闪存存储器容量在64K至128K字节之间的STM32F101xx、STM32F102xx和STM32F103xx微控制器。&amp;nbsp;选择 startup_stm32f10x_md.s。&amp;nbsp;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;大容量产品&lt;/strong&gt;是指闪存存储器容量在256K至512K字节之间的STM32F101xx和STM32F103xx微控制器。&amp;nbsp;选择 startup_stm32f10x_hd.s。&lt;/p&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

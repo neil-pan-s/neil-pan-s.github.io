@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。 uln2003 uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。 &amp;nbsp; &amp;nbsp; 原理图 &amp;nbsp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="uln2003 驱动 继电器及步进电机">
+<meta property="og:url" content="http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。 uln2003 uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。 &amp;nbsp; &amp;nbsp; 原理图 &amp;nbsp;">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/421823183.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/3023693580.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/1879926535.jpg">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/1570599660.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/2252118844.png">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="uln2003 驱动 继电器及步进电机">
+<meta name="twitter:description" content="由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。 uln2003 uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。 &amp;nbsp; &amp;nbsp; 原理图 &amp;nbsp;">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/06/421823183.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>uln2003 驱动 继电器及步进电机</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/05/18/单片机读取EEPROM-AT24C02/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&text=uln2003 驱动 继电器及步进电机"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&is_video=false&description=uln2003 驱动 继电器及步进电机"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=uln2003 驱动 继电器及步进电机&body=Check out this article: http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&name=uln2003 驱动 继电器及步进电机&description=&lt;div&gt;由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-size:16px;&quot;&gt;&lt;strong&gt;uln2003&lt;/strong&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 原理图 &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 应用电路&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/06/421823183.png&quot; alt=&quot;uln2003.png&quot;&gt;&amp;nbsp;&lt;img src=&quot;/uploads/2012/06/3023693580.png&quot; alt=&quot;QQ截图20120618193218.png&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;单片机的I/O口直接和ULN2003连,ULN2003有16个脚共7路驱动.&lt;/div&gt;&lt;div&gt;ULN2003的8脚接5V电源地,9脚接+5V或12V电源,因为ULN2003里面有续流二极管从9脚引出.&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;假如你用P1.0驱动一个电机,那么P1.0接ULN2003的1脚,ULN2003的16脚接电机线圈的一端,电机线圈的另一端接+5V电源.P1.0为高电平,电机就转,P1.0为低电平,电机就停.ULN2003驱动电流500MA.&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;这个器件用起来很简单，它是一个不能输出高电平的反相器，就是说你输入高电平的时候，输出低电平，你输入低电平的时候它就成高阻态（就是电阻很大，可以看成短路，这时如果你加上拉电阻的话输出就会拉成高电平）。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;一般他的用法就当成电子开关用，就是你输入高电平的时候它相应的端口会输出低电平，而且这个低电平能吸收的电流达500mA。所以一般就是电机或者其他用电器的一段接ULN2003 的输出口（像接了一个开关然后再接到低）。还有一段接高电平或者电源。使用的时候就把相应的端口置高电平就会打开开关，让电机形成对地的回路，从而让电机运行；如果相应的端口为低电平，输出为高阻态，就像断开了对地的开关，从而不形成回路让电机关闭。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;继电器&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/06/1879926535.jpg&quot; alt=&quot;QQ截图20120618205011.jpg&quot;&gt;（继电器型号：&amp;nbsp;hjr-4120-&lt;em&gt;v &amp;nbsp; &lt;/em&gt;为线圈控制电压)&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;一般继电器的外壳有标注，如果没有，自己用万用表测一下也很简单：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1、找出线圈引脚。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 用万用表测各引脚间的电阻，阻值在数百至1K欧姆左右的两个脚是线圈引脚。注意有些继电器的线圈分正负极，反接虽然不至于损坏，但不动作。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;2、找出常开、常闭点。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 用万用表测除线圈之外的四个引脚，导通的两个引脚是常闭关 系，给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，它们应断开；如果没有断开，则内部是短接关系。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，此时再用万用表测，如果有原来不通的两个引脚导通了，则它们是常开关系。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 既与常开点有关系，又与常闭点有关系的引脚，就是公共端。&lt;/div&gt;&lt;p&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        uln2003 驱动 继电器及步进电机
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-06-18T13:16:05.000Z" itemprop="datePublished">2012-06-18</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <div>由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。</div><div> </div><div><span style="font-size:16px;"><strong>uln2003</strong></span></div><div> </div><div>uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。</div><div> </div><div>&nbsp; &nbsp; 原理图 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 应用电路</div><div><img src="/uploads/2012/06/421823183.png" alt="uln2003.png">&nbsp;<img src="/uploads/2012/06/3023693580.png" alt="QQ截图20120618193218.png"></div><div><div> </div><div>单片机的I/O口直接和ULN2003连,ULN2003有16个脚共7路驱动.</div><div>ULN2003的8脚接5V电源地,9脚接+5V或12V电源,因为ULN2003里面有续流二极管从9脚引出.</div><div> </div><div>假如你用P1.0驱动一个电机,那么P1.0接ULN2003的1脚,ULN2003的16脚接电机线圈的一端,电机线圈的另一端接+5V电源.P1.0为高电平,电机就转,P1.0为低电平,电机就停.ULN2003驱动电流500MA.</div><div> </div><div>这个器件用起来很简单，它是一个不能输出高电平的反相器，就是说你输入高电平的时候，输出低电平，你输入低电平的时候它就成高阻态（就是电阻很大，可以看成短路，这时如果你加上拉电阻的话输出就会拉成高电平）。</div><div> </div><div>一般他的用法就当成电子开关用，就是你输入高电平的时候它相应的端口会输出低电平，而且这个低电平能吸收的电流达500mA。所以一般就是电机或者其他用电器的一段接ULN2003 的输出口（像接了一个开关然后再接到低）。还有一段接高电平或者电源。使用的时候就把相应的端口置高电平就会打开开关，让电机形成对地的回路，从而让电机运行；如果相应的端口为低电平，输出为高阻态，就像断开了对地的开关，从而不形成回路让电机关闭。</div><div> </div><div><strong>继电器</strong></div><div> </div><div><img src="/uploads/2012/06/1879926535.jpg" alt="QQ截图20120618205011.jpg">（继电器型号：&nbsp;hjr-4120-<em>v &nbsp; </em>为线圈控制电压)</div><div> </div><div><div>一般继电器的外壳有标注，如果没有，自己用万用表测一下也很简单：</div><div> </div><div>1、找出线圈引脚。</div><div>&nbsp; &nbsp; 用万用表测各引脚间的电阻，阻值在数百至1K欧姆左右的两个脚是线圈引脚。注意有些继电器的线圈分正负极，反接虽然不至于损坏，但不动作。</div><div> </div><div>2、找出常开、常闭点。</div><div>&nbsp; &nbsp; 用万用表测除线圈之外的四个引脚，导通的两个引脚是常闭关 系，给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，它们应断开；如果没有断开，则内部是短接关系。</div><div>&nbsp; &nbsp; 给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，此时再用万用表测，如果有原来不通的两个引脚导通了，则它们是常开关系。</div><div> </div><div>&nbsp; &nbsp; 既与常开点有关系，又与常闭点有关系的引脚，就是公共端。</div><p><a id="more"></a></p></div><div> </div><div><strong>步进电机</strong></div><div> </div><div>相关特性：</div><div><div>1、 步进电机必须加驱动才可以运转， 驱动信号必须为脉冲信号，没有脉冲的时候，</div><div>步进电机静止， 如果加入适当的脉冲信号， 就会以一定的角度（称为步角）转动。转</div><div>动的速度和脉冲的频率成正比。</div><div>2、28BYJ48 5V 驱动的4 相5 线的步进电机，而且是减速步进电机，减速比为1：64，步进角为5.625/64 度。如果需要转动1 圈，那么需要360/5.625*64=4096 个脉冲信号。</div><div>3、 步进电机具有瞬间启动和急速停止的优越特性。</div><div>4、 改变脉冲的顺序， 可以方便的改变转动的方向。</div><div> </div><div>因此，目前打印机，绘图仪，机器人，等等设备都以步进电机为动力核心。</div><div> </div><div><div>每一个脉冲信号对应步进电机的某一相或两相绕组的通电状态改变一次，也就对应转子转过一定的角度（一个步距角）。当通电状态的改变完成一个循环时，转子转过一个齿距。四相步进电机可以在不同的通电方式下运行，常见的通电方式有单（单相绕组通电）四拍（A-B-C-D-A。。。），双（双相绕组通电）四拍（AB-BC-CD-DA-AB-。。。），八拍（A-AB-B-BC-C-CD-D-DA-A。。。）。</div><div> </div></div></div><div>采用四拍方式驱动：</div><div><img src="/uploads/2012/06/1570599660.png" alt="QQ截图20120618210127.png"></div><div>将单片机IO（如P1）接到uln2003输入端，将步进电机的信号线对应接到uln2003的输出口，根据上表可以单片机IO口的8个驱动脉冲信号为：</div><div><div>uchar code Step_1[8]={0x08,0x0c,0x04,0x06,0x02,0x03,0x01,0x09}; //逆时钟旋转相序表</div><div>uchar code Step_2[8]={0x09,0x01,0x03,0x02,0x06,0x04,0x0c,0x08}; //正时钟旋转相序表</div><div> </div><div>uln2003驱动继电器 &nbsp;步进电机原理图：</div><div> </div><div><img src="/uploads/2012/06/2252118844.png" alt="QQ截图20120618212527.png"></div></div><div> </div><div> </div></div><div><div><div><div> </div></div></div></div>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&text=uln2003 驱动 继电器及步进电机"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&is_video=false&description=uln2003 驱动 继电器及步进电机"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=uln2003 驱动 继电器及步进电机&body=Check out this article: http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&title=uln2003 驱动 继电器及步进电机"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/18/uln2003-驱动-继电器及步进电机/&name=uln2003 驱动 继电器及步进电机&description=&lt;div&gt;由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-size:16px;&quot;&gt;&lt;strong&gt;uln2003&lt;/strong&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 原理图 &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 应用电路&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/06/421823183.png&quot; alt=&quot;uln2003.png&quot;&gt;&amp;nbsp;&lt;img src=&quot;/uploads/2012/06/3023693580.png&quot; alt=&quot;QQ截图20120618193218.png&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;单片机的I/O口直接和ULN2003连,ULN2003有16个脚共7路驱动.&lt;/div&gt;&lt;div&gt;ULN2003的8脚接5V电源地,9脚接+5V或12V电源,因为ULN2003里面有续流二极管从9脚引出.&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;假如你用P1.0驱动一个电机,那么P1.0接ULN2003的1脚,ULN2003的16脚接电机线圈的一端,电机线圈的另一端接+5V电源.P1.0为高电平,电机就转,P1.0为低电平,电机就停.ULN2003驱动电流500MA.&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;这个器件用起来很简单，它是一个不能输出高电平的反相器，就是说你输入高电平的时候，输出低电平，你输入低电平的时候它就成高阻态（就是电阻很大，可以看成短路，这时如果你加上拉电阻的话输出就会拉成高电平）。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;一般他的用法就当成电子开关用，就是你输入高电平的时候它相应的端口会输出低电平，而且这个低电平能吸收的电流达500mA。所以一般就是电机或者其他用电器的一段接ULN2003 的输出口（像接了一个开关然后再接到低）。还有一段接高电平或者电源。使用的时候就把相应的端口置高电平就会打开开关，让电机形成对地的回路，从而让电机运行；如果相应的端口为低电平，输出为高阻态，就像断开了对地的开关，从而不形成回路让电机关闭。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;继电器&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/06/1879926535.jpg&quot; alt=&quot;QQ截图20120618205011.jpg&quot;&gt;（继电器型号：&amp;nbsp;hjr-4120-&lt;em&gt;v &amp;nbsp; &lt;/em&gt;为线圈控制电压)&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;一般继电器的外壳有标注，如果没有，自己用万用表测一下也很简单：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1、找出线圈引脚。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 用万用表测各引脚间的电阻，阻值在数百至1K欧姆左右的两个脚是线圈引脚。注意有些继电器的线圈分正负极，反接虽然不至于损坏，但不动作。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;2、找出常开、常闭点。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 用万用表测除线圈之外的四个引脚，导通的两个引脚是常闭关 系，给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，它们应断开；如果没有断开，则内部是短接关系。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，此时再用万用表测，如果有原来不通的两个引脚导通了，则它们是常开关系。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 既与常开点有关系，又与常闭点有关系的引脚，就是公共端。&lt;/div&gt;&lt;p&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

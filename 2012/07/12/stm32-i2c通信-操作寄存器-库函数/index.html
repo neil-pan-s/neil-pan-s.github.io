@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；    每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 i2c通信 [操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；    每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/3084720656.jpg">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 i2c通信 [操作寄存器+库函数]">
+<meta name="twitter:description" content="I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；    每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/3084720656.jpg">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 i2c通信 [操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/12/stm32-can总线通信-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&text=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&is_video=false&description=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 i2c通信 [操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&name=stm32 i2c通信 [操作寄存器+库函数]&description=&lt;div&gt;I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;br&gt;&lt;em&gt;   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；
+&lt;/em&gt;   每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；&lt;br&gt;&lt;em&gt;   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；
+&lt;/em&gt;   串行的8 位双向数据传输位速率在标准模式下可达100kbit/s，快速模式下可达400kbit/s，高速模式下可达3.4Mbit/s；&lt;br&gt;&lt;em&gt;   连接到相同总线的IC 数量只受到总线的最大电容400pF 限制。&lt;div&gt;其典型的接口连线如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/3084720656.jpg&quot; alt=&quot;I2C Devices.jpg&quot;&gt;&lt;/div&gt;&lt;/em&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;I2C的协议很简单：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;数据的有效性&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　在传输数据的时候，SDA线必须在时钟的高电平周期保持稳定，SDA的高或低电平状态只有在SCL 线的时钟信号是低电平时才能改变 。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;起始和停止条件&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　SCL 线是高电平时，SDA 线从高电平向低电平切换，这个情况表示起始条件；&lt;/div&gt;&lt;div&gt;　　SCL 线是高电平时，SDA 线由低电平向高电平切换，这个情况表示停止条件。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;字节格式&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　发送到SDA 线上的每个字节必须为8 位，每次传输可以发送的字节数量不受限制。每个字节后必须处理一个响应位。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;应答响应 　　&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;数据传输必须带响应，相关的响应时钟脉冲由主机产生。在响应的时钟脉冲期间发送器释放SDA 线（高）。 　　&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;在响应的时钟脉冲期间，接收器必须将SDA 线拉低，使它在这个时钟脉冲的高电平期间保持稳定的低电平。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;也就是说主器件发送完一字节数据后要接收一个应答位（低电平），从器件接收完一个字节后要发送一个低电平。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;寻址方式(7位地址方式)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;　　第一个字节的头7 位组成了从机地址，最低位（LSB）是第8 位，它决定了传输的 &amp;nbsp;普通的和带重复开始条件的7位地址格式方向。第一个字节的最低位是&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;“0”，表示主机会写信息到被选中的从机；&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; “1”表示主机会向从机读信息。&lt;/div&gt;&lt;div&gt;当发送了一个地址后，系统中的每个器件都在起始条件后将头7 位与它自己的地址比较，如果一样，器件会判定它被主机寻址，至于是从机接收器还是从机发送器，都由R/W 位决定。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;em&gt;*仲裁&lt;/em&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; I2C是所主机总线，每个设备都可以成为主机，但任一时刻只能有一个主机。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;stm32至少有一个I2C接口，提供多主机功能，可以实现所有I2C总线的时序、协议、仲裁和定时功能，支持标准和快速传输两种模式，同时与SMBus 2.0兼容。&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 i2c通信 [操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-12T14:01:38.000Z" itemprop="datePublished">2012-07-12</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <div>I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：</div><div><br><br><em>   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；
+</em>   每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；<br><em>   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；
+</em>   串行的8 位双向数据传输位速率在标准模式下可达100kbit/s，快速模式下可达400kbit/s，高速模式下可达3.4Mbit/s；<br><em>   连接到相同总线的IC 数量只受到总线的最大电容400pF 限制。<div>其典型的接口连线如下：</div><div><img src="/uploads/2012/07/3084720656.jpg" alt="I2C Devices.jpg"></div></em></div><div> </div><div>I2C的协议很简单：</div><div> </div><div><div><strong>数据的有效性</strong></div><div>　　在传输数据的时候，SDA线必须在时钟的高电平周期保持稳定，SDA的高或低电平状态只有在SCL 线的时钟信号是低电平时才能改变 。</div><div> </div><div><div><strong>起始和停止条件</strong></div><div>　　SCL 线是高电平时，SDA 线从高电平向低电平切换，这个情况表示起始条件；</div><div>　　SCL 线是高电平时，SDA 线由低电平向高电平切换，这个情况表示停止条件。</div><div> </div><div><div><strong>字节格式</strong></div><div>　　发送到SDA 线上的每个字节必须为8 位，每次传输可以发送的字节数量不受限制。每个字节后必须处理一个响应位。</div><div> </div><div><strong>应答响应 　　</strong></div><div>&nbsp; &nbsp; &nbsp; &nbsp;数据传输必须带响应，相关的响应时钟脉冲由主机产生。在响应的时钟脉冲期间发送器释放SDA 线（高）。 　　</div><div>&nbsp; &nbsp; &nbsp; &nbsp;在响应的时钟脉冲期间，接收器必须将SDA 线拉低，使它在这个时钟脉冲的高电平期间保持稳定的低电平。</div><div>&nbsp; &nbsp; &nbsp; &nbsp;也就是说主器件发送完一字节数据后要接收一个应答位（低电平），从器件接收完一个字节后要发送一个低电平。</div><div> </div><div><div><strong>寻址方式(7位地址方式)</strong></div><div> </div><div>　　第一个字节的头7 位组成了从机地址，最低位（LSB）是第8 位，它决定了传输的 &nbsp;普通的和带重复开始条件的7位地址格式方向。第一个字节的最低位是</div><div>&nbsp;&nbsp;&nbsp;&nbsp;“0”，表示主机会写信息到被选中的从机；</div><div>&nbsp; &nbsp; “1”表示主机会向从机读信息。</div><div>当发送了一个地址后，系统中的每个器件都在起始条件后将头7 位与它自己的地址比较，如果一样，器件会判定它被主机寻址，至于是从机接收器还是从机发送器，都由R/W 位决定。</div><div> </div><div><em>*仲裁</em></div><div> </div><div>&nbsp; &nbsp; I2C是所主机总线，每个设备都可以成为主机，但任一时刻只能有一个主机。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;stm32至少有一个I2C接口，提供多主机功能，可以实现所有I2C总线的时序、协议、仲裁和定时功能，支持标准和快速传输两种模式，同时与SMBus 2.0兼容。</div>
+
+<a id="more"></a>
+<div> </div><div><strong>&nbsp; &nbsp; 本实验直接操作寄存器实现对I2C总线结构的EEPROM AT24c02的写入和读取。AT24c02相关操作详见&nbsp;</strong><a href="http://www.ichanging.org/at24c02.html">单片机读取EEPROM(AT24C02)</a>。</div><div> </div><div>&nbsp; &nbsp;&nbsp;<strong>库函数实现使用stm32的两个I2C模拟I2C**</strong>设备<strong>**间的数据收发，并通过串口查看数据交换情况。</strong></div><div> </div><div><strong>直接操作寄存器</strong></div><div> </div><div>首先需要配置I2C接口的时钟,相关寄存器如下：</div><div> </div><div>I2C_CR2寄存器低五位：&nbsp;</div><div>&nbsp;&nbsp;&nbsp;&nbsp;FREQ[5:0]：I2C模块时钟频率 ，必须设置正确的输入时钟频率以产生正确的时序，允许的范围在2～36MHz之间：</div><div>&nbsp;&nbsp;&nbsp;&nbsp;000000：禁用 &nbsp;&nbsp;&nbsp; &nbsp; 000001：禁用 &nbsp; &nbsp; &nbsp; 000010：2MHz &nbsp;&nbsp;&nbsp; &nbsp; … &nbsp;&nbsp;&nbsp; &nbsp; 100100：36MHz &nbsp;&nbsp;&nbsp; &nbsp; 大于100100：禁用。</div><div> </div><div>&nbsp;用于设置I2C设备的输入时钟，本例使用的是PLCK1总线上的时钟所以为36Mhz;</div><div> </div><div>时钟控制寄存器(I2C_CCR)低12位：</div><div><div>CCR[11:0]：快速/标准模式下的时钟控制分频系数(主模式)，该分频系数用于设置主模式下的SCL时钟。</div><div>在I2C标准模式或SMBus模式下：</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thigh = CCR ×TPCLK1</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tlow = CCR ×TPCLK1</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp; 时钟周期为 T = Thigh + Tlow;</div><div> </div><div>例如：在标准模式下，FREQR = 36 即36Mhz,产生200kHz的SCL的频率</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;时钟控制分频系数 &nbsp;= Freqr /2/f &nbsp; &nbsp;f 为想得到的频率&nbsp;</div><div> </div><div>配置好时钟，还需要配置本机地址，I2C支持7位地址和10位地址，这里用的是7位地址：</div><div>自身地址寄存器1(I2C_OAR1)[7:1]：接口地址，地址的7~1位。</div><div> </div><div>其他相关操作参见代码，有详细注释：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div> </div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “usart.h”<br>#include “i2c.h”<br><br>#define LED1 PAout(4)<br>#define LED2 PAout(5)<br>#define LED3 PAout(6)<br>#define LED4 PAout(7)<br><br>void Gpio_Init(void);<br><br>int main(void)<br>{<br><br>    Rcc_Init(9);                            //系统时钟设置<br><br>    Usart1_Init(72,9600);<br><br>    Nvic_Init(1,0,I2C1_EV_IRQChannel,4);      //设置抢占优先级为1，响应优先级为0，中断分组为4<br><br>    Nvic_Init(0,0,I2C1_ER_IRQChannel,4);      //设置I2C错误中断抢占优先级为0<br><br>    Gpio_Init();<br><br>    I2c_Init(0x30);                              //设置I2C1地址为0x30<br><br>    I2c_Start();<br><br>    while(1);<br>}<br><br>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR |= 1&lt;&lt;2;            //使能PORTA时钟<br>    RCC-&gt;APB2ENR |= 1&lt;&lt;3;            //使能PORTB时钟;<br><br>    GPIOA-&gt;CRL &amp;= 0x0000FFFF;         // PA0~3设置为浮空输入，PA4~7设置为推挽输出<br>    GPIOA-&gt;CRL |= 0x33334444;<br><br>    GPIOB-&gt;CRL &amp;= 0x00FFFFFF;        //PB6 I2C1_SCL ,PB7  I2C1_SDL<br>    GPIOB-&gt;CRL |= 0xFF000000;        //复用开漏输出<br><br>    //USART1 串口I/O设置<br><br>    GPIOA -&gt; CRH &amp;= 0xFFFFF00F;       //设置USART1 的Tx(PA.9)为第二功能推挽，50MHz；Rx(PA.10)为浮空输入<br>    GPIOA -&gt; CRH |= 0x000008B0;<br><br>}<br></pre><div>User/stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”<br>#include “system.h”<br>#include “stdio.h”<br>#include “i2c.h”<br><br>#define LED1 PAout(4)<br>#define LED2 PAout(5)<br>#define LED3 PAout(6)<br>#define LED4 PAout(7)<br><br>#define  ADDRS_R  0xA1    //读操作地址<br>#define  ADDRS_W  0xA0    //写操作地址<br><br>u8  go = 0;                  //操作步骤标记<br><br>void I2C1_EV_IRQHandler(void)     //I2C1 Event Interrupt<br>{<br>       u16 clear = 0;<br><br>    if(I2C1 -&gt; SR1 &amp; 1&lt;&lt;0 )          //已发送起始条件,写数据寄存器的操作将清除该位<br>    {<br>        printf(“\r\n I2C1 Start .. \r\n”);<br><br>        switch(go)<br>        {<br>            case 0:{<br>                 I2c_Write(ADDRS_W);           //写入从机地址,写指令操作地址<br>                break;<br>            }<br>            case 1:{<br>                I2c_Write(ADDRS_W);           //写入从机地址,写指令操作地址<br>                break;<br>            }<br>            case 2:{<br>                I2c_Write(ADDRS_R);           //写入从机地址,读数据操作地址<br>                break;<br>           }<br>        }<br><br>    }<br><br>    if(I2C1 -&gt; SR1 &amp; 1&lt;&lt;1 )        //从机地址已发送<br>    {<br>        printf(“\r\n I2C1 has send address .. \r\n”);<br>        clear = I2C1 -&gt; SR2;    //读取SR2可以清除该位中断<br><br>        switch(go)<br>        {<br>            case 0:{<br>                 I2c_Write(0x01);    //写入待写入的EEPROM单元地址<br>                break;<br>            }<br><br>            case 1:{<br>                I2c_Write(0x01);    //写入待写入的EEPROM单元地址<br>                break;<br>            }<br>            case 2:{<br>                delay(100000);<br>                 printf(“\r\n Read 0x%X from At24c02 ,Address 0x01 ..  \r\n”,I2c_Read());<br>                 I2c_Stop();<br>                break;<br>           }<br>        }<br><br>    }<br><br>    if(I2C1 -&gt; SR1 &amp; 1&lt;&lt;2 )        //字节发送结束  发送地址字节时，不触发此中断<br>    {<br><br>        //printf(“\r\n I2C1 send byte success .. \r\n”);<br>        switch(go)<br>        {<br>            case 0:{<br>                 I2c_Write(0x86);            //写入数据<br>                printf(“\r\n Write 0x%X to At24c02 ,Address 0x01 ..  \r\n”,0x86);<br>                //I2c_Stop();<br><br>                delay(10000);<br>                go = 1;<br>                I2c_Start();<br>                break;<br>            }<br><br>            case 1:{<br><br>                delay(10000);<br>                go = 2;<br>                I2c_Start();<br>                break;<br>            }<br>            case 2:{<br><br>                break;<br>           }<br>        }<br><br>    }<br><br>    delay(100000);<br>    LED3 = 1;<br><br>       //I2C1 -&gt; CR2 &amp;= ~(1&lt;&lt;9);            //事件中断关闭<br>}<br><br>void I2C1_ER_IRQHandler(void)        //I2C1 Error Interrupt<br>{<br>    delay(100000);<br>    LED4 = 1;<br><br>    if(I2C1-&gt;SR1 &amp; 1&lt;&lt;10)             //应答失败<br>    {<br>        printf(“\r\n ACK ERROR .. \r\n”);<br><br>        I2C1-&gt;SR1 &amp;=~(1&lt;&lt;10);        //清除中断<br>    }<br><br>    if(I2C1-&gt;SR1 &amp; 1&lt;&lt;14)            //超时<br>    {<br>        printf(“\r\n Timeout .. \r\n”);<br><br>        I2C1-&gt;SR1 &amp;=~(1&lt;&lt;14);        //清除中断<br>    }<br><br>    if(I2C1-&gt;SR1 &amp; 1&lt;&lt;11)            //过载/欠载<br>    {<br>        printf(“\r\n Overrun/Underrun .. \r\n”);<br>        I2C1-&gt;SR1 &amp;=~(1&lt;&lt;11);        //清除中断<br>    }<br><br>    if(I2C1-&gt;SR1 &amp; 1&lt;&lt;9)            //仲裁丢失<br>    {<br>        printf(“\r\n Arbitration lost .. \r\n”);<br>        I2C1-&gt;SR1 &amp;=~(1&lt;&lt;9);        //清除中断<br>    }<br><br>    if(I2C1-&gt;SR1 &amp; 1&lt;&lt;8)            //总线出错<br>    {<br>        printf(“\r\n Bus error .. \r\n”);<br>        I2C1-&gt;SR1 &amp;=~(1&lt;&lt;8);        //清除中断<br>    }<br><br>}<br></pre></div></div><div>Library/src/i2c.c</div><div><pre class="brush:cpp;">#include “i2c.h”<br><br>void I2c_Init(u16 Addr )<br>{<br><br>    RCC -&gt; APB1ENR |= 1&lt;&lt;21;            //打开I2C1时钟<br>    //RCC -&gt; APB1ENR |= 1&lt;&lt;22;            //打开I2C2时钟<br><br>    RCC-&gt;APB1RSTR  |= 1&lt;&lt;21;            //复位I2C1<br>    RCC-&gt;APB1RSTR  &amp;= ~(1&lt;&lt;21);            //复位结束I2C1<br>    //RCC-&gt;APB1RSTR  |= 1&lt;&lt;22;            //复位I2C2<br><br>    //I2C1 -&gt; CR1 |=  1&lt;&lt;15;                //复位寄存器<br><br>    //I2C模块时钟频率,2～36MHz之间<br>    I2C1 -&gt; CR2 |=    36 ;                //000000：禁用 000001：禁用 000010：2MHz … 100100：36MHz<br><br>    I2C1 -&gt; CCR |= 0&lt;&lt;15;                //I2C主模式  0：标准模式的I2C     1：快速模式的I2C<br>    //I2C1 -&gt; CCR |= 1&lt;&lt;14;                //快速模式时的占空比 0 Tlow/Thigh = 2     1    Tlow/Thigh = 16/9<br><br>    //得到200kHz频率<br>    I2C1 -&gt; CCR |= 90&lt;&lt;0;                //时钟控制分频系数  = PCLK1 /2/f    f 为想得到的频率<br><br>    //主模式最大上升时间<br>    I2C1 -&gt; TRISE |= 37;                //最大允许SCL上升时间为1000ns，故TRISE[5:0]中必须写入(1us/(1/36)us = 36+1)。<br><br>    I2C1 -&gt; CR1 |=  1&lt;&lt;10;                //打开ACK应答,在接收到一个字节后返回一个应答<br>    I2C1 -&gt; CR1 |= 1&lt;&lt;6;                //广播呼叫使能<br><br>    I2C1 -&gt; OAR1 |= 0&lt;&lt;15;                //寻址模式     1 响应10位地址  0  响应7位地址<br><br>    I2C1 -&gt; OAR1 |= 1&lt;&lt;14;                //必须始终由软件保持为 1<br><br>    I2C1 -&gt; OAR1 |=  Addr &lt;&lt;1 ;            //设置接口地址的 7~1位<br><br>    //I2C1 -&gt; OAR1 |=  0 ;              //设置10位地址模式时地址第0位<br>    //I2C1 -&gt; OAR1 |= 0&lt;&lt;8;                //设置10位地址模式时地址第9~8位<br><br>    //I2C1 -&gt; CR2 |=  1&lt;&lt;10;                //缓冲器中断使能<br>    I2C1 -&gt; CR2 |=  1&lt;&lt;9;                //事件中断使能<br>    I2C1 -&gt; CR2 |=  1&lt;&lt;8;                //出错中断使能<br><br>    I2C1 -&gt; CR1 |=    1&lt;&lt;0;                //开启I2C1<br>}<br><br>void  I2c_Start()<br>{<br><br>    I2C1 -&gt; CR1 |=    1&lt;&lt;8;                //I2C1产生起始条件<br>}<br><br>void  I2c_Stop()<br>{<br>    I2C1 -&gt; CR1 |=    1&lt;&lt;9;                //I2C1产生停止条件<br>}<br><br>void  I2c_Write(u8 data)<br>{<br>    I2C1 -&gt; DR = data;<br>}<br><br>u8  I2c_Read()<br>{<br>    while(!(I2C1 -&gt; SR1 &amp; 1&lt;&lt;6));        //接收到数据标志位<br><br>      return I2C1 -&gt; DR;<br>}<br><br>void  I2c_End()                            //关闭I2C<br>{<br>    I2C1 -&gt; CR1 &amp;=    ~(1&lt;&lt;0);<br>}<br></pre><div>Library/inc/i2c.h</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br><br>void I2c_Init(u16 Addr );<br><br>void  I2c_Start(void);<br>void  I2c_Stop(void);<br>void  I2c_Write(u8 data);<br>u8    I2c_Read(void);<br>void  I2c_End(void);<br></pre></div></div></div></div></div></div></div><div style="text-align: left;">串口接收数据如下：</div><div style="text-align: left;"> </div><div style="text-align: left;"><div>&nbsp;I2C1 Start ..&nbsp;</div><div>&nbsp;I2C1 has send address ..&nbsp;</div><div>&nbsp;Write 0x86 to At24c02 ,Address 0x01 .. &nbsp;</div><div>&nbsp;I2C1 Start ..&nbsp;</div><div>&nbsp;I2C1 has send address ..&nbsp;</div><div>&nbsp;I2C1 Start ..&nbsp;</div><div>&nbsp;I2C1 has send address ..&nbsp;</div><div>&nbsp;Read 0x86 from At24c02 ,Address 0x01 .. &nbsp;</div></div><div style="text-align: left;"> </div><div style="text-align: left;"> </div><div style="text-align: left;"><strong>库函数操作</strong></div><div style="text-align: left;"> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br>#include “stdio.h”<br><br>#define     PRINTF_ON  1<br><br>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void USART_Configuration(void);<br>void I2C_Configuration(void);<br>void NVIC_Configuration(void);<br><br>u8 I2C1_ADDRESS = 0x30;   //7位 I2C 地址<br>u8 I2C2_ADDRESS = 0x31;<br><br>#define Size 4<br><br>vu8 I2C1_Buffer_Tx[Size] = {1,2,3,4};<br>vu8 I2C2_Buffer_Rx[Size] = {0};<br><br>u32 BufferSize = Size ;<br><br>int main(void)<br>{<br>      RCC_Configuration();<br>    GPIO_Configuration();<br>    USART_Configuration();<br>    I2C_Configuration();<br>    NVIC_Configuration();<br><br>    I2C_GenerateSTART(I2C1,ENABLE);<br><br>    while(1);<br>}<br><br>void I2C_Configuration(void)<br>{<br>    I2C_InitTypeDef I2C_InitStructure;<br><br>    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;<br>    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;<br>    I2C_InitStructure.I2C_OwnAddress1 = I2C1_ADDRESS;<br>    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;<br>    I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;<br>    I2C_InitStructure.I2C_ClockSpeed = 200000;<br>    I2C_Init(I2C1,&amp;I2C_InitStructure);<br><br>    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;<br>    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;<br>    I2C_InitStructure.I2C_OwnAddress1 = I2C2_ADDRESS;<br>    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;<br>    I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;<br>    I2C_InitStructure.I2C_ClockSpeed = 200000;<br>    I2C_Init(I2C2,&amp;I2C_InitStructure);<br><br>    I2C_ITConfig(I2C1,I2C_IT_EVT|I2C_IT_BUF,ENABLE);<br>    I2C_ITConfig(I2C2,I2C_IT_EVT|I2C_IT_BUF,ENABLE);<br><br>    I2C_Cmd(I2C1,ENABLE);<br>    I2C_Cmd(I2C2,ENABLE);<br>}<br><br>void NVIC_Configuration(void)<br>{<br>    NVIC_InitTypeDef NVIC_InitStructure;<br><br>    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);<br><br>    NVIC_InitStructure.NVIC_IRQChannel = I2C1_EV_IRQn;<br>    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;<br>    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;<br>    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;<br>    NVIC_Init(&amp;NVIC_InitStructure);<br><br>    NVIC_InitStructure.NVIC_IRQChannel = I2C2_EV_IRQn;<br>    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;<br>    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;<br>    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;<br>    NVIC_Init(&amp;NVIC_InitStructure);<br>}<br><br>void GPIO_Configuration(void)<br>{<br>    GPIO_InitTypeDef    GPIO_InitStructure;<br><br>     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6|GPIO_Pin_7;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;<br>      GPIO_Init(GPIOB , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10|GPIO_Pin_11;<br>     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;<br>      GPIO_Init(GPIOB , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br>}<br><br>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;<br><br>      /<em> 复位系统时钟设置</em>/<br>      RCC_DeInit();<br>      /<em> 开启HSE</em>/<br>      RCC_HSEConfig(RCC_HSE_ON);<br>      /<em> 等待HSE起振并稳定</em>/<br>      HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    /<em> 判断HSE起是否振成功，是则进入if()内部 </em>/<br>      if(HSEStartUpStatus == SUCCESS)<br>      {<br>        /<em> 选择HCLK（AHB）时钟源为SYSCLK 1分频 </em>/<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br>        /<em> 选择PCLK2时钟源为 HCLK（AHB） 1分频 </em>/<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br>        /<em> 选择PCLK1时钟源为 HCLK（AHB） 2分频 </em>/<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br>        /<em> 设置FLASH延时周期数为2 </em>/<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        /<em> 使能FLASH预取缓存 </em>/<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br>        /<em> 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz </em> 9 = 72MHz <em>/<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        /</em> 使能PLL <em>/<br>        RCC_PLLCmd(ENABLE);<br>        /</em> 等待PLL输出稳定 <em>/<br>        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        /</em> 选择SYSCLK时钟源为PLL <em>/<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        /</em> 等待PLL成为SYSCLK时钟源 <em>/<br>        while(RCC_GetSYSCLKSource() != 0x08);<br>      }<br>      /</em> 打开APB2总线上的GPIOA时钟<em>/<br>      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB|RCC_APB2Periph_USART1, ENABLE);<br><br>    //RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);<br><br>    RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1|RCC_APB1Periph_I2C2,ENABLE);<br>    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR|RCC_APB1Periph_BKP|RCC_APB1Periph_WWDG|RCC_APB1Periph_SPI2, ENABLE);<br><br>}<br><br>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;<br><br>    USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;<br>    USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;<br>    USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;<br>    USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;<br>    USART_ClockInit(USART1 , &amp;USART_ClockInitStructure);<br><br>    USART_InitStructure.USART_BaudRate = 9600;<br>    USART_InitStructure.USART_WordLength = USART_WordLength_8b;<br>    USART_InitStructure.USART_StopBits = USART_StopBits_1;<br>    USART_InitStructure.USART_Parity = USART_Parity_No;<br>    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<br>    USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;<br>    USART_Init(USART1,&amp;USART_InitStructure);<br><br>     USART_Cmd(USART1,ENABLE);<br>}<br><br>#if     PRINTF_ON<br><br>int fputc(int ch,FILE </em>f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}<br><br>#endif<br></pre><div>stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”<br>#include “stdio.h”<br><br>extern u32 BufferSize ;<br>extern u8 I2C1_ADDRESS ;<br>extern u8 I2C2_ADDRESS ;<br><br>extern vu8 I2C1_Buffer_Tx[];<br>extern vu8 I2C2_Buffer_Rx[];<br>vu32 Tx_Counter = 0;<br>vu32 Rx_Counter = 0;<br><br>void I2C1_EV_IRQHandler(void)<br>{<br>    switch(I2C_GetLastEvent(I2C1))<br>    {<br>        case I2C_EVENT_MASTER_MODE_SELECT: //已发送启始条件<br>        {<br>            I2C_Send7bitAddress(I2C1,I2C2_ADDRESS,I2C_Direction_Transmitter);<br>            break;<br>        }<br>        case I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED: //已发送从机地址<br>        {<br>            printf(“\r\n The I2C1 has send data %d \r\n”,I2C1_Buffer_Tx[Rx_Counter]);<br>            I2C_SendData(I2C1,I2C1_Buffer_Tx[Tx_Counter++]);<br>            break;<br>        }<br>        case I2C_EVENT_MASTER_BYTE_TRANSMITTED: //第一个数据已发送<br>        {<br>            if(Tx_Counter&lt;BufferSize)<br>            {<br>                printf(“\r\n The I2C1 has send data %d \r\n”,I2C1_Buffer_Tx[Rx_Counter]);<br>                I2C_SendData(I2C1,I2C1_Buffer_Tx[Tx_Counter++]);<br><br>            }else{<br>                I2C_GenerateSTOP(I2C1,ENABLE);<br>                I2C_ITConfig(I2C1,I2C_IT_EVT|I2C_IT_BUF,DISABLE);  //计数发送的个数<br>            }<br><br>            break;<br>        }<br>        default: {break;}<br>    }<br>}<br><br>void I2C2_EV_IRQHandler(void)<br>{<br>    switch(I2C_GetLastEvent(I2C2))<br>    {<br>        case I2C_EVENT_SLAVE_RECEIVER_ADDRESS_MATCHED: //收到匹配的地址数据<br>        {<br>            break;<br>        }<br>        case I2C_EVENT_SLAVE_BYTE_RECEIVED: //收到数据<br>        {<br>            if(Rx_Counter &lt; BufferSize )<br>            {<br>                I2C2_Buffer_Rx[Rx_Counter] = I2C_ReceiveData(I2C2);<br>                printf(“\r\n The I2C2 has received data %d \r\n”,I2C2_Buffer_Rx[Rx_Counter++]); //计数收到的个数<br>            }<br>            break;<br>        }<br>        case I2C_EVENT_SLAVE_STOP_DETECTED: //收到结束条件<br>        {<br>            I2C_ClearFlag(I2C2,I2C_FLAG_STOPF);<br>            I2C_ITConfig(I2C1,I2C_IT_EVT|I2C_IT_BUF,DISABLE);<br><br>            break;<br>        }<br>        default: {break;}<br>    }<br>}<br><br></pre></div></div>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&text=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&is_video=false&description=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 i2c通信 [操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&title=stm32 i2c通信 [操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/12/stm32-i2c通信-操作寄存器-库函数/&name=stm32 i2c通信 [操作寄存器+库函数]&description=&lt;div&gt;I2C总线是由NXP（原PHILIPS）公司设计，有十分简洁的物理层定义,其特性如下：&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;br&gt;&lt;em&gt;   只要求两条总线线路：一条串行数据线SDA，一条串行时钟线SCL；
+&lt;/em&gt;   每个连接到总线的器件都可以通过唯一的地址和一直存在的简单的主机/从机关系软件设定地址，主机可以作为主机发送器或主机接收器；&lt;br&gt;&lt;em&gt;   它是一个真正的多主机总线，如果两个或更多主机同时初始化，数据传输可以通过冲突检测和仲裁防止数据被破坏；
+&lt;/em&gt;   串行的8 位双向数据传输位速率在标准模式下可达100kbit/s，快速模式下可达400kbit/s，高速模式下可达3.4Mbit/s；&lt;br&gt;&lt;em&gt;   连接到相同总线的IC 数量只受到总线的最大电容400pF 限制。&lt;div&gt;其典型的接口连线如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/3084720656.jpg&quot; alt=&quot;I2C Devices.jpg&quot;&gt;&lt;/div&gt;&lt;/em&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;I2C的协议很简单：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;数据的有效性&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　在传输数据的时候，SDA线必须在时钟的高电平周期保持稳定，SDA的高或低电平状态只有在SCL 线的时钟信号是低电平时才能改变 。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;起始和停止条件&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　SCL 线是高电平时，SDA 线从高电平向低电平切换，这个情况表示起始条件；&lt;/div&gt;&lt;div&gt;　　SCL 线是高电平时，SDA 线由低电平向高电平切换，这个情况表示停止条件。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;字节格式&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;　　发送到SDA 线上的每个字节必须为8 位，每次传输可以发送的字节数量不受限制。每个字节后必须处理一个响应位。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;应答响应 　　&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;数据传输必须带响应，相关的响应时钟脉冲由主机产生。在响应的时钟脉冲期间发送器释放SDA 线（高）。 　　&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;在响应的时钟脉冲期间，接收器必须将SDA 线拉低，使它在这个时钟脉冲的高电平期间保持稳定的低电平。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;也就是说主器件发送完一字节数据后要接收一个应答位（低电平），从器件接收完一个字节后要发送一个低电平。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;寻址方式(7位地址方式)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;　　第一个字节的头7 位组成了从机地址，最低位（LSB）是第8 位，它决定了传输的 &amp;nbsp;普通的和带重复开始条件的7位地址格式方向。第一个字节的最低位是&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;“0”，表示主机会写信息到被选中的从机；&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; “1”表示主机会向从机读信息。&lt;/div&gt;&lt;div&gt;当发送了一个地址后，系统中的每个器件都在起始条件后将头7 位与它自己的地址比较，如果一样，器件会判定它被主机寻址，至于是从机接收器还是从机发送器，都由R/W 位决定。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;em&gt;*仲裁&lt;/em&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; I2C是所主机总线，每个设备都可以成为主机，但任一时刻只能有一个主机。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;stm32至少有一个I2C接口，提供多主机功能，可以实现所有I2C总线的时序、协议、仲裁和定时功能，支持标准和快速传输两种模式，同时与SMBus 2.0兼容。&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

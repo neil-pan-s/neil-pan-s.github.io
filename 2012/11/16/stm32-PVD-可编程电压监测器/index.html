@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="&amp;nbsp; &amp;nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&amp;nbsp;Flash&amp;nbsp;保存起来，同时对外设进行相应的保护操作。&amp;nbsp; &amp;nb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 PVD 可编程电压监测器">
+<meta property="og:url" content="http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp; &amp;nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&amp;nbsp;Flash&amp;nbsp;保存起来，同时对外设进行相应的保护操作。&amp;nbsp; &amp;nb">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/11/2368687438.jpg">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 PVD 可编程电压监测器">
+<meta name="twitter:description" content="&amp;nbsp; &amp;nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&amp;nbsp;Flash&amp;nbsp;保存起来，同时对外设进行相应的保护操作。&amp;nbsp; &amp;nb">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/11/2368687438.jpg">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 PVD 可编程电压监测器</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2012/09/19/Stm32-SWD-下载-调试配置/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&text=stm32 PVD 可编程电压监测器"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&is_video=false&description=stm32 PVD 可编程电压监测器"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 PVD 可编程电压监测器&body=Check out this article: http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&name=stm32 PVD 可编程电压监测器&description=&lt;div&gt;&amp;nbsp; &amp;nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，&lt;/div&gt;&lt;div&gt;当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&amp;nbsp;Flash&amp;nbsp;保存起来，同时对外设进行相应的保护操作。&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; PVD的作用是监视供电电压，在供电电压下降到给定的阀值以下时，产生一个中断，通知软件做紧急处理。当供电电压又恢复到给定的阀值以上时，也会产生一个中断，通知软件供电恢复。供电下降的阀值与供电上升的PVD阀值有一个固定的差值，引入这个差值的目的是为了防止电压在阀值上下小幅抖动，而频繁地产生中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;用户在使用STM32时，可以利用其内部的PVD对VDD的电压进行监控，通过电源控制寄存器(PWR_CR)中的PLS[2:0]位来设定监控的电压值。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; PLS[2:0]位用于选择PVD监控电源的电压阀值：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;000：2.2V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;001：2.3V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;010：2.4V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;011：2.5V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;100：2.6V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;101：2.7V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;110：2.8V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;111：2.9V&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;在电源控制/状态寄存器(PWR_CSR)中的PVDO标志用来表明VDD是高于还是低于PVD设定的电压阀值。该事件连接到外部中断的第16线，如果该中断在外部中断寄存器中被使能的，该事件就会产生中断。当VDD下降到PVD阀值以下和（或）当VDD上升到PVD阀值之上时，根据外部中断第16线的上升/下降边沿触发设置，就会产生PVD中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 所以我做了一个实验，测试了stm32 的PVD功能。&lt;strong&gt;设定PVD监控阀值&amp;nbsp;为2.8V,通过一个分压模块将5v电压通过一个可调电阻分压给stm32, 在PVD中断中设定点亮一个LED，调整可调电阻大小，校验PVD是否触发。&lt;/strong&gt;&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 PVD 可编程电压监测器
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-11-16T12:30:33.000Z" itemprop="datePublished">2012-11-16</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp; &nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，</div><div>当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&nbsp;Flash&nbsp;保存起来，同时对外设进行相应的保护操作。&nbsp;</div><div> </div><div>&nbsp; &nbsp; PVD的作用是监视供电电压，在供电电压下降到给定的阀值以下时，产生一个中断，通知软件做紧急处理。当供电电压又恢复到给定的阀值以上时，也会产生一个中断，通知软件供电恢复。供电下降的阀值与供电上升的PVD阀值有一个固定的差值，引入这个差值的目的是为了防止电压在阀值上下小幅抖动，而频繁地产生中断。</div><div> </div><div><div>&nbsp;&nbsp;&nbsp;&nbsp;用户在使用STM32时，可以利用其内部的PVD对VDD的电压进行监控，通过电源控制寄存器(PWR_CR)中的PLS[2:0]位来设定监控的电压值。</div><div> </div><div>&nbsp; &nbsp; PLS[2:0]位用于选择PVD监控电源的电压阀值：</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;000：2.2V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;001：2.3V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;010：2.4V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;011：2.5V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;100：2.6V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;101：2.7V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;110：2.8V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;111：2.9V</div><div> </div><div>&nbsp; &nbsp; &nbsp;在电源控制/状态寄存器(PWR_CSR)中的PVDO标志用来表明VDD是高于还是低于PVD设定的电压阀值。该事件连接到外部中断的第16线，如果该中断在外部中断寄存器中被使能的，该事件就会产生中断。当VDD下降到PVD阀值以下和（或）当VDD上升到PVD阀值之上时，根据外部中断第16线的上升/下降边沿触发设置，就会产生PVD中断。</div><div> </div><div>&nbsp; &nbsp; 所以我做了一个实验，测试了stm32 的PVD功能。<strong>设定PVD监控阀值&nbsp;为2.8V,通过一个分压模块将5v电压通过一个可调电阻分压给stm32, 在PVD中断中设定点亮一个LED，调整可调电阻大小，校验PVD是否触发。</strong></div>
+
+<a id="more"></a>
+<div> </div><div>&nbsp; &nbsp; 实验结果如图：</div><div> </div><div>&nbsp; &nbsp; &nbsp;<img src="/uploads/2012/11/2368687438.jpg" alt="stm32-PVD.jpg"></div><div> </div><div><div>&nbsp; &nbsp; &nbsp;在供电只有2.02V时，触发了PVD的中断，点亮了LED。但是芯片一直处于复位中，检测电压不足后复位。</div><div> </div><div>stm32 PVD 代码:</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br><br>void RCC_Configuration(void);<br>void NVIC_Configuration(void);<br>void GPIO_Configuration(void);<br>void EXTI_Configuration(void);<br>void PVD_Configuration(void);<br><br>int main(void)<br>{<br><br>    //stm32 初始化<br>    RCC_Configuration();<br>    NVIC_Configuration();<br>    EXTI_Configuration();<br>    GPIO_Configuration();<br><br>    GPIO_SetBits(GPIOA,GPIO_Pin_8);<br><br>    PVD_Configuration();<br><br>    while(1);<br>}<br><br>void PVD_Configuration(void)<br>{<br>    PWR_PVDLevelConfig(PWR_PVDLevel_2V8);        // 设定监控阀值<br>    PWR_PVDCmd(ENABLE);<br><br>}<br><br>void EXTI_Configuration(void)<br>{<br>    EXTI_InitTypeDef EXTI_InitStructure;<br><br>    EXTI_InitStructure.EXTI_Line = EXTI_Line16;<br>    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;<br>    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;   //表示电压从高电压下降到低于设定的电压阀值产生中断<br>    EXTI_InitStructure.EXTI_LineCmd = ENABLE;<br>    EXTI_Init(&amp;EXTI_InitStructure);<br>}<br><br>void NVIC_Configuration(void)<br>{<br>    NVIC_InitTypeDef NVIC_InitStructure;<br><br>#ifdef  VECT_TAB_RAM<br>    NVIC_SetVectorTable(NVIC_VectTab_RAM, 0x0);<br>#else  /<em> VECT_TAB_FLASH  </em>/<br>    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0);<br>#endif<br><br>    /<em> Configure one bit for preemption priority </em>/<br>    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);<br><br>    NVIC_InitStructure.NVIC_IRQChannel =PVD_IRQn;<br>    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;<br>    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;<br>    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;<br>    NVIC_Init(&amp;NVIC_InitStructure);<br>}<br><br>void RCC_Configuration(void)<br>{<br>    ErrorStatus HSEStartUpStatus;<br><br>    //使能外部晶振<br>    RCC_HSEConfig(RCC_HSE_ON);<br>    //等待外部晶振稳定<br>    HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    //如果外部晶振启动成功，则进行下一步操作<br>    if (HSEStartUpStatus==SUCCESS)<br>    {<br>        //设置HCLK（AHB时钟）=SYSCLK<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br><br>        //PCLK1(APB1) = HCLK/2<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br><br>        //PCLK2(APB2) = HCLK<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br><br>        //FLASH时序控制<br>        //推荐值：SYSCLK = 0~24MHz   Latency=0<br>        //        SYSCLK = 24~48MHz  Latency=1<br>        //        SYSCLK = 48~72MHz  Latency=2<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        //开启FLASH预取指功能<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br><br>        //PLL设置 SYSCLK/1 <em> 9 = 8</em>1*9 = 72MHz<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        //启动PLL<br>        RCC_PLLCmd(ENABLE);<br>        //等待PLL稳定<br>        while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        //系统时钟SYSCLK来自PLL输出<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        //切换时钟后等待系统时钟稳定<br>        while (RCC_GetSYSCLKSource()!=0x08);<br>    }<br><br>    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);<br>    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);        //开启PVD时钟<br><br>}<br><br>void GPIO_Configuration(void)<br>{<br>    GPIO_InitTypeDef GPIO_InitStructure;<br><br>    //LED<br>    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;<br>    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br>    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;<br>    GPIO_Init(GPIOA, &amp;GPIO_InitStructure);<br>}<br><br>//PVD中断程序<br>void PVD_IRQHandler(void)<br>{<br>    if(PWR_GetFlagStatus(PWR_FLAG_PVDO))&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>    {<br>        GPIO_ResetBits(GPIOA,GPIO_Pin_8);<br>    }<br><br>    EXTI_ClearITPendingBit(EXTI_Line16);         //清除中断<br>}</pre><div> </div></div><div>在void EXTI_Configuration(void)中，对于</div><div>&nbsp;&nbsp;&nbsp;&nbsp;EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;</div><div>中的初始化值，根据你的需要进行修改，具体细节如下：</div>
+
+<ul>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;EXTI_Trigger_Rising — 表示电压从高电压下降到低于设定的电压阀值产生中断；</li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;EXTI_Trigger_Falling — 表示电压从低电压上升到高于设定的电压阀值产生中断；</li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;EXTI_Trigger_Rising_Falling — 表示电压从高电压下降到低于设定的电压阀值、或从低电压上升到高于设定的电压阀值产生中断。<div> </div></li></ul></div></div>
+
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&text=stm32 PVD 可编程电压监测器"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&is_video=false&description=stm32 PVD 可编程电压监测器"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 PVD 可编程电压监测器&body=Check out this article: http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&title=stm32 PVD 可编程电压监测器"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/11/16/stm32-PVD-可编程电压监测器/&name=stm32 PVD 可编程电压监测器&description=&lt;div&gt;&amp;nbsp; &amp;nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，&lt;/div&gt;&lt;div&gt;当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&amp;nbsp;Flash&amp;nbsp;保存起来，同时对外设进行相应的保护操作。&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; PVD的作用是监视供电电压，在供电电压下降到给定的阀值以下时，产生一个中断，通知软件做紧急处理。当供电电压又恢复到给定的阀值以上时，也会产生一个中断，通知软件供电恢复。供电下降的阀值与供电上升的PVD阀值有一个固定的差值，引入这个差值的目的是为了防止电压在阀值上下小幅抖动，而频繁地产生中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;用户在使用STM32时，可以利用其内部的PVD对VDD的电压进行监控，通过电源控制寄存器(PWR_CR)中的PLS[2:0]位来设定监控的电压值。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; PLS[2:0]位用于选择PVD监控电源的电压阀值：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;000：2.2V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;001：2.3V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;010：2.4V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;011：2.5V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;100：2.6V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;101：2.7V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;110：2.8V&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;111：2.9V&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;在电源控制/状态寄存器(PWR_CSR)中的PVDO标志用来表明VDD是高于还是低于PVD设定的电压阀值。该事件连接到外部中断的第16线，如果该中断在外部中断寄存器中被使能的，该事件就会产生中断。当VDD下降到PVD阀值以下和（或）当VDD上升到PVD阀值之上时，根据外部中断第16线的上升/下降边沿触发设置，就会产生PVD中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; 所以我做了一个实验，测试了stm32 的PVD功能。&lt;strong&gt;设定PVD监控阀值&amp;nbsp;为2.8V,通过一个分压模块将5v电压通过一个可调电阻分压给stm32, 在PVD中断中设定点亮一个LED，调整可调电阻大小，校验PVD是否触发。&lt;/strong&gt;&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

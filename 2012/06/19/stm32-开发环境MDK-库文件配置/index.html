@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多 stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 开发环境MDK+库文件配置">
+<meta property="og:url" content="http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多 stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/04/3708034991.jpg">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 开发环境MDK+库文件配置">
+<meta name="twitter:description" content="stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多 stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/04/3708034991.jpg">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 开发环境MDK+库文件配置</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/06/29/stm32-直接操作寄存器开发环境配置/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&text=stm32 开发环境MDK+库文件配置"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&is_video=false&description=stm32 开发环境MDK+库文件配置"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 开发环境MDK+库文件配置&body=Check out this article: http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&name=stm32 开发环境MDK+库文件配置&description=&lt;p&gt;stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil 界面和keil是一样的 之前安装过keil 直接把MDK 覆盖原来的keil 就可以支持51单片机和arm的芯片的开发
+
+MDK官网下载地址 :[https://www.keil.com/arm/demo/eval/arm.htm](https://www.keil.com/arm/demo/eval/arm.htm)
+
+stm32 V3.5.0 库文件官网下载:[stm32f10x_stdperiph_lib.zip](http://www.st.com/internet/com/SOFTWARE_RESOURCES/SW_COMPONENT/FIRMWARE/stm32f10x_stdperiph_lib.zip)
+
+stm32 相关资料:[http://www.st.com/internet/mcu/product/164492.jsp](http://www.st.com/internet/mcu/product/164492.jsp#top)
+
+关于开发应用 是使用库函数 还是直接操作寄存器的问题 我觉得使用库函数 有很多的好处 尤其是在团队开发应用的时候 每个程序员都有自己的代码风格 加上操作寄存器的复杂 项目巨大的代码量 会让开发和维护变得困难 当然想更为深入了解arm 的原理 直接操作寄存器当然可取 而且当你熟悉到一定程度 &amp;amp;nbsp;可能写出的代码 会比库函数的效率更高 不过一般的应用 使用库函数都可以实现 库函数很类似于 php 等语言中框架的概念 对开发很有帮助
+
+**固件库设置**
+
+库函数中很多内容是可以删减的 &amp;amp;nbsp;减小项目的大小 可以根据自己的习惯 改变库函数结构
+
+首先解压缩下载的固件库（保留一个备份，你懂的）
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;_htmresc ： ST 的logo 完全无用，可以删去。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Libraries： 比较重要的文件包含STM32的系统文件和大量头文件，也就是库文件了。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Project： 包含大量外设的例程，和各个软件版本的评估版工程模板。KEIL 对应的就是MDK-ARM 文件下的工程模板。你也可以利用这个工程模板来修改，得到你自己的工程模块,开发中不需要，可以删去。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Utilities： 就是评估版的相关文件：也不会用到，可以删去。
+
+需要先去掉这四个文件的只读属性,选择文件夹后，右键属性，勾去只读。。。
+
+我删减后库函数结构如下图：
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;STM32-v3-5-库函数实际文件结构&quot;&gt;&lt;a href=&quot;#STM32-v3-5-库函数实际文件结构&quot; class=&quot;headerlink&quot; title=&quot;STM32 v3.5 库函数实际文件结构&quot;&gt;&lt;/a&gt;&lt;img src=&quot;/uploads/2012/04/3708034991.jpg&quot; alt=&quot;stm32_lib_file.jpg&quot;&gt;STM32 v3.5 库函数实际文件结构&lt;/h3&gt;&lt;p&gt;Cmsis 包含微控制器外设访问层和内核设备访问层文件；&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Startup 当然包含的是stm32的 启动文件,与芯片Flash容量有关，详见手册
+
+Libraries 包含的是&amp;amp;nbsp;标准外设库驱动源文件(src文件夹) 和 （inc） 标准外设库驱动头文件
+
+User中包含的是项目的代码 和中断代码
+
+Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息
+&lt;/code&gt;&lt;/pre&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#STM32-v3-5-库函数实际文件结构"><span class="toc-number">1.</span> <span class="toc-text">STM32 v3.5 库函数实际文件结构</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 开发环境MDK+库文件配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-06-19T13:42:17.000Z" itemprop="datePublished">2012-06-19</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多</p>
+<pre><code>stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil 界面和keil是一样的 之前安装过keil 直接把MDK 覆盖原来的keil 就可以支持51单片机和arm的芯片的开发
+
+MDK官网下载地址 :[https://www.keil.com/arm/demo/eval/arm.htm](https://www.keil.com/arm/demo/eval/arm.htm)
+
+stm32 V3.5.0 库文件官网下载:[stm32f10x_stdperiph_lib.zip](http://www.st.com/internet/com/SOFTWARE_RESOURCES/SW_COMPONENT/FIRMWARE/stm32f10x_stdperiph_lib.zip)
+
+stm32 相关资料:[http://www.st.com/internet/mcu/product/164492.jsp](http://www.st.com/internet/mcu/product/164492.jsp#top)
+
+关于开发应用 是使用库函数 还是直接操作寄存器的问题 我觉得使用库函数 有很多的好处 尤其是在团队开发应用的时候 每个程序员都有自己的代码风格 加上操作寄存器的复杂 项目巨大的代码量 会让开发和维护变得困难 当然想更为深入了解arm 的原理 直接操作寄存器当然可取 而且当你熟悉到一定程度 &amp;nbsp;可能写出的代码 会比库函数的效率更高 不过一般的应用 使用库函数都可以实现 库函数很类似于 php 等语言中框架的概念 对开发很有帮助
+
+**固件库设置**
+
+库函数中很多内容是可以删减的 &amp;nbsp;减小项目的大小 可以根据自己的习惯 改变库函数结构
+
+首先解压缩下载的固件库（保留一个备份，你懂的）
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;_htmresc ： ST 的logo 完全无用，可以删去。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Libraries： 比较重要的文件包含STM32的系统文件和大量头文件，也就是库文件了。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Project： 包含大量外设的例程，和各个软件版本的评估版工程模板。KEIL 对应的就是MDK-ARM 文件下的工程模板。你也可以利用这个工程模板来修改，得到你自己的工程模块,开发中不需要，可以删去。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Utilities： 就是评估版的相关文件：也不会用到，可以删去。
+
+需要先去掉这四个文件的只读属性,选择文件夹后，右键属性，勾去只读。。。
+
+我删减后库函数结构如下图：
+</code></pre><h3 id="STM32-v3-5-库函数实际文件结构"><a href="#STM32-v3-5-库函数实际文件结构" class="headerlink" title="STM32 v3.5 库函数实际文件结构"></a><img src="/uploads/2012/04/3708034991.jpg" alt="stm32_lib_file.jpg">STM32 v3.5 库函数实际文件结构</h3><p>Cmsis 包含微控制器外设访问层和内核设备访问层文件；</p>
+<pre><code>Startup 当然包含的是stm32的 启动文件,与芯片Flash容量有关，详见手册
+
+Libraries 包含的是&amp;nbsp;标准外设库驱动源文件(src文件夹) 和 （inc） 标准外设库驱动头文件
+
+User中包含的是项目的代码 和中断代码
+
+Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息
+</code></pre><a id="more"></a>
+<p><strong>MDK设置</strong></p>
+<pre><code>在库函数压缩包中找到相应文件 &amp;nbsp;如上图分配好各个文件 （可参考此文：[stm32固件库使用V3.5](http://wenku.baidu.com/view/884ad1f0f61fb7360b4c6597.html)） 就可以继续下一步&amp;nbsp;
+
+在keil中新建工程 &amp;nbsp;比如建TEST.uvproj,保存在刚才的Project 文件夹下面。选择你使用的STM32芯片，比如我用的是103RB 的，就选择那个，确定后，会跳出来个窗口，问你是否复制启动代码，选择否，因为我们库函数中已经有了，前面的准备工作不是白做的。
+
+![option_keil.png](/uploads/2012/04/3266765472.png)
+
+然后右键TARGET 1，选择Manage Ccmponents,根据刚才的库函数文件结构把文件加进去，新建文件夹，再加入相应文件。
+
+设置好的界面如下：
+
+![set_keil.png](/uploads/2012/04/2832056623.png)
+
+keil下的这些文件夹会虚的 不一定是对应存在的文件夹的&amp;nbsp;
+
+最后在右键TARGET 1，选择Options for TARGET1 。。在tab页 Listing,Output下点击Select Folder for Objects...设置对应的输出文件夹 。
+
+Output设置如下：
+
+![Output_set.png](/uploads/2012/04/3282354659.png)
+
+在C/C++下 还需要设置下Include Paths路径，这个路径根据你的实际文件目录结构相关：
+
+![C_tab_set_mdk.png](/uploads/2012/07/2031782826.png)
+
+设置完成后就可以编译一下测试 库函数可以正常运行。
+</code></pre>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#STM32-v3-5-库函数实际文件结构"><span class="toc-number">1.</span> <span class="toc-text">STM32 v3.5 库函数实际文件结构</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&text=stm32 开发环境MDK+库文件配置"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&is_video=false&description=stm32 开发环境MDK+库文件配置"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 开发环境MDK+库文件配置&body=Check out this article: http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&title=stm32 开发环境MDK+库文件配置"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/19/stm32-开发环境MDK-库文件配置/&name=stm32 开发环境MDK+库文件配置&description=&lt;p&gt;stm32 是一款arm cortex-m3 架构的芯片 结合库函数使用 可以更方便的实现各种功能 尤其是结合各种总线开发应用时 因为库函数已经封装很多总线的处理方法和驱动 直接调用对应库函数 就可以操作各个总线 相比于 直接操作寄存器来说 操作I2C SPI CAN 等总线结构 会简单很多&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;stm32 的开发工具有很多MDK ADS AVR 等 我用的是MDk 其实就是可以编译arm的keil 界面和keil是一样的 之前安装过keil 直接把MDK 覆盖原来的keil 就可以支持51单片机和arm的芯片的开发
+
+MDK官网下载地址 :[https://www.keil.com/arm/demo/eval/arm.htm](https://www.keil.com/arm/demo/eval/arm.htm)
+
+stm32 V3.5.0 库文件官网下载:[stm32f10x_stdperiph_lib.zip](http://www.st.com/internet/com/SOFTWARE_RESOURCES/SW_COMPONENT/FIRMWARE/stm32f10x_stdperiph_lib.zip)
+
+stm32 相关资料:[http://www.st.com/internet/mcu/product/164492.jsp](http://www.st.com/internet/mcu/product/164492.jsp#top)
+
+关于开发应用 是使用库函数 还是直接操作寄存器的问题 我觉得使用库函数 有很多的好处 尤其是在团队开发应用的时候 每个程序员都有自己的代码风格 加上操作寄存器的复杂 项目巨大的代码量 会让开发和维护变得困难 当然想更为深入了解arm 的原理 直接操作寄存器当然可取 而且当你熟悉到一定程度 &amp;amp;nbsp;可能写出的代码 会比库函数的效率更高 不过一般的应用 使用库函数都可以实现 库函数很类似于 php 等语言中框架的概念 对开发很有帮助
+
+**固件库设置**
+
+库函数中很多内容是可以删减的 &amp;amp;nbsp;减小项目的大小 可以根据自己的习惯 改变库函数结构
+
+首先解压缩下载的固件库（保留一个备份，你懂的）
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;_htmresc ： ST 的logo 完全无用，可以删去。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Libraries： 比较重要的文件包含STM32的系统文件和大量头文件，也就是库文件了。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Project： 包含大量外设的例程，和各个软件版本的评估版工程模板。KEIL 对应的就是MDK-ARM 文件下的工程模板。你也可以利用这个工程模板来修改，得到你自己的工程模块,开发中不需要，可以删去。
+
+&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;Utilities： 就是评估版的相关文件：也不会用到，可以删去。
+
+需要先去掉这四个文件的只读属性,选择文件夹后，右键属性，勾去只读。。。
+
+我删减后库函数结构如下图：
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;STM32-v3-5-库函数实际文件结构&quot;&gt;&lt;a href=&quot;#STM32-v3-5-库函数实际文件结构&quot; class=&quot;headerlink&quot; title=&quot;STM32 v3.5 库函数实际文件结构&quot;&gt;&lt;/a&gt;&lt;img src=&quot;/uploads/2012/04/3708034991.jpg&quot; alt=&quot;stm32_lib_file.jpg&quot;&gt;STM32 v3.5 库函数实际文件结构&lt;/h3&gt;&lt;p&gt;Cmsis 包含微控制器外设访问层和内核设备访问层文件；&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Startup 当然包含的是stm32的 启动文件,与芯片Flash容量有关，详见手册
+
+Libraries 包含的是&amp;amp;nbsp;标准外设库驱动源文件(src文件夹) 和 （inc） 标准外设库驱动头文件
+
+User中包含的是项目的代码 和中断代码
+
+Project 用于包含编译是时生成的一系列文件，Output 用来放置输出文件 .hex .axf，Listing用来放置Listing信息
+&lt;/code&gt;&lt;/pre&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

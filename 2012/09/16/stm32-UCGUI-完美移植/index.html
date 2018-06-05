@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 UCGUI 完美移植">
+<meta property="og:url" content="http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/09/1767023912.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/09/2583809479.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/09/3295526051.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/09/1844886028.png">
+<meta property="og:updated_time" content="2017-05-30T14:37:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 UCGUI 完美移植">
+<meta name="twitter:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/09/1767023912.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 UCGUI 完美移植</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/09/19/Stm32-SWD-下载-调试配置/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/09/11/stm32-DA-数模转换/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&text=stm32 UCGUI 完美移植"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&is_video=false&description=stm32 UCGUI 完美移植"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 UCGUI 完美移植&body=Check out this article: http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&name=stm32 UCGUI 完美移植&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何尺寸的真实显示或虚拟显示。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;它的设计架构是模块化的，由不同的模块中的不同层组成，由一个LCD驱动层来包含所有对LCD的具体图形操作。UCGUI可以在任何的CPU上运行，因为它是100%的标准C代码编写的。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;类似程序还有国产的一个MINIGUI （&lt;a href=&quot;http://www.minigui.com/zhcn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.minigui.com/zhcn/&lt;/a&gt;），MiniGUI 是一个自由软件项目。其目标是提供一个快速、稳定、跨操作系统的图形用户界面（GUI）支持系统，尤其是基于 Linux/uClinux、eCos 以及其他传统 RTOS（如 VxWorks、ThreadX、uC/OS-II、Nucleus 等）的实时嵌入式操作系统。有机会尝试下，支持下国产，毕竟国内这样的公司不多。。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;这里移植的UCGUI3.90a版本，虽然已经有更新的版本，比如UCGUI3.98、甚至4.04版本。但是目前来说只有这个版本的代码是最全的，包括了JPEG , MULTILAYER , MEMDEV ,AntiAlias等模块。一直想尝试做一个数码相册，JEPG模块自然少不了，所以移植了这个版本。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;a href=&quot;/uploads/2012/09/3915051259.zip&quot; title=&quot;UCGUI390a.zip&quot;&gt;UCGUI390a 下载&lt;/a&gt;&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 UCGUI 完美移植
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-09-15T20:13:21.000Z" itemprop="datePublished">2012-09-16</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何尺寸的真实显示或虚拟显示。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;它的设计架构是模块化的，由不同的模块中的不同层组成，由一个LCD驱动层来包含所有对LCD的具体图形操作。UCGUI可以在任何的CPU上运行，因为它是100%的标准C代码编写的。</div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;类似程序还有国产的一个MINIGUI （<a href="http://www.minigui.com/zhcn/" target="_blank" rel="external">http://www.minigui.com/zhcn/</a>），MiniGUI 是一个自由软件项目。其目标是提供一个快速、稳定、跨操作系统的图形用户界面（GUI）支持系统，尤其是基于 Linux/uClinux、eCos 以及其他传统 RTOS（如 VxWorks、ThreadX、uC/OS-II、Nucleus 等）的实时嵌入式操作系统。有机会尝试下，支持下国产，毕竟国内这样的公司不多。。</div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;这里移植的UCGUI3.90a版本，虽然已经有更新的版本，比如UCGUI3.98、甚至4.04版本。但是目前来说只有这个版本的代码是最全的，包括了JPEG , MULTILAYER , MEMDEV ,AntiAlias等模块。一直想尝试做一个数码相册，JEPG模块自然少不了，所以移植了这个版本。</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<a href="/uploads/2012/09/3915051259.zip" title="UCGUI390a.zip">UCGUI390a 下载</a></div>
+
+<a id="more"></a>
+<div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;整个移植过程，让LCD显示图案倒是没花多少时间，资料也比较多，但是在移植触摸屏的时候卡了好几天，然后又是 UCGUI 指针图标 移动有重影(LCD读取像素颜色函数有问题)。。。总之移植是个累人的活 &nbsp;</div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;首先需要保证你的LCD驱动和触摸屏驱动是有效的，如果你的LCD也是ili93xx 控制器 XPT2046控制器的触摸屏可以参考&nbsp;<a href="http://www.ichanging.org/stm32-lcd.html">stm32 驱动 TFT LCD</a>&nbsp;&nbsp;<a href="http://www.ichanging.org/stm32-xpt2046.html">stm32 驱动 触摸屏</a>&nbsp;两篇文章</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp; UCGUI的文件数量很大，主要用到UCGUI390a/Start/Config 和 UCGUI390a/Start/GUI两个文件夹下文件，不过文件数量也已经很多了 。。。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;相关文件介绍如下：</div><div><img src="/uploads/2012/09/1767023912.png" alt="ucgui files.png"></div><div>&nbsp; &nbsp; 将Config和GUI下所有文件加入工程，MDK中新建工程需要划分好结构，这是UCGUI官方推荐的结构：</div><div>&nbsp;&nbsp;</div><div><img src="/uploads/2012/09/2583809479.png" alt="ucgui Project.png"></div><div>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPEG, MemDev , MultiLayer ,&nbsp;Widget , Wm 这5 个文件夹的内容可以暂时不加入MDK工程。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为这些文件起到的是扩展功能，在移植阶段可以先不添加，等到以后用到其中的功能时再选择添加。但是建议都添加进去，避免遇到各种无解问题。。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当然前提是在配置时要把相应的功能开关关掉，在下面的步骤中会提到。&nbsp; &nbsp;</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ConverMono , ConverColor ,Core ,Font 这四个目录下的文件是不用修改的。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;要修改的文件在LCDDriver ，Config 这两个目录下。</div><div> </div><div>&nbsp; &nbsp; LCDDriver 是LCD的驱动接口函数文件，需要将自己的LCD驱动函数提供给UCGUI调用。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;需要提供3个LCD底层驱动函数：</div>
+
+<ul>
+<li>void LCD_L0_SetPixelIndex(int x, int y, int PixelIndex) &nbsp;LCD画点函数,&nbsp;用指定颜色填充一个像素</li>
+<li>unsigned int LCD_L0_GetPixelIndex(int x, int y) &nbsp;LCD读取定点颜色函数，读取一个像素点的16位RGB颜色值</li>
+<li>void LCD_L0_FillRect(int x0, int y0, int x1, int y1) &nbsp;矩形填充函数，用指定颜色填充一个矩形 。这个函数也可以不改 使用UCGUI的函数，用一个一个的像素点填充成一个矩形。也可以在底层驱动根据像素个数直接往GRAM 中写数据，封装成函数，供这个函数调用。速度会快很多。<div>&nbsp; &nbsp;其他的画线画图形函数，也可以同样优化。</div><div>&nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp;LCDDriver&nbsp;下有三个文件，&nbsp;LCDDummy.c 、 LCDNull.c 和LCDWin.c。 这三个都是UCGUI LCD接口模板文件。功能一样，只是移植时修改的细节不一样。我们可以选用其中一个，稍作修改作为接口文件。以LCDDummy.c为例：</div><div><pre class="brush:cpp;">#include “LCD_Private.h”      /<em> private modul definitions &amp; config </em>/<br>#include “GUI_Private.h”<br>#include “GUIDebug.h”</pre></div></li>
+</ul>
+<p>/<em>#if (LCD_CONTROLLER == -1) \<br>    &amp;&amp; (!defined(WIN32) | defined(LCD_SIMCONTROLLER))</em>/    //必须注释，否则不会编译</p>
+<p>#include “ili93xx.h”                //包含你的LCD驱动函数声明</p>
+<p>#if (LCD_CONTROLLER == -1)       //这句对应Config/LCDConf.h</p>
+<p>……..<br>……..</p>
+<p>void LCD_L0_SetPixelIndex(int x, int y, int PixelIndex) {</p>
+<pre><code>  POINT_COLOR = PixelIndex;      //我的画点函数使用了一个全局变量设定颜色
+LCD_DrawPoint(x,y);                    //画点函数
+</code></pre><p>}</p>
+<p>……..<br>……..</p>
+<p>unsigned int LCD_L0_GetPixelIndex(int x, int y) {</p>
+<pre><code>return LCD_ReadPoint(x,y);     //我的读取像素颜色函数
+</code></pre><p>}<br>……..<br>……..</p>
+<p>void LCD_L0_FillRect(int x0, int y0, int x1, int y1) {</p>
+<p>  LCD_Fill(x0,y0,x1,y1,LCD_COLORINDEX);&nbsp;&nbsp;&nbsp;&nbsp;//填充矩形函数<br>  /<em>for (; y0 &lt;= y1; y0++) {<br>    LCD_L0_DrawHLine(x0, y0, x1);<br>  }</em>/<br>}<br><div>UCGUI提供了一些LCD控制器的驱动函数，但是这种配置方法，可以适用于任何控制IC。</div><div> </div><div>到这就算完成三分之一了，接下来修改Config文件夹下文件，Config下有三个文件：</div><div>&nbsp;&nbsp;&nbsp;&nbsp;GUIConf.h&nbsp;&nbsp;&nbsp;&nbsp; LCDConf.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUITouchConf.h &nbsp;</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;还需要加入一个GUI_X.c文件，要不然编译的时候会有错误。直接复制UCGUI390a\Sample\GUI_X\GUI_X.c即可。如果打开了触摸功能还需要加入一个UCGUI390a\Sample\GUI_X\GUI_X_Touch.c 。</div><div>&nbsp; &nbsp; 这三个文件是UCGUI的上层配置文件，也就是GUI 一些功能的开关。</div><div> </div><div>&nbsp; &nbsp; GUIConf.h:</div><div><pre class="brush:cpp;">#ifndef GUICONF_H</pre></div></p>
+<p>#define GUICONF_H</p>
+<p>#define GUI_OS                    (0)  /<em> 操作系统的支持，当用到ucos 时需要打开  Compile with multitasking support </em>/</p>
+<p>#define GUI_SUPPORT_TOUCH         (1)  /<em> 触摸屏的支持        Support a touch screen (req. win-manager) </em>/</p>
+<p>#define GUI_SUPPORT_UNICODE       (0)  /<em> 用汉字库时再打开 Support mixed ASCII/UNICODE strings </em>/</p>
+<p>#define GUI_DEFAULT_FONT          &amp;GUI_Font6x8         /<em> 定义字体大小     </em>/</p>
+<p>#define GUI_ALLOC_SIZE          12500      /<em>分配的动态内存空间  Size of dynamic memory … For WM and memory devices</em>/</p>
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>*</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong><br>*</p>
+<ul>
+<li>Configuration of available packages<br>*/</li>
+</ul>
+<p>#define GUI_WINSUPPORT            1  /<em> 窗口功能支持  要使用指针图标 必须打开     Window manager package available </em>/</p>
+<p>#define GUI_SUPPORT_MEMDEV        1  /<em> 内存管理     Memory devices available </em>/</p>
+<p>#define GUI_SUPPORT_AA            1  /<em> 抗锯齿功能，打开后可以提高显示效果        Anti aliasing available </em>/</p>
+<p>#endif  /<em> Avoid multiple inclusion </em>/<div>&nbsp; &nbsp; &nbsp; &nbsp; LCDConf.h</div><div><pre class="brush:cpp;">#ifndef LCDCONF_H</pre></div></p>
+<p>#define LCDCONF_H</p>
+<p>#define LCD_XSIZE      (240)   /<em> lcd 的水平分辨率  X-resolution of LCD, Logical coor. </em>/</p>
+<p>#define LCD_YSIZE      (320)   /<em> lcd 的垂直分辨率  Y-resolution of LCD, Logical coor. </em>/</p>
+<p>#define LCD_BITSPERPIXEL   (16)       /<em> 16位颜色RGB值 颜色深度</em>/</p>
+<p>#define LCD_SWAP_RB        (1)     /<em>红蓝反色交换 </em>/</p>
+<p>/<em> lcd 控制器的具体型号  
+ </em></p>
+<ul>
+<li>设置为 -1时 会编译LCDDriver 下 LCDDummy.c   </li>
+<li>设置为 -2时 会编译LCDDriver 下 LCDNull.c<br>*</li>
+<li>还需要修改LCDDriver 下文件的宏定义 才可以被编译</li>
+<li>eg. LCDDummy.c：<br>*</li>
+<li>#if (LCD_CONTROLLER == -1) &amp;&amp; (!defined(WIN32) |defined(LCD_SIMCONTROLLER))</li>
+<li>改为    </li>
+<li>#if    (LCD_CONTROLLER == -1)<br>*/<br>#define LCD_CONTROLLER  -1        //设置为-1-2，因为UCGUI没有相应LCD 控制IC驱动</li>
+</ul>
+<p>#define LCD_INIT_CONTROLLER() LCD_Config();        //绑定相关LCD底层驱动的初始化函数<div>配置完这两个文件，如果不启用触摸屏的话，UCGUI已经可以正常运行。</div><div> </div><div>下面细讲下<strong>UCGUI触摸屏的配置，</strong>这个折腾了我好几天的“简单”问题。。</div><div> </div><div>首先配置GUIToucConf.h</div><div><pre class="brush:cpp;">#ifndef GUITOUCH_CONF_H</pre></div></p>
+<p>#define GUITOUCH_CONF_H</p>
+<p>/<em> 正点原子LCD相关参数,不同LCD值不同，需另测 </em>/</p>
+<p>#define GUI_TOUCH_AD_LEFT          120     //最左边x轴的AD值,非坐标值</p>
+<p>#define GUI_TOUCH_AD_RIGHT             1870    //最右边x轴的AD值</p>
+<p>#define GUI_TOUCH_AD_TOP            90      //最上边y轴的AD值</p>
+<p>#define GUI_TOUCH_AD_BOTTOM         1850    //最下边y轴的AD值</p>
+<p>#define GUI_TOUCH_SWAP_XY    0    //不允许翻转</p>
+<p>#define GUI_TOUCH_MIRROR_X   0</p>
+<p>#define GUI_TOUCH_MIRROR_Y   0</p>
+<p>#endif /<em> GUITOUCH_CONF_H </em>/<div>UCGUI 触摸屏驱动接口函数文件 GUI_X_Touch.c ：</div><div><pre class="brush:cpp;">#include “GUI.h”</pre></div></p>
+<p>#include “GUI_X.h”</p>
+<p>#include “xpt2046.h”<br>//#include “stdio.h”</p>
+<p>void GUI_TOUCH_X_ActivateX(void) {    //不用配置<br>}</p>
+<p>void GUI_TOUCH_X_ActivateY(void) {  //不用配置<br>}</p>
+<p>int  GUI_TOUCH_X_MeasureX(void) {</p>
+<pre><code>u16 var = ADS_Read_XY(CMD_RDX);  //读取X轴的AD转换值  不是坐标值
+
+//printf(&quot;\r\n MeasureX is %d \r\n&quot;,var);
+
+  return var;          
+</code></pre><p>}</p>
+<p>int  GUI_TOUCH_X_MeasureY(void) {</p>
+<pre><code>u16 var = ADS_Read_XY(CMD_RDY);   //读取Y轴的AD转换值
+
+//printf(&quot;\r\n MeasureY is %d \r\n&quot;,var);
+
+  return var;        
+</code></pre><p>}<div>还有最关键的一点就是，何时触发UCGUI调用这些函数，测量AD值，定位触摸点的坐标。很多文档都没清这个问题，可以使用两种方法来触发：</div></p>
+<ul>
+<li>&nbsp; &nbsp; 设定触摸屏的一个引脚为外部触发，触摸点击时，电平变化触发中断，在中断函数中调用GUI_TOUCH_Exec()函数，让UCGUI更新TOUCH时间数据。</li>
+<li>&nbsp; &nbsp; 设定一个10ms的定时器中断不断查询，在中断函数中调用GUI_TOUCH_Exec()。<div>其实第一个方案，看似更为合适，不占用CPU，让CPU可以处理其他事情。但是UCGUI的触摸事件，一次触摸只会读取一个轴的AD值，也就是说一次读取X轴AD,下一次在读取Y轴AD值。这样导致获得的数据都是错误的。uCGUI 有处理的抖动的函数_StoreUnstable(x, y)，会将误差较大的数据过滤，两次点击事件时间很短的话，也至少会是一次正确坐标，一次错误坐标 ..</div><div>&nbsp; &nbsp; eg.&nbsp;&nbsp;&nbsp;&nbsp;</div><div>&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;点击事件1： &nbsp;MeasureY AD is 736 &nbsp;, coordinate is &nbsp; &nbsp; X = 134261972 ,Y= 134261972&nbsp;</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp;点击事件2：&nbsp;MeasureX AD is 576 &nbsp; , coordinate is &nbsp; &nbsp; X = 62 ,Y= 117&nbsp;</div><div> </div><div>而且外部中断的方法，只能获得触摸点击的事件，无法获得触摸移动的事件。所以采用了查询的方法。。使用Stm32的滴答定时器 产生一个10ms的中断，在中断函数中调用UCGUI更新函数。。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;stm32f10x_it.c：</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”<br>#include “GUI.h”</pre></div></li>
+</ul>
+<p>void SysTick_Handler(void)<br>{<br>    GUI_TOUCH_Exec();         //调用UCGUI TOUCH相关函数<br>    GUI_Exec();                 //GUI事件更新</p>
+<p>}<br><div>这里还调用了GUI_Exec（）函数，让UCGUI更新,这个函数必须要加上，有文档说还需要修改GUI_TOUCH_DriverAnalog.c 下的一些函数 其实没必要 …</div><div> </div><div>配置完成后，在main.c中初始化GUI,调用相关函数<strong>实现显示一个指针鼠标，跟随触摸移动</strong>。。</div><div> </div><div>main.c:</div><div><pre class="brush:cpp;">#include “common.h”</pre></div></p>
+<p>#include “GUI.h”</p>
+<p>void Delay(u32 us)<br>{<br>    u32 time=100*us/7;<br>    while(–time);<br>}</p>
+<p>int main(void)<br>{<br>    //stm32 初始化<br>    RCC_Configuration();<br>    NVIC_Configuration();<br>    USART_Configuration();<br>    SPI_Configuration();<br>    GPIO_Configuration();</p>
+<pre><code>GUI_Init();
+
+Delay(100000);
+
+GUI_SetBkColor(GUI_RED); //设置背景颜色  
+GUI_SetColor(GUI_WHITE); //设置前景颜色，及字体和绘图的颜色
+GUI_Clear(); //按指定颜色清屏
+GUI_DispStringAt(&quot;Hello World ..&quot;,10,10); //显示字符
+GUI_CURSOR_Show();       //显示鼠标,测试触摸屏     必须打开窗口功能 GUI_WINSUPPORT
+
+Delay(1000000);              //必须稍加延时,否则会白屏    
+
+SysTick_Config(720000);    //10ms
+
+while(1);
+</code></pre><p>}<div> </div><div>编译如果没出错，可能你就成功了。但往往没有那么简单,很可能还有第三步，也很可能是最耗时的一步——调试 。。</div><div> </div><div>这里再附上一份整理的UCGUI API函数列表：<a href="/uploads/2012/09/4242376293.pdf" title="UCGUI函数表 .pdf">UCGUI函数表 .pdf</a></div><div> </div><div>UCGUI 指针跟随效果: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; UCGUI Xeye Demo 效果:</div><div> </div><div><img src="/uploads/2012/09/3295526051.png" alt="ucgui point.png"></div><div>&nbsp; &nbsp; &nbsp; &nbsp;<img src="/uploads/2012/09/1844886028.png" alt="ucgui xeye.png">&nbsp; &nbsp; &nbsp;&nbsp;</div><div> </div></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&text=stm32 UCGUI 完美移植"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&is_video=false&description=stm32 UCGUI 完美移植"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 UCGUI 完美移植&body=Check out this article: http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&title=stm32 UCGUI 完美移植"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/09/16/stm32-UCGUI-完美移植/&name=stm32 UCGUI 完美移植&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;UCGUI是一种嵌入式应用中的图形支持系统。它设计用于为任何使用LCD图形显示的应用提供高效的独立于处理器及LCD控制器的图形用户接口，它适用单任务或是多任务系统环境, 并适用于任意LCD控制器和CPU下任何尺寸的真实显示或虚拟显示。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;它的设计架构是模块化的，由不同的模块中的不同层组成，由一个LCD驱动层来包含所有对LCD的具体图形操作。UCGUI可以在任何的CPU上运行，因为它是100%的标准C代码编写的。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;类似程序还有国产的一个MINIGUI （&lt;a href=&quot;http://www.minigui.com/zhcn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.minigui.com/zhcn/&lt;/a&gt;），MiniGUI 是一个自由软件项目。其目标是提供一个快速、稳定、跨操作系统的图形用户界面（GUI）支持系统，尤其是基于 Linux/uClinux、eCos 以及其他传统 RTOS（如 VxWorks、ThreadX、uC/OS-II、Nucleus 等）的实时嵌入式操作系统。有机会尝试下，支持下国产，毕竟国内这样的公司不多。。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;这里移植的UCGUI3.90a版本，虽然已经有更新的版本，比如UCGUI3.98、甚至4.04版本。但是目前来说只有这个版本的代码是最全的，包括了JPEG , MULTILAYER , MEMDEV ,AntiAlias等模块。一直想尝试做一个数码相册，JEPG模块自然少不了，所以移植了这个版本。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;a href=&quot;/uploads/2012/09/3915051259.zip&quot; title=&quot;UCGUI390a.zip&quot;&gt;UCGUI390a 下载&lt;/a&gt;&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="/fm/">FM</a></li>
+         
+          <li><a href="/steps/">Steps</a></li>
+         
+          <li><a href="/there/">There</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-20407881-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil_pan_s';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

@@ -1,0 +1,350 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	border: 0;
+	font-family: inherit;
+	font-size: 100%;
+	font-style: inherit;
+	font-weight: inherit;
+	margin: 0;
+	outline: 0;
+	padding: 0;
+	vertical-align: baseline;
+}
+:focus {/* remember to define focus styles! */
+	outline: 0;
+}
+html,body,.container{
+	background: #fff;
+	height:100%;     
+}
+ol, ul {
+	list-style: none;
+}
+table {/* tables still need 'cellspacing="0"' in the markup */
+	border-collapse: separate;
+	border-spacing: 0;
+}
+caption, th, td {
+	font-weight: normal;
+	text-align: left;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: "";
+}
+blockquote, q {
+	quotes: "" "";
+}
+a img {
+	border: 0;
+}
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body, input, textarea {
+	color: #ccc;
+	font:normal normal normal 0.8em/1.5em \5fae\8f6f\96c5\9ed1,Tahoma,Helvetica,'Lucida Grande',Georgia,Verdana;
+}
+
+.container{
+	width:100%;
+	min-width:1200px; 
+	margin:auto;
+}
+
+a{
+	color:#888;
+	text-decoration: none;	
+}
+
+*{
+	padding:0;
+	margin:0;
+}
+
+.header{
+	width:100%;  
+        min-width:1200px; 
+	height:30px;
+	background: url(./images/nav.png) repeat-x;
+	text-align:center;
+        margin:auto;
+}
+
+.header ul{
+	margin:auto;
+	width:90%;
+}
+
+.header li{
+	display:block;
+	float:left;
+	width:19%;
+}
+
+.header li  a{
+	color:#EEE;
+	font-size:12px;
+	word-spacing:20px;
+	letter-spacing:20px;
+	text-shadow:#888 1px 1px 1px; 
+}
+
+.main{
+	width:100%;
+	min-width:1200px;
+	height:540px;
+	text-align:center;
+        margin:auto;
+}
+
+.main .player{
+	padding-top:20px;
+	width:100%;
+	height:100px;
+	text-align:center;
+}
+
+.main .player .radio{
+	color:#888;
+	float:right;
+	text-align:left;
+	width:150px;
+	height:60px;
+	
+}
+
+.main .player #flash_box{
+	position: fixed;
+	top:0px;
+	left:0px;
+	overflow:hidden; 
+	width:100%; 
+	height:100%;
+}
+
+.main .player #radio{
+	display:none;
+}
+
+.main .logo{
+	padding-top:100px;
+	opacity: 0;
+}
+
+.main .logo h1{
+	font-size:48px;
+	line-height:60px;
+}
+
+.main .logo h2{
+	font-size:18px;
+	line-height:40px;
+	color:#888;
+}
+
+.main .logo .color_1{
+	color:#FF0084;
+}
+
+.main .logo .color_2{
+	color:#0063DC;
+}
+
+.main .error_404{
+	padding-top:200px;
+	opacity: 100;
+	font-weight:bold;
+}
+
+.comment_box{
+	width:800px; 
+	margin:auto;
+}
+
+.main .post_box{
+        overflow:hidden;
+        overflow-y: auto;
+	width:100%;
+	min-width:1200px;
+	height:540px;
+}
+.main .post{
+	text-align:left;
+	padding-top:50px;
+	width:800px;
+        margin:auto;       
+}
+
+.main .post .post_title,.those_title{
+	text-align:left;
+        color:#333; 
+	font-size:24px;
+	line-height:48px; 
+        
+}
+.main .post .post_title a,.those_title a{
+        color:#333; 	
+}
+
+.main .post .post_title a:hover{
+	text-decoration:underline;
+}
+ 
+.main .post .post_des{
+	padding:30px 0;	
+        
+}
+.main .post .post_des a{
+	color:#ccc;
+}
+.main .post .post_des a:hover{
+	text-decoration:underline;
+
+}
+.main .post .post_des span{
+	display:inline-block;
+        color:#ccc;
+	padding-left:10px; 
+}
+
+.main .post .post_text{
+	line-height:30px;
+	color:#999;
+        padding-bottom:50px;
+} 
+
+.main .post .post_text a{
+	text-decoration:underline;	
+}
+
+.main .post_nav .pre
+{
+	float:left;
+}
+
+.main .post_nav .next
+{
+	float:right;
+}
+
+.main .post_nav a:hover
+{	
+	text-decoration:underline;
+}
+
+.main .page_nav,.main .post_nav{
+	width:800px;
+        margin:auto;
+	color:#888;
+}
+
+.main .page_nav a{
+	display:inline-block;
+        padding-right:10px;
+        text-decoration:underline;
+}
+.main .program_page_nav{ 
+	text-align:left; 
+        margin:10px;
+}
+
+
+
+.footer{
+	width:100%;
+        min-width:1200px;  
+	text-align:center;
+	color:#888;
+        position:relative;
+        margin:30px 0px;
+} 
+ 
+.footer .search_box{ 
+	background:#FFF;
+	position:absolute;
+        top:-60px;
+        right:50px;
+        z-index:999;
+        padding:10px 0;
+  	display:none; 
+        border-top:1px dotted #888; 
+        border-bottom:1px dotted #888;
+        width:200px;
+        color:#333;
+        
+}
+.footer .search_box input{
+	color:#333;
+}
+.footer .sina,.footer .rss,.footer .comment,.footer .search{
+	float:right;
+	display:block;
+	width:50px;
+	height:50px;
+	overflow:hidden;
+	background:#333 no-repeat;
+	margin-right:20px;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px; 
+	border-radius: 25px;
+	-webkit-transition: 300ms all;
+}
+
+.footer .sina:hover,.footer .rss:hover,.footer .comment:hover,.footer .search:hover{
+-webkit-border-radius: 0px;
+-moz-border-radius: 0px;
+border-radius: 0px;
+}
+
+.footer p{
+	clear:both;  
+}
+
+.footer a:hover{
+	color: #373737;
+}
+
+.search_error{ color:#333;}
+.clear{ clear:both;}
+
+.those{
+	width:1000px;
+        margin:auto;
+        margin-top:30px;
+}
+
+.those_book,.those_song{
+	float:left;
+}
+
+.those_book img{ 
+	margin:5px;	
+}
+
+.those_song{
+	width:250px;
+	margin-left:70px;
+}
+
+.those_ps{
+	text-align:left;
+        color:#333;
+       	margin:30px 10px;  
+        
+}
+
+
+
+
+
+
+
