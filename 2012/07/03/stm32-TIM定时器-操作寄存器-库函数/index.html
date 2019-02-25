@@ -146,6 +146,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div> </div><div>stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。</div><div> </div><div>stm32的通用定时器由一个通过可编程预分频器驱动的<strong>16位自动装载计数器</strong>构成。通用定时器可以用于测量输入信号的脉冲长度（输入捕获）或者产生输出波形（输出比较和PWM）等。</div><div> </div><div>通用计时器的使用，需要先配置一个时基单元，就是设定一个基准时间，确定计数一次耗去的时间，可以设定在几个微妙到几个毫秒之间。</div><div> </div><div>通用定时器的都有4个独立通道（TIMx_CH1~4），这些通道可以用来作为：</div>
 
@@ -456,15 +466,6 @@ RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -587,6 +588,7 @@ RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

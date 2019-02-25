@@ -144,6 +144,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>晚上帮同学写了段代码 &nbsp;用单片机P1口扩展成4<em>4的键盘 &nbsp;按下按键点亮P0口的LED&nbsp;</em></div><div> </div><div>矩阵键盘的扩展不算复杂 主要是检测代码部分比较复杂&nbsp;</div><div> </div><div><strong>IO扩展原理</strong></div><div> </div><div><img src="/uploads/2012/10/125937352.png" alt="矩阵键盘.png"></div><div><div>&nbsp;&nbsp;&nbsp;&nbsp;矩阵键盘又称行列键盘，它是用四条I/O线作为行线，四条I/O线作为列线组成的键盘。</div><div>在行线和列线的每个交叉点上设置一个按键。这样键盘上按键的个数就为44个。</div><div>这种行列式键盘结构能有效地提高单片机系统中I/O口的利用率。</div><div> </div><div><strong>检测原理</strong></div><div> </div><div><strong>&nbsp; &nbsp;&nbsp;当无按键闭合时，行线与列线之间开路。当有键闭合时，与闭合键相连的两条I/O口线之间短路。</strong></div><div> </div><div>&nbsp; &nbsp; 判断有无按键按下的方法：</div>
 
@@ -156,15 +166,6 @@
 <div>代码如下：</div><div><pre class="brush:cpp;">#include &lt;reg51.h&gt;<br>#define  uchar  unsigned char<br><br>#define  LED_ON(X)  P0 = ~(1&lt;&lt;(X))      //LED低电平点亮<br><br>uchar KeyScan(void);<br><br>void main(void)<br>{<br>    uchar key;<br><br>    while(1){<br>        key = KeyScan();<br><br>        if(key &gt; 0)<br>        {<br>            key = key -1;<br>            LED_ON(key);<br>        }<br>    }<br>}<br><br>uchar KeyScan(void)<br>{<br><br>    uchar i,val,row,col,key;<br><br>    P1 = 0xF0;            //行线置0,列线置1<br><br>    if( P1 != 0x0F0 )    //按键按下<br>    {<br>        for(i=0;i&lt;4;i++)   //行扫描<br>        {<br>            val = 0xFF&amp;(~(1&lt;&lt;i));     //每行轮流置1<br>            P1 = val;<br>            if(P1 != val)<br>            {<br>                row = i;    //确定行数<br>                break;        //终止循环<br>            }<br>        }<br><br>        for(i=0;i&lt;4;i++)   //列扫描<br>        {<br>            val = 0xFF&amp;(~(0x10&lt;&lt;i));<br>            P1 = val;<br>            if(P1 != val)<br>            {<br>                col = i+1;    //确定列数<br>                break;        //终止循环<br>            }<br>        }<br>        key = row*4+col;<br>        return key;<br>    }else{<br>        return 0;<br>    }<br>}</pre></div></div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -288,6 +289,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

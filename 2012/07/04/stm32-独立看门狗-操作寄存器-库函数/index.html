@@ -143,6 +143,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>以单片机为核心的微型计算机系统中，单片机经常会受到来自外界电磁场的干扰。</div><div>造成程序跑飞，只是程序的正常运行状态被打断而进入死循环，从而使单片机控制的系统无法正常工作。看门狗就是一种专门用于检测单片机程序运行状态的硬件结构。</div><div> </div><div>stm32也是如此。</div><div> </div><div>stm32 的独立看门狗由内部专门的40Khz低速时钟驱动，即使主时钟发生故障时，它也仍然有效。这里需要注意的是独立看门狗的时钟是一个内部时钟，所以不是准确的40Khz，而是在30~60Khz之间的一个可变化的时钟，看门狗的时钟对时间的要求不是很精确，所以时钟有偏差可以接受。</div><div> </div><div><strong>本例直接操作寄存器实现验证独立看门狗的复位功能，设定一个800ms的喂狗时间，在主函数中实现LED闪烁，如果设定一个1s的延时，则触发独立看门狗复位，LED常亮。</strong></div><div><strong>库函数实现当外部中断发生（按下PA0按键），长时间不喂狗，引发独立看门狗复位时，向外用串口输出复位提示。</strong></div><div> </div><div> </div><div><strong>直接操作寄存器</strong></div><div> </div><div>使用独立看门狗，需要了解一下寄存器：</div><div> </div><div><strong>键值寄存器:（IWDG_KR）</strong></div><div>低16位有效的寄存器，只写寄存器，读出值恒为0x0000.</div><div>软件必须以一定的间隔写入0xAAAA，否则，当计数器为0时，看门狗会产生复位。</div><div>写入0x5555表示允许访问IWDG_PR和IWDG_RLR寄存器。</div><div>写入0xCCCC，启动看门狗工作。</div><div> </div><div><strong>预分频寄存器：（IWDG_PR）</strong></div><div>第三位有效寄存器，用于设置看门狗的分频系数，最低为4，最高位256.</div><div>通过设置PR[2:0]:位来选择计数器时钟的预分频因子。要改变预分频因子，IWDG_SR寄存器的PVU位必须为0。</div>
 
@@ -324,15 +334,6 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -456,6 +457,7 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

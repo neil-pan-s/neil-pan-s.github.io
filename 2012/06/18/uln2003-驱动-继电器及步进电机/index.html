@@ -142,19 +142,20 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>由于单片机的驱动能力较弱，使用继电器、步进电机等外设时，一般需要外接5v 12v电源驱动，使用uln2003即可使用小电压控制大电压的通断。</div><div> </div><div><span style="font-size:16px;"><strong>uln2003</strong></span></div><div> </div><div>uln2003的内部是一组达林顿管，你可以理解为放大倍数很高的三极管，你用到的控制极就是其基极，所以，它有0.7V电压就可以工作了。但一般在使用时，还是要保证提供2V以上，不然可能不会很可靠。</div><div> </div><div>&nbsp; &nbsp; 原理图 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 应用电路</div><div><img src="/uploads/2012/06/421823183.png" alt="uln2003.png">&nbsp;<img src="/uploads/2012/06/3023693580.png" alt="QQ截图20120618193218.png"></div><div><div> </div><div>单片机的I/O口直接和ULN2003连,ULN2003有16个脚共7路驱动.</div><div>ULN2003的8脚接5V电源地,9脚接+5V或12V电源,因为ULN2003里面有续流二极管从9脚引出.</div><div> </div><div>假如你用P1.0驱动一个电机,那么P1.0接ULN2003的1脚,ULN2003的16脚接电机线圈的一端,电机线圈的另一端接+5V电源.P1.0为高电平,电机就转,P1.0为低电平,电机就停.ULN2003驱动电流500MA.</div><div> </div><div>这个器件用起来很简单，它是一个不能输出高电平的反相器，就是说你输入高电平的时候，输出低电平，你输入低电平的时候它就成高阻态（就是电阻很大，可以看成短路，这时如果你加上拉电阻的话输出就会拉成高电平）。</div><div> </div><div>一般他的用法就当成电子开关用，就是你输入高电平的时候它相应的端口会输出低电平，而且这个低电平能吸收的电流达500mA。所以一般就是电机或者其他用电器的一段接ULN2003 的输出口（像接了一个开关然后再接到低）。还有一段接高电平或者电源。使用的时候就把相应的端口置高电平就会打开开关，让电机形成对地的回路，从而让电机运行；如果相应的端口为低电平，输出为高阻态，就像断开了对地的开关，从而不形成回路让电机关闭。</div><div> </div><div><strong>继电器</strong></div><div> </div><div><img src="/uploads/2012/06/1879926535.jpg" alt="QQ截图20120618205011.jpg">（继电器型号：&nbsp;hjr-4120-<em>v &nbsp; </em>为线圈控制电压)</div><div> </div><div><div>一般继电器的外壳有标注，如果没有，自己用万用表测一下也很简单：</div><div> </div><div>1、找出线圈引脚。</div><div>&nbsp; &nbsp; 用万用表测各引脚间的电阻，阻值在数百至1K欧姆左右的两个脚是线圈引脚。注意有些继电器的线圈分正负极，反接虽然不至于损坏，但不动作。</div><div> </div><div>2、找出常开、常闭点。</div><div>&nbsp; &nbsp; 用万用表测除线圈之外的四个引脚，导通的两个引脚是常闭关 系，给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，它们应断开；如果没有断开，则内部是短接关系。</div><div>&nbsp; &nbsp; 给线圈加上5V(继电器线圈有效电压)直流电，使继电器动作，此时再用万用表测，如果有原来不通的两个引脚导通了，则它们是常开关系。</div><div> </div><div>&nbsp; &nbsp; 既与常开点有关系，又与常闭点有关系的引脚，就是公共端。</div><p><a id="more"></a></p></div><div> </div><div><strong>步进电机</strong></div><div> </div><div>相关特性：</div><div><div>1、 步进电机必须加驱动才可以运转， 驱动信号必须为脉冲信号，没有脉冲的时候，</div><div>步进电机静止， 如果加入适当的脉冲信号， 就会以一定的角度（称为步角）转动。转</div><div>动的速度和脉冲的频率成正比。</div><div>2、28BYJ48 5V 驱动的4 相5 线的步进电机，而且是减速步进电机，减速比为1：64，步进角为5.625/64 度。如果需要转动1 圈，那么需要360/5.625*64=4096 个脉冲信号。</div><div>3、 步进电机具有瞬间启动和急速停止的优越特性。</div><div>4、 改变脉冲的顺序， 可以方便的改变转动的方向。</div><div> </div><div>因此，目前打印机，绘图仪，机器人，等等设备都以步进电机为动力核心。</div><div> </div><div><div>每一个脉冲信号对应步进电机的某一相或两相绕组的通电状态改变一次，也就对应转子转过一定的角度（一个步距角）。当通电状态的改变完成一个循环时，转子转过一个齿距。四相步进电机可以在不同的通电方式下运行，常见的通电方式有单（单相绕组通电）四拍（A-B-C-D-A。。。），双（双相绕组通电）四拍（AB-BC-CD-DA-AB-。。。），八拍（A-AB-B-BC-C-CD-D-DA-A。。。）。</div><div> </div></div></div><div>采用四拍方式驱动：</div><div><img src="/uploads/2012/06/1570599660.png" alt="QQ截图20120618210127.png"></div><div>将单片机IO（如P1）接到uln2003输入端，将步进电机的信号线对应接到uln2003的输出口，根据上表可以单片机IO口的8个驱动脉冲信号为：</div><div><div>uchar code Step_1[8]={0x08,0x0c,0x04,0x06,0x02,0x03,0x01,0x09}; //逆时钟旋转相序表</div><div>uchar code Step_2[8]={0x09,0x01,0x03,0x02,0x06,0x04,0x0c,0x08}; //正时钟旋转相序表</div><div> </div><div>uln2003驱动继电器 &nbsp;步进电机原理图：</div><div> </div><div><img src="/uploads/2012/06/2252118844.png" alt="QQ截图20120618212527.png"></div></div><div> </div><div> </div></div><div><div><div><div> </div></div></div></div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -272,6 +273,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

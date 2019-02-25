@@ -142,6 +142,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>&nbsp; &nbsp;这里使用的stm32型号为 stm32f103c8te，只有GPIOA、B两组通用I/O口，共48个引脚。引脚图如下：</div><div><img src="/uploads/2012/07/1889639279.png" alt="stm32f103c8t6.png"></div><div> </div><div><div> </div><div>1. VDDA引脚</div><div> </div><div>VDDA用于模拟电路（ADC采样）.VDD若直接与之连接,数字电路的干扰会窜入模拟电路的,如果想保证ADC采样的精度可以在VDD和VDDA间加入滤波电路。</div><div> </div><div><img src="/uploads/2012/07/450395061.png" alt="vdda.png"></div><div> </div><div>很多开发板都是直接和VDD连接，也可以运行。</div><div> </div><div>由于STM32F103 系列单片机的内部高速RC 振荡器（HSI）由VDDA、VSSA 供电，故即使不使用单片机自带的A/D 转换器，也必须保证VDDA、VSSA 的供电，否则STM32F103不能正常启动。</div><div> </div>
 
@@ -149,15 +159,6 @@
 <div>2.VBAT引脚</div><div> </div><div>备用电源引脚，当VDD关闭时，实时时钟（RTC）和 备用寄存器可以从VBAT引脚获得电压。</div><div> </div><div> </div><div>3.Boot 选择</div><div>通过 Boot0 和 Boot1两个引脚可以选择stm32启动模式，参见下图：</div><div><img src="/uploads/2012/07/3455029096.png" alt="stm32_boot.png"></div><div> </div><div>3.Jtag引脚接法如下：</div><div> </div><div><img src="/uploads/2012/07/77275299.png" alt="jtag.png"></div><div> </div><div> </div><div> </div><div>4.电压转换</div><div> </div><div>单片机系统中常用 5V和3.3V电压，可以通过电压调节器实现电压转换。</div><div> </div><div>LM1117是一个低压差电压调节器系列。其压差在1.2V输出，负载电流为800mA时为1.2V。它与国家半导体的工业标准器件LM317有相同的管脚排列。LM1117有可调电压的版本，通过2个外部电阻可实现1.25～13.8V输出电压范围。另外还有5个固定电压输出（1.8V、2.5V、2.85V、3.3V和5V）的型号。输出端需要一个至少10uF的钽电容来改善瞬态响应和稳定性。</div><div> </div><div>Lm1117电路如下：</div><div> </div><div><img src="/uploads/2012/07/3577142099.png" alt="lm1117.png"></div><div> </div><div> </div><div>Stm32f103c8t6 最小系统原理图：&nbsp;<a href="/uploads/2012/07/3144815126.pdf" title="Stm32f103CBT6_SCH.pdf">Stm32f103CBT6_SCH.pdf</a></div><div> </div></div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -275,6 +276,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

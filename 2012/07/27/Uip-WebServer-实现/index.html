@@ -138,6 +138,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。</div><div> </div><div>要运行Uip的WebServer 只需要:</div><div>1. 修改uip-con.h 里的#inlcude “webserver.h” &nbsp;去除其注释</div><div>2. 在User/main.c 里加入&nbsp;&nbsp; &nbsp; &nbsp;httpd_init(); &nbsp; //初始化服务器</div><div> </div><div>Uip+ stm32移植参见&nbsp;<a href="http://www.ichanging.org/uip-stm32.html" target="_blank" rel="external">Uip + Stm32移植问题总结</a><span style="text-align: left; ">&nbsp;</span></div><div> </div><div>浏览器访问 Uip WebServer 页面：</div><div> </div><div><img src="/uploads/2012/07/2241307800.jpg" alt="6581bcdegw1dv93b6puvhj.jpg"></div><div> </div><div>分析下 Uip Webserver 的运行过程,Uip WebServer使用到相关文件如下：</div><div> </div><div>httpd.c &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div><div>httpd.c中定义了一些字符阿斯克码，含义如下</div><div><br>        #define ISO_nl      0x0a     // 换行<br>        #define ISO_space   0x20     // 空格<br>        #define ISO_bang    0x21     // !<br>        #define ISO_percent 0x25     // %<br>        #define ISO_period  0x2e   // .<br>        #define ISO_slash   0x2f     // /<br>        #define ISO_colon   0x3a     // :<br><br></div><div>当Uip接收到Uip接收到底层传递的数据,将接收到的数据通过调用http_appcall(),传递给Webserver处理，再通过handle_connection(）先后调用handle_input(）函数和handle_output()函数</div>
 
@@ -361,15 +371,6 @@ PT_WAIT_THREAD(&amp;s-&gt;scriptpt,                        //eg. %! file-stats  
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -486,6 +487,7 @@ PT_WAIT_THREAD(&amp;s-&gt;scriptpt,                        //eg. %! file-stats  
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

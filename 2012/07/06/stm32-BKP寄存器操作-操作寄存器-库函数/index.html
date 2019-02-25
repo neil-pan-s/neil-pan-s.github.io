@@ -146,6 +146,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>BKP是“BACKUP”的缩写，stm32f103RCTE的内部配备了10个16位宽度的BKP寄存器。在主电源切断或系统产生复位时间时，BKP寄存器仍然可以在备用电源的支持下保持其内容。&nbsp;</div><div>BKP在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复等。</div><div> </div><div><strong>本例实现对BKP寄存器的读写操作，和入侵检测和处理。主程序中写入寄存器后，依次打印出10个BKP寄存器数据，然后触发GPIOC13的入侵中断（输入低电平），在中断中打印出入侵事件发生后的寄存器内容（复位为0 ）。</strong></div><div> </div><div><strong>直接操作寄存器</strong></div><div>用到的寄存器描述如下：</div><div><div> </div><div><strong>备份数据寄存器x(BKP_DRx) (x = 1 … 10)：</strong>低16位[15:0]有效，用来写入或读出备份数据。</div><div> </div><div><strong>备份控制寄存器(BKP_CR)：</strong></div><div>低两位有效。</div><div>TPAL[1]：侵入检测TAMPER引脚有效电平(TAMPER pin active level)</div>
 
@@ -422,15 +432,6 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -555,6 +556,7 @@ NVIC_Init(&amp;amp;NVIC_InitStructure);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

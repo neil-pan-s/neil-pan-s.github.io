@@ -138,6 +138,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。</div><div> </div><div>Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。</div><div> </div><div>SysTick 可以产生中断、设置中断优先级，有专门的中断处理函数SysTick_Handler().库函数作为ST公司自己的推出的框架， 在中断这方面做了更为细致的处理。</div><div>库函数包含的头文件是&nbsp;stm32f10x.h &nbsp;这个文件中 列出了完整的stm32中断向量表（截取部分）：</div><div><pre class="brush:cpp;">/<strong>**</strong>  Cortex-M3 Processor Exceptions Numbers <strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>*</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/<br>  NonMaskableInt_IRQn         = -14,    /<em>!&lt; 2 Non Maskable Interrupt                             </em>/<br>  MemoryManagement_IRQn       = -12,    /<em>!&lt; 4 Cortex-M3 Memory Management Interrupt              </em>/<br>  BusFault_IRQn               = -11,    /<em>!&lt; 5 Cortex-M3 Bus Fault Interrupt                      </em>/<br>  UsageFault_IRQn             = -10,    /<em>!&lt; 6 Cortex-M3 Usage Fault Interrupt                    </em>/<br>  SVCall_IRQn                 = -5,     /<em>!&lt; 11 Cortex-M3 SV Call Interrupt                       </em>/<br>  DebugMonitor_IRQn           = -4,     /<em>!&lt; 12 Cortex-M3 Debug Monitor Interrupt                 </em>/<br>  PendSV_IRQn                 = -2,     /<em>!&lt; 14 Cortex-M3 Pend SV Interrupt                       </em>/<br>  SysTick_IRQn                = -1,     /<em>!&lt; 15 Cortex-M3 System Tick Interrupt                   </em>/<br><br>/<strong>**</strong>  STM32 specific Interrupt Numbers <strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>*</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/<br>  WWDG_IRQn                   = 0,      /<em>!&lt; Window WatchDog Interrupt                            </em>/<br>  PVD_IRQn                    = 1,      /<em>!&lt; PVD through EXTI Line detection Interrupt            </em>/<br>  TAMPER_IRQn                 = 2,      /<em>!&lt; Tamper Interrupt                                     </em>/<br>  RTC_IRQn                    = 3,      /<em>!&lt; RTC global Interrupt                                 </em>/<br>  FLASH_IRQn                  = 4,      /<em>!&lt; FLASH global Interrupt                               </em>/<br>  RCC_IRQn                    = 5,      /<em>!&lt; RCC global Interrupt                                 </em>/<br>  EXTI0_IRQn                  = 6,      /<em>!&lt; EXTI Line0 Interrupt                                 </em>/<br>  EXTI1_IRQn                  = 7,      /<em>!&lt; EXTI Line1 Interrupt                                 </em>/<br>  EXTI2_IRQn                  = 8,      /<em>!&lt; EXTI Line2 Interrupt                                 </em>/<br>  EXTI3_IRQn                  = 9,      /<em>!&lt; EXTI Line3 Interrupt                                 </em>/<br>  EXTI4_IRQn                  = 10,     /<em>!&lt; EXTI Line4 Interrupt                                 </em>/<br>  DMA1_Channel1_IRQn          = 11,     /<em>!&lt; DMA1 Channel 1 global Interrupt                      </em>/<br>  DMA1_Channel2_IRQn          = 12,     /<em>!&lt; DMA1 Channel 2 global Interrupt                      </em>/<br>  DMA1_Channel3_IRQn          = 13,     /<em>!&lt; DMA1 Channel 3 global Interrupt                      </em>/<br>  DMA1_Channel4_IRQn          = 14,     /<em>!&lt; DMA1 Channel 4 global Interrupt                      </em>/<br>  DMA1_Channel5_IRQn          = 15,     /<em>!&lt; DMA1 Channel 5 global Interrupt                      </em>/<br>  DMA1_Channel6_IRQn          = 16,     /<em>!&lt; DMA1 Channel 6 global Interrupt                      </em>/<br>  DMA1_Channel7_IRQn          = 17,     /<em>!&lt; DMA1 Channel 7 global Interrupt                      </em>/</pre><div>其中就包含了对系统级中断的处理，有SysTick的中断定义。</div><div>在 库函数的Cmsis\core_cm3.h文件中的中断配置函数也区分了系统中断 和 其他中断的区分处理 ：</div><div><pre class="brush:cpp;">static <strong>INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)<br>{<br>  if(IRQn &lt; 0) {<br>    SCB-&gt;SHP[((uint32_t)(IRQn) &amp; 0xF)-4] = ((priority &lt;&lt; (8 - </strong>NVIC_PRIO_BITS)) &amp; 0xff); } /<em> set Priority for Cortex-M3 System Interrupts </em>/<br>  else {<br>    NVIC-&gt;IP[(uint32_t)(IRQn)] = ((priority &lt;&lt; (8 - <strong>NVIC_PRIO_BITS)) &amp; 0xff);    }        /<em> set Priority for device specific Interrupts  </em>/<br>}<br></strong></pre></div><div>其中 SysTick_Config（）函数也在这个文件中：</div><div><pre class="brush:cpp;">static INLINE uint32_t SysTick_Config(uint32_t ticks)<br>{<br>  if (ticks &gt; SysTick_LOAD_RELOAD_Msk)  return (1);            /<em> Reload value impossible </em>/<br><br>  SysTick-&gt;LOAD  = (ticks &amp; SysTick_LOAD_RELOAD_Msk) - 1;      /<em> set reload register </em>/<br>  NVIC_SetPriority (SysTick_IRQn, (1&lt;&lt;__NVIC_PRIO_BITS) - 1);  /<em> set Priority for Cortex-M0 System Interrupts </em>/<br>  SysTick-&gt;VAL   = 0;                                          /<em> Load the SysTick Counter Value </em>/<br>  SysTick-&gt;CTRL  = SysTick_CTRL_CLKSOURCE_Msk |<br>                   SysTick_CTRL_TICKINT_Msk   |<br>                   SysTick_CTRL_ENABLE_Msk;                    /<em> Enable SysTick IRQ and SysTick Timer </em>/<br>  return (0);                                                  /<em> Function successful </em>/<br>}</pre></div><div>所以库函数中可以将SysTick作为一个中断操作。</div><div>但是直接操作寄存器，包含的头文件是&nbsp;stm32f10x_lib.h ，中断向量表在stm32f10x_nvic.h 中（截取部分）：</div><div><pre class="brush:cpp;">/<em> IRQ Channels ————————————————————–</em>/<br>#define WWDG_IRQChannel              ((u8)0x00)  /<em> Window WatchDog Interrupt </em>/<br>#define PVD_IRQChannel               ((u8)0x01)  /<em> PVD through EXTI Line detection Interrupt </em>/<br>#define TAMPER_IRQChannel            ((u8)0x02)  /<em> Tamper Interrupt </em>/<br>#define RTC_IRQChannel               ((u8)0x03)  /<em> RTC global Interrupt </em>/<br>#define FLASH_IRQChannel             ((u8)0x04)  /<em> FLASH global Interrupt </em>/<br>#define RCC_IRQChannel               ((u8)0x05)  /<em> RCC global Interrupt </em>/<br>#define EXTI0_IRQChannel             ((u8)0x06)  /<em> EXTI Line0 Interrupt </em>/<br>#define EXTI1_IRQChannel             ((u8)0x07)  /<em> EXTI Line1 Interrupt </em>/<br>#define EXTI2_IRQChannel             ((u8)0x08)  /<em> EXTI Line2 Interrupt </em>/<br>#define EXTI3_IRQChannel             ((u8)0x09)  /<em> EXTI Line3 Interrupt </em>/<br>#define EXTI4_IRQChannel             ((u8)0x0A)  /<em> EXTI Line4 Interrupt </em>/</pre></div><div>并没有对systick做定义，所以直接操作寄存器，需要通过查询标志位的方式，查看Systick的状态。</div><div> </div><div><strong><span style="text-align: left; ">本例将实现用Systick 产生一个100ms的定时器，让GPIO_Pin_5管脚led灯闪烁。</span></strong></div>
 
@@ -230,15 +240,6 @@ GPIO_Init(GPIOA , &amp;GPIO_InitStructure);
 
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -356,6 +357,7 @@ GPIO_Init(GPIOA , &amp;GPIO_InitStructure);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

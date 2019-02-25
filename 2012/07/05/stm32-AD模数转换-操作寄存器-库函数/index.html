@@ -136,6 +136,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。</div><div> </div><div>stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样，执行注入通道采样后，再执行之前的规则通道采样，和中断类似。本例只使用规则通道实现独立模式的中断采样，这里不再赘述两种通道区别。</div><div> </div><div>stm32的ADC可以由外部事件触发(例如定时器捕获，EXTI线)和软件触发(即在配置相关寄存器时，直接开启采样）。</div><div> </div><div><div><strong><br>        本例实现AD采样PB0口，使用串口输出PB0口电压值。PB0口接变阻器以改变调整电压。</strong></div><div>效果如下：</div><div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.39v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.38v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.40v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.38v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.39v</div><div> </div><p><a id="more"></a></p></div></div><div><strong>直接操作寄存器</strong></div><div> </div><div>首先需要配置ADC的时钟分频值，在RCC-&gt;CFGR的[15:14]位：</div>
 
@@ -354,15 +364,6 @@ USART_Init(USART1,&amp;amp;USART_InitStructure);
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -479,6 +480,7 @@ USART_Init(USART1,&amp;amp;USART_InitStructure);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

@@ -144,6 +144,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>脉冲调制（PWM）是利用微处理器对数字输出来对模拟电路的一种非常有效的技术。简单点说就是对确定频率的信号，调整其占空比。</div><div> </div><div>stm32的定时器除了TIM6和TIM7外，其他定时器都可以产生PWM输出。其中高级定时器TIM1和TIM8可以产生多达7路的PWM输出。通用定时器可以产生4路的PWM输出。</div><div> </div><div style="text-align: left;">在<a href="http://www.ichanging.org/stm32_tim_led.html" target="_blank" rel="external">stm32 TIM定时器[操作寄存器+库函数]</a><span style="text-align: left; ">&nbsp; 中我们是通过在中断中，翻转指定引脚的电平。在stm32中可以通过配置一个</span><strong>捕获/比较模式寄存器(TIMx_CCMR)</strong>，设置通道引脚输出模式为PWM脉冲模式，在计时器计数到捕获/比较模式寄存器的值，指定引脚会输出一个有效电平，这样就可以通过定时器直接产生 PWM脉冲。<strong>这种方式下不需要开启中断。</strong></div><div style="text-align: left;"> </div>
 
@@ -506,15 +516,6 @@ RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -636,6 +637,7 @@ RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

@@ -149,6 +149,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>操作stm32 有使用官方库函数（参见 <a href="http://www.ichanging.org/mdk-stm32lib-set.html" target="_blank" rel="external">stm32 开发环境MDK+库文件配置</a>&nbsp;）和 直接操作寄存器的方法</div><div>直接操作寄存器的方法 &nbsp;会比库函数的方法效率更高 &nbsp;而且代码量会比较少 &nbsp; 例如 在库函数下 配置一个GPIO口 需要 &nbsp;&nbsp;</div><div>GPIO_InitTypeDef &nbsp; &nbsp;GPIO_InitStructure; &nbsp; &nbsp; //结构体 初始化</div><div><div>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;</div><div>GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</div><div>GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; &nbsp;&nbsp;</div><div>GPIO_Init(GPIOA , &amp;GPIO_InitStructure);</div><div> </div><div>五行代码 &nbsp; 而直接操作寄存器只需要：</div><div> </div><div>RCC-&gt;APB2ENR|=1&lt;&lt;2; &nbsp; &nbsp;//使能PORTA时钟<span class="Apple-tab-span" style="white-space: pre; "></span> &nbsp; <span class="Apple-tab-span" style="white-space: pre; "></span></div><div><div>GPIOA-&gt;CRL&amp;=0XFFF0FFFF;&nbsp;</div><div>GPIOA-&gt;CRL|=0X00030000;//PA4 推挽输出 &nbsp; <span class="Apple-tab-span" style="white-space:pre"></span></div><div> </div><div>三行代码 而且实际上这三行代码可以配置8个GPIO口 &nbsp; &nbsp;可以看出直接操作寄存器也是比较方便的</div><div>使用直接操作寄存器的方法操作stm32 &nbsp;环境配置和库函数类似 &nbsp;相关MDK设置可以参考&nbsp;<a href="http://www.ichanging.org/mdk-stm32lib-set.html" target="_blank" rel="external">stm32 开发环境MDK+库文件配置</a>&nbsp; 直接操作寄存器需要的文件结构 会少得多&nbsp;</div><div> </div><div><strong><span style="text-align: left; ">STM32 直接操作寄存器 keil工程结构</span></strong></div><div> </div><div><img src="/uploads/2012/07/2442186229.png" alt="base-list.png"><span style="text-align: left; ">Startup 包含的是stm32的 启动文件,与芯片Flash容量有关</span></div>
 
@@ -579,15 +589,6 @@ while(1) {
   </div>
 </article>
 
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
-
 
     <div class="blog-post-comments">
         <div id="disqus_thread">
@@ -713,6 +714,7 @@ while(1) {
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

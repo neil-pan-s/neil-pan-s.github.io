@@ -150,6 +150,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;找到一篇比较好的 关于stm32 &nbsp;SWD模式 下载 调试 配置文章 整理如下：</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;我们比较常用的是Jlink下载器 ，这种下载器有一个缺点就是使用的Jtag 20PIN接口，太多的PIN会导致一些小型的PCB板很拥挤，也会增加布线的难度。 而使用SWD接口下载调试，只需要要使用4个PIN: &nbsp;GND, RST, SWDIO, SWDCLK ，而且下载速度可以达到10M/s，优势显而易见。</div><div> </div><div>&nbsp; &nbsp; 以下转自：<a href="http://www.openedv.com/posts/list/187.htm" target="_blank" rel="external">http://www.openedv.com/posts/list/187.htm</a></div><div>&nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; 我们所使用的Jtag &nbsp;20PIN引脚图： &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 相关原理图：</div><div> </div><div><img src="/uploads/2012/09/3300570723.jpg" alt="jtag IO定义.jpg">&nbsp;<img src="/uploads/2012/09/751556913.jpg" alt="Jtag 原理图.jpg"></div><div> </div><div><div> </div><div><strong>SWD 仿真模式概念简述</strong></div><div> </div><div>一、SWD 和传统的调试方式区别</div>
 
@@ -173,15 +183,6 @@
 
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -308,6 +309,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

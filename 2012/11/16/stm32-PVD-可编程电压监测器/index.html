@@ -136,6 +136,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>&nbsp; &nbsp; PVD (Programmable Votage Detector) ,即可编程电压监测器 。stm32库函数手册中没有细讲这个模块，只是在 PWM一章中列出了两个相关函数。但是这个功能在实际项目中会有较大的作用，</div><div>当电压过低时，对系统的一些数据使用掉电不丢失的 EEPROM 或&nbsp;Flash&nbsp;保存起来，同时对外设进行相应的保护操作。&nbsp;</div><div> </div><div>&nbsp; &nbsp; PVD的作用是监视供电电压，在供电电压下降到给定的阀值以下时，产生一个中断，通知软件做紧急处理。当供电电压又恢复到给定的阀值以上时，也会产生一个中断，通知软件供电恢复。供电下降的阀值与供电上升的PVD阀值有一个固定的差值，引入这个差值的目的是为了防止电压在阀值上下小幅抖动，而频繁地产生中断。</div><div> </div><div><div>&nbsp;&nbsp;&nbsp;&nbsp;用户在使用STM32时，可以利用其内部的PVD对VDD的电压进行监控，通过电源控制寄存器(PWR_CR)中的PLS[2:0]位来设定监控的电压值。</div><div> </div><div>&nbsp; &nbsp; PLS[2:0]位用于选择PVD监控电源的电压阀值：</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;000：2.2V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;001：2.3V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;010：2.4V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;011：2.5V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;100：2.6V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;101：2.7V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;110：2.8V</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;111：2.9V</div><div> </div><div>&nbsp; &nbsp; &nbsp;在电源控制/状态寄存器(PWR_CSR)中的PVDO标志用来表明VDD是高于还是低于PVD设定的电压阀值。该事件连接到外部中断的第16线，如果该中断在外部中断寄存器中被使能的，该事件就会产生中断。当VDD下降到PVD阀值以下和（或）当VDD上升到PVD阀值之上时，根据外部中断第16线的上升/下降边沿触发设置，就会产生PVD中断。</div><div> </div><div>&nbsp; &nbsp; 所以我做了一个实验，测试了stm32 的PVD功能。<strong>设定PVD监控阀值&nbsp;为2.8V,通过一个分压模块将5v电压通过一个可调电阻分压给stm32, 在PVD中断中设定点亮一个LED，调整可调电阻大小，校验PVD是否触发。</strong></div>
 
@@ -150,15 +160,6 @@
 
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -276,6 +277,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

@@ -136,6 +136,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过对stm32内部的flash的读写可以实现对stm32的编程操作。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stm32 的内置可编程Flash在许多场合具有十分重要的意义。如其支持ICP特性使得开发人员对stm32可以警醒调试开发，可以通过JTAG和SWD接口对stm32进行程序烧写；支持IAP特性使得开发人员可以在stm32运行程序的时候对其内部程序进行更新操作。对一些对数据安全有要求的场合，可编程FLASH可以结合stm32内部唯一的身份标识实现各种各样的防破解方案。并且stm32的FLASH在一些轻量级的防掉电存储方案中也有立足之地。</div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;stm32的FLASH分为主存储块和信息块。主存储块用于保存具体的程序代码和用户数据，信息块用于负责由stm32出厂是放置2KB的启动程序（Bootloader）和512B的用户配置信息区。</div><div> </div><div>&nbsp; &nbsp; 主存储块是以页为单位划分的，一页大小为1KB。范围为从地址0x08000000开始的128KB内。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;对Flash 的写入操作要 “先擦除后写入”的原则；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;stm32的内置flash 编程操作都是以页为单位写入的，而写入的操作必须要以16位半字宽度数据位单位，允许跨页写，写入非16位数据时将导致stm32内部总线错误。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;进行内置flash读写时，必须要打开内部Rc振荡器。</div>
 
@@ -143,15 +153,6 @@
 <div> </div><div>main.c:</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br>#include “stdio.h”<br><br>#define     PRINTF_ON  1<br><br>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void USART_Configuration(void);<br><br>u32 count=0;<br><br>u16 data[5]={0x0001,0x0002,0x0003,0x0004,0x0005};<br><br>int main(void)<br>{<br>      RCC_Configuration();<br>    GPIO_Configuration();<br>    USART_Configuration();<br><br>    RCC_HSICmd(ENABLE);<br><br>    FLASH_Unlock();<br><br>    FLASH_ClearFlag(FLASH_FLAG_EOP|FLASH_FLAG_PGERR|FLASH_FLAG_WRPRTERR);<br><br>    FLASH_ErasePage(0x8002000);<br><br>    while(count &lt; 5)<br>    {<br>        FLASH_ProgramHalfWord((0x8002000 +count<em>2),data[count]);  //flash  为一个字节存储，16位数据必须地址加2<br><br>        count++;<br><br>    }<br><br>    FLASH_Lock();<br><br>    count = 0;<br><br>    printf(“\r\n The Five Data Is : \r\n”);<br><br>    while(count &lt; 5)<br>    {<br><br>        printf(“\r %d \r”,</em>(u8 <em>)(0x8002000 + count</em>2));      //读取方法<br><br>        count++;<br><br>    }<br><br>    while(1);<br><br>}<br><br>void GPIO_Configuration(void)<br>{<br>    GPIO_InitTypeDef    GPIO_InitStructure;<br><br>     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br>}<br><br>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;<br><br>      /<em> 复位系统时钟设置</em>/<br>      RCC_DeInit();<br>      /<em> 开启HSE</em>/<br>      RCC_HSEConfig(RCC_HSE_ON);<br>      /<em> 等待HSE起振并稳定</em>/<br>      HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    /<em> 判断HSE起是否振成功，是则进入if()内部 </em>/<br>      if(HSEStartUpStatus == SUCCESS)<br>      {<br>        /<em> 选择HCLK（AHB）时钟源为SYSCLK 1分频 </em>/<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br>        /<em> 选择PCLK2时钟源为 HCLK（AHB） 1分频 </em>/<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br>        /<em> 选择PCLK1时钟源为 HCLK（AHB） 2分频 </em>/<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br>        /<em> 设置FLASH延时周期数为2 </em>/<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        /<em> 使能FLASH预取缓存 </em>/<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br>        /<em> 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz </em> 9 = 72MHz <em>/<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        /</em> 使能PLL <em>/<br>        RCC_PLLCmd(ENABLE);<br>        /</em> 等待PLL输出稳定 <em>/<br>        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        /</em> 选择SYSCLK时钟源为PLL <em>/<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        /</em> 等待PLL成为SYSCLK时钟源 <em>/<br>        while(RCC_GetSYSCLKSource() != 0x08);<br>      }<br>      /</em> 打开APB2总线上的GPIOA时钟<em>/<br>      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1, ENABLE);<br><br>    //RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);<br><br>    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR,ENABLE);<br>    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR|RCC_APB1Periph_BKP|RCC_APB1Periph_WWDG, ENABLE);<br><br>}<br><br>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;<br><br>    USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;<br>    USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;<br>    USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;<br>    USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;<br>    USART_ClockInit(USART1 , &amp;USART_ClockInitStructure);<br><br>    USART_InitStructure.USART_BaudRate = 9600;<br>    USART_InitStructure.USART_WordLength = USART_WordLength_8b;<br>    USART_InitStructure.USART_StopBits = USART_StopBits_1;<br>    USART_InitStructure.USART_Parity = USART_Parity_No;<br>    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<br>    USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;<br>    USART_Init(USART1,&amp;USART_InitStructure);<br><br>     USART_Cmd(USART1,ENABLE);<br>}<br><br>#if     PRINTF_ON<br><br>int fputc(int ch,FILE </em>f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}<br><br>#endif<br></pre></div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -269,6 +270,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

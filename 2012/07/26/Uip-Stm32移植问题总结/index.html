@@ -140,6 +140,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （<a href="http://dunkels.com/adam/uip/）开发。其源代码由C" target="_blank" rel="external">http://dunkels.com/adam/uip/）开发。其源代码由C</a> 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为<a href="http://www.ichanging.org/uip-webclient.html" target="_blank" rel="external">WebClient</a> 向指定网站提交数据，可以作为<a href="http://www.ichanging.org/uip-webserver.html" target="_blank" rel="external">WebServer</a>作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有考虑协议安全的问题。</div><div> </div><div>首先介绍下移植的环境： stm32 +&nbsp;ENC28J60网络模块&nbsp;</div><div> </div><div><img src="/uploads/2012/07/1880526909.jpg" alt="IMG_20100101_103506.jpg"></div><div> </div><div>Enc28j60是带SPI 接口的独立以太网控制器，可以用mcu控制spi来实现tcp/ip数据流的收发，所以要先完成Enc28j60的驱动程序，再整合Uip。Uip是用标准的C语言实现，所以移植Uip在51单片机和stm32上类似。</div><div> </div><div>经过几天的琢磨，已经将Uip的几个示例稳定运行。Uip中apps下的例子相互之间存在冲突，源程序中也有一些Error 要修改，我将Uip的文件结构做了一些调整。</div>
 
@@ -154,15 +164,6 @@
 
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -280,6 +281,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

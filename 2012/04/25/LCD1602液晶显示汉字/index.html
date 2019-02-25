@@ -139,6 +139,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。</div><div>常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”;</div><div> </div><div>1602中有这样几个区：</div><div> </div><div>CGRAM 区为用户自定义字符区 &nbsp;</div><div>DDRAM 为字符显示地址（位置）数据存贮器</div><div>CGROM为 液晶模块内部字符发生存储器</div><div> </div><div>使用1602显示汉字 就需要是用到 CGRAM，需要将取模后的点阵字符写入CGRAM ，以备后面读出显示。</div><div> </div><div>1602 使用的显示点阵大小是 5<em>8 ，可以使用取模软件获得文字的点阵显示字符，但是点阵大小最小为8</em>8， 要取得5*8的字模 只需要空出前三列即可。</div><div><img src="/uploads/2012/04/4248643945.png" alt="字模提取.png"></div><div> </div>
 
@@ -146,15 +156,6 @@
 <div>将生成的点阵数组保存到CGRAM存储器中，生成自定义字符。1602内部CGRAM用于自定义的字符点阵的存储，总共64字节。由上一步点阵提取可知，每一个字符由8个字节数据组成。所以64字节CGRAM存储器，能够存储8组自定义字符的点阵数组。</div><div>按照CGRAM地址划分为 0－7为第一组，8－15为第二组，依次类推56－63为第8组数据。</div><div>把自定义字符的数组按8个字节一组存储到CGRAM中。</div><div> </div><div><div>自定义字符存储到CGRAM的任意一组以后，每一个组（8个字节）也有一个显示编码。按顺序依次为00H－07H 。显示时，只要调用每一组的编码，即可以显示相应的字符。</div><div>注：内部常用字符显示时，显示编码是从0x20开始的。0x00－0x0f是专门留给自定义字符显示的。0x00－0x07和0x08－0x0f内容是一样的。例如：调用0x01 位置和0x09位置，显示的内容是一样的。</div><div> </div><div>1602显示”你好”：</div><div> </div><div><img src="/uploads/2012/04/420763698.jpg" alt="IMG_20120425_154514.jpg"></div><div> </div><div>51单片机的默认是将变量定义在直接寻址data区，这个区域是片内RAM的低128字节，所以存储的空间有限，所以编程时可以把一些变量编译在 间接寻址的idata区（52是80H~0FFH区域）或者 64 程序存储器 code 区中。</div><div> </div><div>LCD1602显示程序代码：</div><div><pre class="brush:cpp;">    #include &lt;reg52.h&gt;<br>    #include “lcd1602.h”<br><br>    #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    uchar idata words[4][8] = {<br>                        { 0x01,0x02,0x06,0x02,0x02,0x02,0x02,0x00},       //你字左边<br>                        { 0x08,0x0F,0x15,0x04,0x15,0x15,0x04,0x0C},       //你字右边<br>                        { 0x00,0x04,0x1F,0x0A,0x04,0x0A,0x00,0x00},       //好字左边<br>                        { 0x1E,0x02,0x04,0x1F,0x04,0x04,0x0C,0x00}       //好字右边<br>                    };<br><br>    void main()<br>    {<br>        uchar i;<br><br>        LCD_Init();<br><br>        for(i=0;i&lt;4;i++)<br>        {<br>            LCD_CGRAM_WriteByte(words[i],i);<br>            LCD_WriteByte(0x80+i,0);<br>            LCD_WriteByte(i,1);<br>        }<br><br>        LCD_WriteString(“Wrold !!”,2);<br><br>        /<strong>**</strong>这样也可以显示“A”<br><br>        LCD_WriteByte(0xCA,0);<br>        LCD_WriteByte(0x41,1);<br><br>        <strong><strong><em>*</em></strong></strong>/<br>        while(1);<br><br>    }<br></pre></div></div><div>lcd1602.h ：</div><div><pre class="brush:cpp;">    #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    #define DataPin    P0<br><br>    sbit  LCD_RS = P2^4;    //    LCD    数据/ 命令选择 ,高电平时选择数据寄存器<br>    sbit  LCD_RW = P2^5;    //  LCD 读 / 写选择       ,高电平时读操作<br>    sbit  LCD_E  = P2^6;    //  LCD 使能<br>    sbit  IR_DQ  = P2^3;    //    红外接收头数据线<br><br>    void  LCD_BusyCheck(void);<br>    void  LCD_WriteByte(uchar var,bit RS);<br>    void  LCD_Init(void);<br>    void  LCD_WriteString(uchar <em>str,uchar line);<br>    void  LCD_CGRAM_WriteByte(uchar </em>p,uchar num);<br>    void  LCD_Delay(uint n);<br><br>    void LCD_Delay(uint n)<br>    {<br>        while(–n);                // 8us一次<br>    }<br><br>    void LCD_BusyCheck(void)<br>    {<br>        uchar isBusy;<br><br>        LCD_RS = 0;<br>        LCD_RW = 1;<br><br>        LCD_E  = 1;<br>        LCD_Delay(10);<br>        isBusy = DataPin &amp; 0x80;<br>        LCD_E  = 0;<br><br>        if(isBusy == 0x80)<br>        {<br>            LCD_BusyCheck();<br>        }<br>    }<br><br>    void LCD_WriteByte(uchar var,bit RS )       //参数 RS为 LCD数据/ 命令选择 ,高电平时选择数据寄存器<br>    {<br>        LCD_BusyCheck();<br><br>        LCD_RS = RS;<br>        LCD_RW = 0;<br>        DataPin = var;<br><br>        LCD_E = 0;<br>        LCD_Delay(70);                      //必须延时500us左右<br>        LCD_E  = 1;<br>        LCD_Delay(5);<br>        LCD_E = 0;<br><br>    }<br><br>    void LCD_WriteString(uchar <em>str,uchar line)<br>    {<br>        uchar i = 0,addr;<br><br>        if(line == 1) { addr = 0x80;}<br>        if(line == 2) { addr = 0xC0;}<br><br>        while(1)<br>        {<br>            LCD_WriteByte(addr+i,0);       //写入地址<br>            LCD_WriteByte(str[i],1);<br>            i++;<br>            if(i==16 || str[i] == ‘\0’){ break;}<br>        }<br>    }<br><br>    void LCD_CGRAM_WriteByte(uchar </em>p,uchar num)           //将自定义字符写入CGRAM中,最多64字节,uchar num为自定义字符存放位置 0-7<br>    {<br>        uchar i,place;<br><br>        place = 0x40 + 8<em>(num&amp;0x07);                    // num&amp;0x07 保证num取值范围为 0-7<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            LCD_WriteByte(place+i,0);<br>            LCD_WriteByte(p[i],1);<br>        }<br>    }<br><br>    void LCD_Init(void)<br>    {<br>        LCD_Delay(1875);            //延时15ms<br><br>        LCD_WriteByte(0x38,0);<br><br>        LCD_Delay(625);                //延时5ms<br><br>        LCD_WriteByte(0x38,0);  //配置LCD为4位数据总线,双行显示,5</em>7点阵字符<br><br>        LCD_WriteByte(0x08,0);  //配置LCD关闭显示,无光标,无闪烁<br><br>        LCD_WriteByte(0x01,0);  //LCD清屏<br><br>        LCD_WriteByte(0x06,0);  //LCD光标右移<br><br>        LCD_WriteByte(0x0C,0);  //打开LCD显示<br><br>    }<br><br></pre></div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -272,6 +273,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

@@ -150,6 +150,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div><div>&nbsp; &nbsp; &nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，<span style="text-align: left; ">在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。</span><span style="text-align: left; ">在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。</span>参见&nbsp;<a href="/stm32-bkp.html">stm32 BKP寄存器操作</a>&nbsp;。</div></div><div> </div><div>单片机掉电保护通常可采用以下三种方法：</div>
 
@@ -166,15 +176,6 @@
 <div>&nbsp; &nbsp;器件地址码格式如下：</div><div><img src="/uploads/2012/05/1787393783.png" alt="QQ截图20120518131152.png"></div><div> </div><div>其中前四位是器件的类型，有固定的定义，EPROM为1010；后三位为片选，同类器件可以接8个；R/W为读写控制，R/W=1为从总线读取信息，R/W=0为从总线写入信息。</div><div> </div><div>I2C 读指定单元时序：</div><div> </div><div>开始信号 + 器件地址码（R/W = 0 写） + ACK（接收应答信号）+待读取单元地址+ACK+开始信号+器件地址码（R/W = 1 读） + ACK+读取8位数据+停止信号</div><div> </div><div>I2C 指定单元写时序：</div><div> </div><div>开始信号 + 器件地址码（R/W = 0 写） + ACK（接收应答信号）+待写入单元地址+ACK+写入8位数据&nbsp;+ ACK+停止信号</div><div> </div><div>读写时序时间控制：</div><div><img src="/uploads/2012/05/4004612757.png" alt="QQ截图20120518125424.png"></div><div> </div><div>单片机读取EEPROM(AT24C02)代码：</div><div>at24c02.c</div><div><pre class="brush:cpp;">       #include &lt;reg52.h&gt;<br><br>       #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    #define ADDRS_R  0xA1     //读操作地址<br>    #define ADDRS_W  0xA0     //写操作地址<br><br>    sbit I2C_SCL =  P2^0;<br>    sbit I2C_SDL =  P2^1;<br><br>    sbit I2C_ACK_Led = P2^7;    //接收到正确的ACK相应（低电平），则灯不亮（低电平亮）<br><br>    void  I2C_Delay(uchar n);<br>    void  I2C_Start();<br>    void  I2C_End();<br>    void  I2C_ACK();<br>    void  I2C_WriteByte(uchar var);<br>    uchar I2C_ReadByte();<br>    uchar I2C_Read(uchar addr);<br>    void I2C_Write(uchar addr,uchar var);<br><br>    void I2C_Delay(uchar n)<br>    {<br>        while(–n);                // 2us一次<br>    }<br><br>    void I2C_Start()<br>    {<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 0;<br>        I2C_Delay(1);<br><br>        I2C_SCL = 0;           //每次执行完读写操作后都，拉低SCL ，防止时序混乱<br>        I2C_Delay(1);<br><br>    }<br><br>    void I2C_End()<br>    {<br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>        I2C_SDL = 0;<br>        I2C_Delay(1);<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 1;<br>        I2C_Delay(1);<br>    }<br><br>    void I2C_ACK()                           //EEPROM  字节写入相应，低电平正确<br>    {<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        while(I2C_SDL == 1){ I2C_ACK_Led = 0; }<br>        I2C_ACK_Led = 1;<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br><br>    }<br><br>    void I2C_WriteByte(uchar var)            //单字节写入函数<br>    {<br>        uchar i;<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            I2C_SCL = 0;<br>            I2C_Delay(1);<br>            if(var &amp; 0x80) I2C_SDL = 1; else I2C_SDL = 0;<br>            I2C_Delay(1);<br>            I2C_SCL = 1;<br>            I2C_Delay(1);<br>            var &lt;&lt;=  1;<br>        }<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>    }<br><br>    uchar I2C_ReadByte()                    //单字节读取函数<br>    {<br>        uchar var,i;<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            var &lt;&lt;= 1;<br>            I2C_SCL = 0;<br>            I2C_Delay(1);<br>            I2C_SCL = 1;<br>            I2C_Delay(1);<br>            if(I2C_SDL == 1)  var |= 0x01;<br>            I2C_Delay(1);<br>        }<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br><br>        return var;<br><br>    }<br><br>    void I2C_Write(uchar addr,uchar var)   //EEPROM 单元写入函数<br>    {<br>           I2C_Start();<br><br>        I2C_WriteByte(ADDRS_W);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(addr);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(var);<br><br>        I2C_ACK();<br><br>        I2C_End();<br><br>    }<br><br>    uchar I2C_Read(uchar addr)         //EEPROM 单元读取函数<br>    {<br>        uchar var;<br><br>        I2C_Start();<br><br>        I2C_WriteByte(ADDRS_W);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(addr);<br><br>        I2C_ACK();<br><br>        I2C_Start();<br><br>        I2C_WriteByte(ADDRS_R);<br><br>        I2C_ACK();<br><br>        var = I2C_ReadByte();<br><br>        I2C_End();<br><br>        return var;<br><br>    }</pre></div><div>在程序中调用读写函数即可，程序调试使用的是11.0592Mhz的晶振。</div><div> </div><div> </div>
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -302,6 +303,7 @@
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 

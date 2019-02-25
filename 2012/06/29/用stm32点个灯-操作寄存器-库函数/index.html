@@ -154,6 +154,16 @@
   </header>
   
 
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
   <div class="content" itemprop="articleBody">
     <div>stm32的使用和51单片机不同，单片机接上晶振接上电源 直接就可以操作io口，但是stm32的时钟是</div><div>经过了倍频器放大频率的，然后再由锁相环输出稳定的时钟频率。</div><div>这么做的带来了很多好处，虽然stm32的外部时钟只有8Mhz ，经过倍频器后就可以得到好几种的时钟频率 给不同的外设提供不同的时钟频率。</div><div>所以stm32有很多总线，这些总线的频率是不同的，而且在使用前总线是关闭的，使用外设前必须打开其对应的总线，这样也是处于为stm32降低功耗的考虑。</div><div> </div><div><div>使用stm32的所有外设都要加入其对应的驱动文件。 &nbsp;&nbsp;</div><div> </div><div>对于stm32的GPIO口还需要注意的一点是，通过GPIO寄存器，可以把GPIO口配置成8种工作模式：</div>
 
@@ -260,15 +270,6 @@ GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
   </div>
 </article>
-
-<!-- Google Adsense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-7002319867557344",
-    enable_page_level_ads: true
-  });
-</script>
 
 
     <div class="blog-post-comments">
@@ -397,6 +398,7 @@ GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         ga('create', 'UA-20407881-1', 'auto');
         ga('send', 'pageview');
     </script>
+
 
 <!-- Disqus Comments -->
 
