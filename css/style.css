@@ -1,3 +1,10 @@
+[href="/fm/"] {
+    display: none;
+}
+[href="/fm"] {
+    display: none;
+}
+
 .inline {
   display: inline;
 }
