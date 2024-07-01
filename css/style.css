@@ -1,3 +1,7 @@
+#menu-icon, nav {
+    display: none;
+}
+
 [href="/fm/"] {
     display: none;
 }
