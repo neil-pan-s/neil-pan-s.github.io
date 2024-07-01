@@ -1,4 +1,4 @@
-#menu-icon, nav, #thread__container, #layout {
+#menu-icon, nav, #thread__container, #layout, #disqus_thread, .blog-post-comments {
     display: none;
 }
 
