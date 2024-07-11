@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （http://dunkels.com/adam/uip/）开发。其源代码由C 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为WebClient 向指定网站提交数据，可以作为WebServer作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Uip + Stm32移植问题总结">
+<meta property="og:url" content="http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （http://dunkels.com/adam/uip/）开发。其源代码由C 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为WebClient 向指定网站提交数据，可以作为WebServer作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/1880526909.jpg">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/563037952.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/1953523001.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.210Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Uip + Stm32移植问题总结">
+<meta name="twitter:description" content="uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （http://dunkels.com/adam/uip/）开发。其源代码由C 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为WebClient 向指定网站提交数据，可以作为WebServer作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/1880526909.jpg">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>Uip + Stm32移植问题总结</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/27/Uip-WebClient-实现/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/14/stm32-SPI通信-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&text=Uip + Stm32移植问题总结"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&is_video=false&description=Uip + Stm32移植问题总结"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Uip + Stm32移植问题总结&body=Check out this article: http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&name=Uip + Stm32移植问题总结&description=&lt;div&gt;uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （&lt;a href=&quot;http://dunkels.com/adam/uip/）开发。其源代码由C&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://dunkels.com/adam/uip/）开发。其源代码由C&lt;/a&gt; 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为&lt;a href=&quot;http://www.ichanging.org/uip-webclient.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;WebClient&lt;/a&gt; 向指定网站提交数据，可以作为&lt;a href=&quot;http://www.ichanging.org/uip-webserver.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;WebServer&lt;/a&gt;作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有考虑协议安全的问题。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;首先介绍下移植的环境： stm32 +&amp;nbsp;ENC28J60网络模块&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/1880526909.jpg&quot; alt=&quot;IMG_20100101_103506.jpg&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Enc28j60是带SPI 接口的独立以太网控制器，可以用mcu控制spi来实现tcp/ip数据流的收发，所以要先完成Enc28j60的驱动程序，再整合Uip。Uip是用标准的C语言实现，所以移植Uip在51单片机和stm32上类似。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;经过几天的琢磨，已经将Uip的几个示例稳定运行。Uip中apps下的例子相互之间存在冲突，源程序中也有一些Error 要修改，我将Uip的文件结构做了一些调整。&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Uip + Stm32移植问题总结
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-26T13:37:49.000Z" itemprop="datePublished">2012-07-26</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （<a href="http://dunkels.com/adam/uip/）开发。其源代码由C" target="_blank" rel="noopener">http://dunkels.com/adam/uip/）开发。其源代码由C</a> 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为<a href="http://www.ichanging.org/uip-webclient.html" target="_blank" rel="noopener">WebClient</a> 向指定网站提交数据，可以作为<a href="http://www.ichanging.org/uip-webserver.html" target="_blank" rel="noopener">WebServer</a>作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有考虑协议安全的问题。</div><div> </div><div>首先介绍下移植的环境： stm32 +&nbsp;ENC28J60网络模块&nbsp;</div><div> </div><div><img src="/uploads/2012/07/1880526909.jpg" alt="IMG_20100101_103506.jpg"></div><div> </div><div>Enc28j60是带SPI 接口的独立以太网控制器，可以用mcu控制spi来实现tcp/ip数据流的收发，所以要先完成Enc28j60的驱动程序，再整合Uip。Uip是用标准的C语言实现，所以移植Uip在51单片机和stm32上类似。</div><div> </div><div>经过几天的琢磨，已经将Uip的几个示例稳定运行。Uip中apps下的例子相互之间存在冲突，源程序中也有一些Error 要修改，我将Uip的文件结构做了一些调整。</div>
+
+<a id="more"></a>
+<div> </div><div><strong>Uip文件结构</strong></div><div> </div><div>先介绍下Uip下各个目录文件的功能：</div><div> </div><div><span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">├─apps</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apps目录 下为uip提供的一些应用示例<br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─dhcpc</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─hello-world</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─resolv</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─smtp</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─telnetd</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; ├─webclient</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; └─webserver</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └─httpd-fs</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">├─doc</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; doc下放置的为说明文档，程序中用不上 &nbsp;<br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">│&nbsp; └─html</span><br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">├─lib</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; lib下为内存块管理函数源码<br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">├─uip</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;uip下为uip和核心实现源码&nbsp;<br>    <span style="color: rgb(51, 51, 51); font-family: Arial; font-size: 14.44444465637207px; letter-spacing: normal; line-height: 25.55555534362793px; text-align: left; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; ">└─unix</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; unix环境里的uip应用例子,可以参照这个例子实现应用</div><div> </div><div><strong>Uip+stm32 MDK下工程建立</strong></div><div> </div><div><img src="/uploads/2012/07/563037952.png" alt="QQ截图20120726204704.png"></div><div>stm32的目录结构建立可以参考&nbsp;<a href="http://www.ichanging.org/mdk-stm32lib-set.html" target="_blank" rel="noopener">stm32 开发环境MDK+库文件配置</a><span style="text-align: left; ">&nbsp;</span></div><div> </div><div>User 放置 stm32 SPI配置以及Uip配置和Enc28j60和Uip的接口函数</div><div> </div><div> </div><div> </div><div> </div><div>uip下为uip的核心实现源码以及内存管理源码（即为Uip/uip+Uip/lib）</div><div>dev下为Enc28j60的驱动函数源码</div><div>apps为uip的各个示例应用源码（Uip/apps下的文件）包括smtp,rsolve,dhcp，telnetd,以及webclient</div><div> </div><div>webserver 的文件结构较为复杂，独立一个文件夹</div><div> </div><div> </div><div><strong>Uip移**</strong>植<strong></strong></div><div> </div><div>Uip的移植可以参考uip的unix的文件结构。</div><div> </div><div>1. Uip的数据通过网卡Enc28j60从物理层剥离，所以需要先配置Uip和Enc28j60的数据交互。这个部分在tapdev.c文件中：</div><div><pre class="brush:cpp;">#include “uip.h”<br>#include “ENC28J60.h”<br><br>/<em>—————————————————————————</em>/<br>void<br>tapdev_init(unsigned char <em>my_mac)<br>{<br>    enc28j60Init(my_mac);<br>}<br>/</em>—————————————————————————<em>/<br>unsigned int<br>tapdev_read(void)<br>{<br>    return enc28j60PacketReceive(UIP_CONF_BUFFER_SIZE,uip_buf);<br>}<br>/</em>—————————————————————————<em>/<br>void<br>tapdev_send(void)<br>{<br>    enc28j60PacketSend(uip_len,uip_buf);<br>}<br>/</em>—————————————————————————<em>/</em></pre><div><div>写网卡驱动程序，与具体硬件相关。这一步比较费点时间，不过好在大部分网卡芯片的驱动程序都有代码借鉴或移植。驱动需要提供三个函数，以Enc28j60 驱动为例。</div><div>tapdev_init（）：网卡初始化函数，初始化网卡的工作模式。</div><div>tapdev_read(void)：读包函数。将网卡收到的数据放入全局缓存区uip_buf 中，返回包的长度，赋给uip_len。</div><div>void tapdev_send(void)：发包函数。将全局缓存区uip_buf 里的数据（长度放在uip_len 中）发送出去。</div><div> </div></div><div>2.由于uIP 协议栈需要使用时钟，为TCP 和ARP 的定时器服务。因此使用单片机的定时器或是stm32的滴答定时器用作时钟，每20ms 让计数tick_cnt 加1，这样，25 次计数（0.5S）满了后可以调用TCP 的定时处理程序。10S 后可以调用ARP 老化程序。uIP1.0 版本，增加了timer.c/timer.h，专门用来管理时钟，修改clock-arch.c如下：</div><div><pre class="brush:cpp;">#include “clock-arch.h”<br>#include “stm32f10x.h”<br><br>extern __IO int32_t g_RunTime;<br>/—————————————————————————<em>/<br>clock_time_t<br>clock_time(void)<br>{<br>    return g_RunTime;<br>}<br>/</em>—————————————————————————<em>/</em></pre><div>使用stm32 滴答定时器中断代码：</div><div> </div><div>User/stm32f10x_it.c</div><div><pre class="brush:cpp;">__IO int32_t g_RunTime = 0;<br>void SysTick_Handler(void)<br>{<br>    static uint8_t s_count = 0;<br>    if (++s_count &gt;= 10)<br>    {<br>        s_count = 0;<br><br>        g_RunTime++;    / 全局运行时间每10ms增1 <em>/<br>        if (g_RunTime == 0x80000000)<br>        {<br>            g_RunTime = 0;<br>        }<br>    }<br>}</em></pre></div><div>3.uipopt.h/uip-conf.h 是配置文件，用来设置本地的IP 地址、网关地址、MAC 地址、全局缓冲区的大小、支持的最大连接数、侦听数、ARP 表大小等。可以根据需要配置。</div><div> </div><div><div>#define UIP_FIXEDADDR 1</div><div>决定uIP是否使用一个固定的IP地址。</div><div>如果uIP使用一个固定的IP地址，应该置位（set）这些uipopt.h中的选项。如果不的话，则应该使用宏uip_sethostaddr(),uip_setdraddr() 和 uip_setnetmask()。</div><div> </div><div>#define UIP_PINGADDRCONF 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ping IP地址赋值。</div><div>#define UIP_FIXEDETHADDR 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;指明uIP ARP模块是否在编译时使用一个固定的以太网MAC地址。</div><div>#define UIP_TTL 255&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uIP发送的IP packets的IP TTL (time to live)。</div><div>#define UIP_REASSEMBLY 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uIP支持IP packets的分片和重组。</div><div>#define UIP_REASS_MAXAGE 40 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;一个IP fragment在被丢弃之前可以在重组缓冲区中存在的最大时间。</div><div>#define UIP_UDP 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;是否编译UDP的开关。</div><div>#define UIP_ACTIVE_OPEN 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;决定是否支持uIP打开一个连接。</div><div>#define UIP_CONNS 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;同时可以打开的TCP连接的最大数目。由于TCP连接是静态分配的，减小这个数目将占用更少的RAM。每一个TCP连接需要大约30字节的内存。</div><div>#define UIP_LISTENPORTS 10 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;同时监听的TCP端口的最大数目。每一个TCP监听端口需要2个字节的内存。</div><div>#define UIP_RECEIVE_WINDOW 32768 &nbsp;&nbsp;建议的接收窗口的大小。如果应用程序处理到来的数据比较慢，那么应该设置的小一点（即，相对与uip_buf缓冲区的大小来说），相反如果应用程序处理数据很快，可以设置的大一点（32768字节）。</div><div>#define UIP_URGDATA 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;决定是否支持TCP urgent data notification。</div><div>#define UIP_RTO 3 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;The initial retransmission timeout counted in timer pulses.不要改变</div><div>#define UIP_MAXRTX 8 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;在中止连接之前，应该重发一个段的最大次数。不要改变</div><div>#define UIP_TCP_MSS (UIP_BUFSIZE – UIP_LLH_LEN – 40) &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCP段的最大长度。它不能大于UIP_BUFSIZE – UIP_LLH_LEN – 40.</div><div>#define UIP_TIME_WAIT_TIMEOUT 120&nbsp;&nbsp;&nbsp;&nbsp;一个连接应该在TIME_WAIT状态等待多长。不要改变</div><div>#define UIP_ARPTAB_SIZE 8 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ARP表的大小。如果本地网络中有许多到这个uIP节点的连接，那么这个选项应该设置为一个比较大的值。</div><div>#define UIP_BUFSIZE 1500&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uIP packet缓冲区不能小于60字节，但也不必大于1500字节。</div><div>#define UIP_STATISTICS 1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;决定是否支持统计数字。统计数字对调试很有帮助，并展示给用户。</div><div>#define UIP_LOGGING 0 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;输出uIP登陆信息。</div><div>#define UIP_LLH_LEN 14 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;链接层头部长度。对于SLIP，应该设置成0。</div></div><div> </div><div>uip-conf.h&nbsp;中增加几个主要结构体定义，不include任何应用</div><div> </div><div><pre class="brush:cpp;">#define UIP_CONF_LOGGING         0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//logging off<br><br>typedef int uip_tcp_appstate_t;            //出错可注释<br>typedef int uip_udp_appstate_t;            //出错可注释<br><br>/#include “smtp.h”<em>/<br>/</em>#include “hello-world.h”<em>/<br>/</em>#include “telnetd.h”<em>/<br>/</em>#include “webserver.h”<em>/<br>/</em>#include “dhcpc.h”<em>/<br>/</em>#include “resolv.h”<em>/<br>/</em>#include “webclient.h”<em>/<br><br>#include “app_call.h”&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//加入一个Uip的数据接口文件<br></em></pre></div><div><div>uIP 在接受到底层传来的数据包后，调用UIP_APPCALL( )，将数据送到上层应用程序处理。</div></div><div>User/app_call.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br><br>#ifndef UIP_APPCALL<br>    #define UIP_APPCALL                    Uip_Appcall<br>#endif<br><br>#ifndef UIP_UDP_APPCALL<br>    #define UIP_UDP_APPCALL                Udp_Appcall<br>#endif<br><br>void Uip_Appcall(void);<br>void Udp_Appcall(void);<br><br>void Uip_Appcall(void)<br>{<br><br>}<br><br>void Udp_Appcall(void)<br>{<br><br>}<br></pre></div><div> </div><div>4.加入uIP 的的主循环代码架构</div><div>User/main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br>#include “stdio.h”<br>#include “string.h”<br><br>#include “uip.h”<br>#include “uip_arp.h”<br>#include “tapdev.h”<br>#include “timer.h”<br>#include “ENC28J60.h”<br>#include “SPI.h”<br><br>#define     PRINTF_ON  1<br><br>#define BUF ((struct uip_eth_hdr )&amp;uip_buf[0])<br><br>#ifndef NULL<br>#define NULL (void <em>)0<br>#endif /</em> NULL <em>/<br><br>static unsigned char mymac[6] = {0x04,0x02,0x35,0x00,0x00,0x01};<br><br>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void USART_Configuration(void);<br><br>int main(void)<br>{<br>    int i;<br>    uip_ipaddr_t ipaddr;<br>    struct timer periodic_timer, arp_timer;<br><br>      RCC_Configuration();<br>      GPIO_Configuration();<br>    USART_Configuration();<br>    SPInet_Init();<br><br>    timer_set(&amp;periodic_timer, CLOCK_SECOND / 2);<br>    timer_set(&amp;arp_timer, CLOCK_SECOND </em> 10);<br><br>    SysTick_Config(72000);            //配置滴答计时器<br><br>      //以太网控制器驱动初始化<br>    tapdev_init(mymac);<br><br>      //Uip 协议栈初始化<br>      uip_init();<br><br>    uip_ipaddr(ipaddr, 192, 168, 1, 15);     //配置Ip<br>    uip_sethostaddr(ipaddr);<br>    uip_ipaddr(ipaddr, 192, 168, 1, 1);     //配置网关<br>    uip_setdraddr(ipaddr);<br>    uip_ipaddr(ipaddr, 255, 255, 255, 0);   //配置子网掩码<br>    uip_setnetmask(ipaddr);<br><br>      while(1){<br><br>        uip_len = tapdev_read();                                 //从网卡读取数据<br><br>        if(uip_len &gt; 0)<br>        {                                                        //如果数据存在则按协议处理<br>            if(BUF-&gt;type == htons(UIP_ETHTYPE_IP)) {            //如果收到的是IP数据，调用uip_input()处理<br><br>                uip_arp_ipin();<br>                uip_input();<br><br>                /<em> If the above function invocation resulted in data that<br>                   should be sent out on the network, the global variable uip_len is set to a value &gt; 0. </em>/<br><br>                if(uip_len &gt; 0)<br>                {<br>                  uip_arp_out();<br>                  tapdev_send();<br>                }<br><br>              }else if(BUF-&gt;type == htons(UIP_ETHTYPE_ARP)){     //如果收到的是ARP数据，调用uip_arp_arpin处理<br><br>                uip_arp_arpin();<br><br>                /<em> If the above function invocation resulted in data that<br>                   should be sent out on the network, the global variable uip_len is set to a value &gt; 0. </em>/<br><br>                if(uip_len &gt; 0)<br>                {<br>                  tapdev_send();<br>                }<br>            }<br><br>        }else if(timer_expired(&amp;periodic_timer)){            //查看0.5s是否到了，调用uip_periodic处理TCP超时程序<br><br>              timer_reset(&amp;periodic_timer);<br>              for(i = 0; i &lt; UIP_CONNS; i++) {<br><br>                    uip_periodic(i);<br><br>                    /<em> If the above function invocation resulted in data that<br>                       should be sent out on the network, the global variable uip_len is set to a value &gt; 0. </em>/<br><br>                    if(uip_len &gt; 0)<br>                    {<br>                      uip_arp_out();<br>                      tapdev_send();<br>                    }<br>              }<br><br>                for(i = 0; i &lt; UIP_UDP_CONNS; i++)<br>              {<br><br>                    uip_udp_periodic(i);                                //处理udp超时程序<br><br>                    /<em> If the above function invocation resulted in data that<br>                       should be sent out on the network, the global variable uip_len is set to a value &gt; 0. </em>/<br><br>                    if(uip_len &gt; 0)<br>                    {<br>                      uip_arp_out();<br>                      tapdev_send();<br>                    }<br>              }<br><br>              /<em> Call the ARP timer function every 10 seconds. </em>/             //10s到了就处理ARP<br>              if(timer_expired(&amp;arp_timer))<br>              {<br>                    timer_reset(&amp;arp_timer);<br>                    uip_arp_timer();<br>              }<br>        }<br>    }<br><br>}<br>/<strong><strong><strong><strong><strong><strong><strong>*</strong></strong></strong></strong></strong></strong></strong>Stm32 Set<strong><strong><strong><strong><strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong></strong></strong></strong></strong>/<br><br>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;<br>      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br>}<br><br>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;<br><br>      /<em> 复位系统时钟设置</em>/<br>      RCC_DeInit();<br>      /<em> 开启HSE</em>/<br>      RCC_HSEConfig(RCC_HSE_ON);<br>      /<em> 等待HSE起振并稳定</em>/<br>      HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    /<em> 判断HSE起是否振成功，是则进入if()内部 </em>/<br>      if(HSEStartUpStatus == SUCCESS)<br>      {<br>        /<em> 选择HCLK（AHB）时钟源为SYSCLK 1分频 </em>/<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br>        /<em> 选择PCLK2时钟源为 HCLK（AHB） 1分频 </em>/<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br>        /<em> 选择PCLK1时钟源为 HCLK（AHB） 2分频 </em>/<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br>        /<em> 设置FLASH延时周期数为2 </em>/<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        /<em> 使能FLASH预取缓存 </em>/<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br>        /<em> 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz </em> 9 = 72MHz <em>/<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        /</em> 使能PLL <em>/<br>        RCC_PLLCmd(ENABLE);<br>        /</em> 等待PLL输出稳定 <em>/<br>        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        /</em> 选择SYSCLK时钟源为PLL <em>/<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        /</em> 等待PLL成为SYSCLK时钟源 <em>/<br>        while(RCC_GetSYSCLKSource() != 0x08);<br>      }<br>      /</em> 打开APB2总线上的GPIOA时钟<em>/<br>      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1, ENABLE);<br><br>}<br><br>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;<br><br>    USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;<br>    USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;<br>    USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;<br>    USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;<br>    USART_ClockInit(USART1 , &amp;USART_ClockInitStructure);<br><br>    USART_InitStructure.USART_BaudRate = 9600;<br>    USART_InitStructure.USART_WordLength = USART_WordLength_8b;<br>    USART_InitStructure.USART_StopBits = USART_StopBits_1;<br>    USART_InitStructure.USART_Parity = USART_Parity_No;<br>    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<br>    USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;<br>    USART_Init(USART1,&amp;USART_InitStructure);<br><br>     USART_Cmd(USART1,ENABLE);<br>}<br><br>#if     PRINTF_ON<br><br>int fputc(int ch,FILE </em>f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}<br><br>#endif</pre></div><div> </div><div>5.解决编译过程中的错误。归总如下：</div>
+
+<ul>
+<li>Uip/uip-split.c &nbsp;注释所有的 tcpip_output()函数 &nbsp;消除uip_fw_output()函数的注释</li>
+<li>Uip/memb.c 中 memb_free()函数 返回值 return -1 改为 return 1</li>
+<li>Apps/resolv.c 中resolv_conf() 中&nbsp;<div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;//resolv_conn = uip_udp_new(dnsserver, HTONS(53));</div><div>&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resolv_conn = uip_udp_new((uip_ipaddr_t*)dnsserver, HTONS(53));<span class="Apple-tab-span" style="white-space:pre"></span></div><div> </div><div>解决完所有问题后，编译成功后下载到stm32，ping 测试。。</div><div> </div><div><img src="/uploads/2012/07/1953523001.png" alt="QQ截图20120726201101.png"></div><div> </div><div> </div></li></ul></div></div>
+
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&text=Uip + Stm32移植问题总结"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&is_video=false&description=Uip + Stm32移植问题总结"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Uip + Stm32移植问题总结&body=Check out this article: http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&title=Uip + Stm32移植问题总结"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/26/Uip-Stm32移植问题总结/&name=Uip + Stm32移植问题总结&description=&lt;div&gt;uIP 由瑞典计算机科学学院(网络嵌入式系统小组)的Adam Dunkels （&lt;a href=&quot;http://dunkels.com/adam/uip/）开发。其源代码由C&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://dunkels.com/adam/uip/）开发。其源代码由C&lt;/a&gt; 语言编写，并完全公开，有了这个TCP/IP协议栈，让嵌入式可以实现的功能更为丰富。可以作为&lt;a href=&quot;http://www.ichanging.org/uip-webclient.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;WebClient&lt;/a&gt; 向指定网站提交数据，可以作为&lt;a href=&quot;http://www.ichanging.org/uip-webserver.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;WebServer&lt;/a&gt;作为网页服务器，提供一个小型的动态页面访问功能。由于是开源的免费协议栈，据说Uip没有考虑协议安全的问题。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;首先介绍下移植的环境： stm32 +&amp;nbsp;ENC28J60网络模块&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/1880526909.jpg&quot; alt=&quot;IMG_20100101_103506.jpg&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Enc28j60是带SPI 接口的独立以太网控制器，可以用mcu控制spi来实现tcp/ip数据流的收发，所以要先完成Enc28j60的驱动程序，再整合Uip。Uip是用标准的C语言实现，所以移植Uip在51单片机和stm32上类似。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;经过几天的琢磨，已经将Uip的几个示例稳定运行。Uip中apps下的例子相互之间存在冲突，源程序中也有一些Error 要修改，我将Uip的文件结构做了一些调整。&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。   独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。 窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。窗口看门狗的上窗口就是配置寄存器WWDG-&amp;gt;CFR里设定的W">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 窗口看门狗[操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。   独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。 窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。窗口看门狗的上窗口就是配置寄存器WWDG-&amp;gt;CFR里设定的W">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.238Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 窗口看门狗[操作寄存器+库函数]">
+<meta name="twitter:description" content="stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。   独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。 窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。窗口看门狗的上窗口就是配置寄存器WWDG-&amp;gt;CFR里设定的W">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 窗口看门狗[操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/04/stm32-独立看门狗-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&text=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&is_video=false&description=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 窗口看门狗[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&name=stm32 窗口看门狗[操作寄存器+库函数]&description=&lt;div&gt;stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。&lt;/li&gt;
+&lt;li&gt;窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。&lt;div&gt;窗口看门狗的上窗口就是配置寄存器WWDG-&amp;gt;CFR里设定的W[6:0],下窗口是固定的0x40；当窗口看门狗的计数器在上窗口值之外，或是低于下窗口值都会产生复位。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;上窗口的值可以只有设定，7位二进制数最大只可以设定为127，最小又必须大于下窗口的0x40，所以其取值范围为40~127;&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;窗口看门狗的核心是一个7位的递减计数器，只有当计数器的值在窗口范围内在可以执行喂狗操作，即更新此计数器的值，否则将导致复位操作。 在配置寄存器WWDG-&amp;gt;CFR中可以为此计数器设定时钟分频系数，确定这个计数器可以定时的时间范围，从而确定窗口的时间范围。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;窗口看门狗的时钟来自于PCLK1，在时钟配置中，其频率为外部时钟经倍频器后的二分频时钟，即为36MHz，根据手册可以知道其定时时间计算方法：&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;上窗口时间 T_min = 4096 &lt;em&gt; (2^WDGTB)&lt;/em&gt;(WWDG_CR[6:0] - WWDG_CFR[6:0])/36 (us)&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;下窗口时间 T_max = 4096 &lt;em&gt; (2^WDGTB)&lt;/em&gt;(WWDG_CR[6:0] - 0x40)/36 (us)&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 窗口看门狗[操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-04T13:35:59.000Z" itemprop="datePublished">2012-07-04</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。</div>
+
+<ul>
+<li>独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。</li>
+<li>窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。<div>窗口看门狗的上窗口就是配置寄存器WWDG-&gt;CFR里设定的W[6:0],下窗口是固定的0x40；当窗口看门狗的计数器在上窗口值之外，或是低于下窗口值都会产生复位。</div><div> </div><div>上窗口的值可以只有设定，7位二进制数最大只可以设定为127，最小又必须大于下窗口的0x40，所以其取值范围为40~127;&nbsp;</div><div> </div><div>窗口看门狗的核心是一个7位的递减计数器，只有当计数器的值在窗口范围内在可以执行喂狗操作，即更新此计数器的值，否则将导致复位操作。 在配置寄存器WWDG-&gt;CFR中可以为此计数器设定时钟分频系数，确定这个计数器可以定时的时间范围，从而确定窗口的时间范围。</div><div> </div><div>窗口看门狗的时钟来自于PCLK1，在时钟配置中，其频率为外部时钟经倍频器后的二分频时钟，即为36MHz，根据手册可以知道其定时时间计算方法：</div><div>&nbsp; &nbsp; &nbsp; &nbsp;上窗口时间 T_min = 4096 <em> (2^WDGTB)</em>(WWDG_CR[6:0] - WWDG_CFR[6:0])/36 (us)</div><div>&nbsp; &nbsp; &nbsp; &nbsp;下窗口时间 T_max = 4096 <em> (2^WDGTB)</em>(WWDG_CR[6:0] - 0x40)/36 (us)</div><div> </div><div></div></li>
+</ul>
+<a id="more"></a>
+<p>36Mhz下相关窗口看门狗的喂狗时间范围：<br><div> </div><div><table border="1" cellpadding="1" cellspacing="1" style="width: 500px; ">        <thead>            <tr>                <th scope="col">                    WDGTB（计数器分频值）</th>                <th>                    最早喂狗时间/us</th>                <th>                    最晚喂狗时间/ms</th>            </tr>        </thead>        <tbody>            <tr>                <td style="text-align: center; ">0</td>                <td style="text-align: center; ">113</td>                <td style="text-align: center; ">7.28</td>            </tr>            <tr>                <td style="text-align: center; ">1</td>                <td style="text-align: center; ">227</td>                <td style="text-align: center; ">14.56</td>            </tr>            <tr>                <td style="text-align: center; ">2</td>                <td style="text-align: center; ">455</td>                <td style="text-align: center; ">29.12</td>            </tr>            <tr>                <td style="text-align: center; ">3</td>                <td style="text-align: center; ">910</td>                <td style="text-align: center; ">58.25</td>            </tr>        </tbody>    </table><div> </div><div><strong>本例直接寄存器实现4种测试模式，测试窗口看门狗的复位原理。</strong></div><div></div></div></p>
+<ul>
+<li>MODE_1 0 &nbsp; // 在30ms时喂狗，在窗口范围内喂狗，LED灯闪烁</li>
+<li>MODE_2 0 &nbsp; // 在10ms时喂狗，在窗口范围外导致复位 ，LED灯常亮</li>
+<li>MODE_3 0 &nbsp; // 在100ms时喂狗，在窗口范围外喂狗导致复位</li>
+<li><p>MODE_4 1 &nbsp; // 主函数不执行喂狗，开启提前唤醒中断，在WWDG中断函数中喂狗<div><strong><strong style="text-align: left; ">库函数实现在提前唤醒中断中，喂狗操作，PA4口LED正常闪烁。当外部中断发生（按下PA0按键），长时间不喂狗，引发窗口看门狗复位。</strong></strong></div><div> </div><div><strong>直接操作寄存器</strong></div><div> </div><div>相关寄存器如下：</div><div> </div><div>控制寄存器WWDG-&gt;CR： 低8位有效。第8位为WDGA,看门狗激活位。低7位[6:0]为看门狗计数器的计数值。</div><div> </div><div>配置寄存器WWDG-&gt;CFR：</div><div>低十位有效。</div><div>第10位为EWI：提醒唤起中断。 此位置1，当计数器值到达0x40时，将产生中断。</div><div>第8，9位WDGTB:为计数器分频系数设置为：</div></p>
+</li>
+<li><p>00: CK计时器时钟(PCLK1除以4096)除以1&nbsp;&nbsp;&nbsp;&nbsp; 01: CK计时器时钟(PCLK1除以4096)除以2</p>
+</li>
+<li>10: CK计时器时钟(PCLK1除以4096)除以4 &nbsp;&nbsp;&nbsp;&nbsp;11: CK计时器时钟(PCLK1除以4096)除以8<div>低7位[6:0]:为窗口值。</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">&nbsp;&nbsp;</span><span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="noopener">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “wdg.h”     </pre></div></li>
+</ul>
+<p>#define LED1 PAout(4)</p>
+<p>//选择测试模式，一次置1一个测试</p>
+<p>#define MODE_1 0   // 在30ms时喂狗，在窗口范围内喂狗</p>
+<p>#define MODE_2 0   // 在10ms时喂狗，在窗口范围外导致复位</p>
+<p>#define MODE_3 0   // 在100ms时喂狗，在窗口范围外喂狗导致复位</p>
+<p>#define MODE_4 1   // 主函数不执行喂狗，开启提前唤醒中断，在WWDG中断函数中喂狗</p>
+<p>void Gpio_Init(void);</p>
+<p>int main(void)<br>{                  </p>
+<pre><code>Rcc_Init(9);              //系统时钟设置
+
+Wwdg_Init(127,100,3);  //设定为只能在24.57ms~58.25ms内喂狗,时间计算方法参见wdg.c Wwdg_Init();
+
+#if MODE_4
+    Nvic_Init(0,0,WWDG_IRQChannel,0);      //设置抢占优先级为0，响应优先级为0，中断分组为0
+#endif
+
+Gpio_Init();
+
+while(1){
+
+    LED1 = !LED1;
+
+    #if MODE_1
+        delay(30000);      //延时30ms后喂狗，LED闪烁
+        Wwdg_Feed();    //喂狗
+    #elif MODE_2
+        delay(10000);      //延时10ms,引发窗口看门狗复位，LED不闪烁
+        Wwdg_Feed();    //喂狗
+    #elif MODE_3
+        delay(100000);      //延时100ms,引发窗口看门狗复位，LED不闪烁
+        Wwdg_Feed();    //喂狗
+    #elif MODE_4
+        delay(30000);      //延时30ms后在中断中喂狗，LED闪烁
+    #endif
+
+}        
+</code></pre><p>}</p>
+<p>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR|=1&lt;&lt;2;    //使能PORTA时钟                   </p>
+<pre><code>GPIOA-&amp;gt;CRL&amp;amp;=0x0000FFFF; // PA0~3设置为浮空输入，PA4~7设置为推挽输出
+GPIOA-&amp;gt;CRL|=0x33334444; 
+</code></pre><p>}<br><div>User/stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”</pre></div></p>
+<p>extern void Wwdg_Feed(void);</p>
+<p>void WWDG_IRQHandler(void)<br>{<br>    //必须判断 计数值小于 窗口值之后才可以喂狗,不加此判断直接喂狗会导致复位，原因不详<br>    if((WWDG-&gt;CR&amp;0x7F) &lt; (WWDG -&gt; CFR&amp;0x7F)){<br>        Wwdg_Feed();<br>    }</p>
+<pre><code>WWDG-&amp;gt;SR = 0x00;  //清除中断标志位
+</code></pre><p>} <div style="text-align: left;">Library/src/wdg.c 和 &nbsp;Library/inc/wdg.h 参见&nbsp;<a href="http://www.ichanging.org/stm32-iwdg.html" target="_blank" rel="noopener">stm32 独立看门狗[操作寄存器+库函数]</a></div><div> </div><div>在中断函数 stm32f10x_it.c WWDG_IRQChannel（）中&nbsp;必须判断 计数值小于 窗口值之后才可以喂狗,不加此判断直接喂狗会导致复位，原因不详。</div><div> </div><div>此中断是在计数器计数到0x40时触发，必然会小于窗口设定值 ，除非是此中断不止在此条件下触发，启动WWDG计数器可能也会导致中断。猜测一下而已 。。。</div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”</pre></div></p>
+<p>#include “stdio.h”</p>
+<p>#define     PRINTF_ON  1</p>
+<p>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void NVIC_Configuration(void);<br>void USART_Configuration(void);<br>void WWDG_Configuration(void);<br>void EXTI_Configuration(void);</p>
+<p>int main(void)<br>{<br>      RCC_Configuration();<br>      GPIO_Configuration();<br>    NVIC_Configuration();<br>    USART_Configuration();<br>    EXTI_Configuration();<br>    WWDG_Configuration();</p>
+<pre><code>while(1){    
+    if(RCC_GetFlagStatus(RCC_FLAG_WWDGRST) != RESET)
+    {
+        printf(&quot;\r\n The Stm32 has been reset by WWDG .\r\n&quot;);
+        RCC_ClearFlag();
+    }
+}
+</code></pre><p>}</p>
+<p>void EXTI_Configuration(void)<br>{<br>    EXTI_InitTypeDef EXTI_InitStructure;</p>
+<pre><code>EXTI_InitStructure.EXTI_Line = EXTI_Line0;
+EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+EXTI_Init(&amp;amp;EXTI_InitStructure);
+
+GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource0);
+</code></pre><p>}</p>
+<p>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;<br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;<br>      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);</p>
+<pre><code>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;            
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure);      
+
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;            
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure); 
+
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;            
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure); 
+</code></pre><p>}</p>
+<p>void WWDG_Configuration(void)<br>{<br>    WWDG_SetPrescaler(WWDG_Prescaler_8);<br>    WWDG_Enable(0x7F);<br>    WWDG_ClearFlag();<br>    WWDG_EnableIT();<br>}</p>
+<p>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;</p>
+<pre><code>  /* 复位系统时钟设置*/
+  RCC_DeInit();
+  /* 开启HSE*/
+  RCC_HSEConfig(RCC_HSE_ON);
+  /* 等待HSE起振并稳定*/
+  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+/* 判断HSE起是否振成功，是则进入if()内部 */
+  if(HSEStartUpStatus == SUCCESS)
+  {
+    /* 选择HCLK（AHB）时钟源为SYSCLK 1分频 */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
+    /* 选择PCLK2时钟源为 HCLK（AHB） 1分频 */
+    RCC_PCLK2Config(RCC_HCLK_Div1); 
+    /* 选择PCLK1时钟源为 HCLK（AHB） 2分频 */
+    RCC_PCLK1Config(RCC_HCLK_Div2);
+    /* 设置FLASH延时周期数为2 */
+    FLASH_SetLatency(FLASH_Latency_2);
+    /* 使能FLASH预取缓存 */
+    FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+    /* 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz * 9 = 72MHz */
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+    /* 使能PLL */ 
+    RCC_PLLCmd(ENABLE);
+    /* 等待PLL输出稳定 */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+    /* 选择SYSCLK时钟源为PLL */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    /* 等待PLL成为SYSCLK时钟源 */
+    while(RCC_GetSYSCLKSource() != 0x08);
+  } 
+  /* 打开APB2总线上的GPIOA时钟*/
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1, ENABLE);
+
+RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR|RCC_APB1Periph_BKP|RCC_APB1Periph_WWDG, ENABLE);
+</code></pre><p>}</p>
+<p>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;</p>
+<pre><code>USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;
+USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;
+USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;                                                                                                                                                      
+USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;
+USART_ClockInit(USART1 , &amp;amp;USART_ClockInitStructure);
+
+USART_InitStructure.USART_BaudRate = 9600;
+USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+USART_InitStructure.USART_StopBits = USART_StopBits_1;
+USART_InitStructure.USART_Parity = USART_Parity_No;
+USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;
+USART_Init(USART1,&amp;amp;USART_InitStructure);
+
+ USART_Cmd(USART1,ENABLE);
+</code></pre><p>}</p>
+<p>void NVIC_Configuration(void)<br>{<br>    NVIC_InitTypeDef NVIC_InitStructure;</p>
+<pre><code>NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+NVIC_Init(&amp;amp;NVIC_InitStructure);
+
+NVIC_InitStructure.NVIC_IRQChannel = WWDG_IRQn;
+NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+NVIC_Init(&amp;amp;NVIC_InitStructure);
+</code></pre><p>}</p>
+<p>#if     PRINTF_ON</p>
+<p>int fputc(int ch,FILE *f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}</p>
+<p>#endif<br><div>stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”</pre></div></p>
+<p>#include “stdio.h”</p>
+<p>extern vu32 Display;</p>
+<p>void WWDG_IRQHandler(void)<br>{<br>    WWDG_SetCounter(0x7F);<br>    GPIO_WriteBit(GPIOA,GPIO_Pin_4,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_4)));<br>    WWDG_ClearFlag();<br>}<br></p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&text=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&is_video=false&description=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 窗口看门狗[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&title=stm32 窗口看门狗[操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/&name=stm32 窗口看门狗[操作寄存器+库函数]&description=&lt;div&gt;stm32有两个看门狗，独立看门狗和窗口看门狗，其实两者的功能是类似的，只是喂狗的限制时间不同。&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;独立看门狗是限制喂狗时间在0-x内，x由你的相关寄存器决定。喂狗的时间不能过晚。&lt;/li&gt;
+&lt;li&gt;窗口看门狗，所以称之为窗口就是因为其喂狗时间是一个有上下限的范围内，你可以通过设定相关寄存器，设定其上限时间和下限时间。喂狗的时间不能过早也不能过晚。&lt;div&gt;窗口看门狗的上窗口就是配置寄存器WWDG-&amp;gt;CFR里设定的W[6:0],下窗口是固定的0x40；当窗口看门狗的计数器在上窗口值之外，或是低于下窗口值都会产生复位。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;上窗口的值可以只有设定，7位二进制数最大只可以设定为127，最小又必须大于下窗口的0x40，所以其取值范围为40~127;&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;窗口看门狗的核心是一个7位的递减计数器，只有当计数器的值在窗口范围内在可以执行喂狗操作，即更新此计数器的值，否则将导致复位操作。 在配置寄存器WWDG-&amp;gt;CFR中可以为此计数器设定时钟分频系数，确定这个计数器可以定时的时间范围，从而确定窗口的时间范围。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;窗口看门狗的时钟来自于PCLK1，在时钟配置中，其频率为外部时钟经倍频器后的二分频时钟，即为36MHz，根据手册可以知道其定时时间计算方法：&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;上窗口时间 T_min = 4096 &lt;em&gt; (2^WDGTB)&lt;/em&gt;(WWDG_CR[6:0] - WWDG_CFR[6:0])/36 (us)&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;下窗口时间 T_max = 4096 &lt;em&gt; (2^WDGTB)&lt;/em&gt;(WWDG_CR[6:0] - 0x40)/36 (us)&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

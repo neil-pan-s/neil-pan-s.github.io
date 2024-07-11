@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="&amp;nbsp; &amp;nbsp; &amp;nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。参见&amp;nbsp;stm32 BKP寄存器操作&amp;nbsp;。 单片机掉电保护通常可采用以下三种方法：   一是加接不间断电源，让整个系统在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单片机读取EEPROM(AT24C02)">
+<meta property="og:url" content="http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp; &amp;nbsp; &amp;nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。参见&amp;nbsp;stm32 BKP寄存器操作&amp;nbsp;。 单片机掉电保护通常可采用以下三种方法：   一是加接不间断电源，让整个系统在">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/05/231203730.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/05/1787393783.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/05/4004612757.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.249Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="单片机读取EEPROM(AT24C02)">
+<meta name="twitter:description" content="&amp;nbsp; &amp;nbsp; &amp;nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。参见&amp;nbsp;stm32 BKP寄存器操作&amp;nbsp;。 单片机掉电保护通常可采用以下三种方法：   一是加接不间断电源，让整个系统在">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/05/231203730.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>单片机读取EEPROM(AT24C02)</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/06/18/uln2003-驱动-继电器及步进电机/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/05/12/单片机4-4矩阵键盘/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&text=单片机读取EEPROM(AT24C02)"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&is_video=false&description=单片机读取EEPROM(AT24C02)"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=单片机读取EEPROM(AT24C02)&body=Check out this article: http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&name=单片机读取EEPROM(AT24C02)&description=&lt;div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，&lt;span style=&quot;text-align: left; &quot;&gt;在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。&lt;/span&gt;&lt;span style=&quot;text-align: left; &quot;&gt;在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。&lt;/span&gt;参见&amp;nbsp;&lt;a href=&quot;/stm32-bkp.html&quot;&gt;stm32 BKP寄存器操作&lt;/a&gt;&amp;nbsp;。&lt;/div&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;单片机掉电保护通常可采用以下三种方法：&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;一是加接不间断电源，让整个系统在掉电时继续工作。&lt;/li&gt;
+&lt;li&gt;二是采用备份电源，掉电后保护系统中全部或部分数据存储单元的内容；&lt;/li&gt;
+&lt;li&gt;三是采用EEPROM来保存数据。&lt;div&gt;由于第一种方法体积大、成本高，对单片机系统来说，不宜采用。第二种方法是根据实际需要，掉电时保存一些必要的数据，使系统在电源恢复后，能够继续执行程序。EEPROM既具有ROM掉电不丢失数据的特点，又有RAM随机读写的特点。所以使用EEPROM AT24C02实现掉电保护是最可行的一种方式。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;AT24C02是一种I2C总线结构的芯片。&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/05/231203730.png&quot; alt=&quot;QQ截图20120518125241.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;I2C总线协议如下：&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol&gt;
+&lt;li&gt;只有在在总线空闲时才可以启动数据发送。&lt;/li&gt;
+&lt;li&gt;在数据传送过程中，当时钟线为高电平时，数据线上必须保持稳定，不允许有跳变；时钟线为高电平时，数据线的任何电平跳变都视为是总线起始或是结束信号。&lt;div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &lt;strong&gt;起始信号：&lt;/strong&gt;SCL 线是高电平时，SDA 线从高电平向低电平切换；&lt;/div&gt;&lt;div&gt;　　&lt;strong&gt;停止信号：&lt;/strong&gt;SCL 线是高电平时，SDA 线由低电平向高电平切换；&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;发送起始信号后，可以以字节为单位发送数据，每个字节必须为8位，高位在前，低位在后。主设备每个字节发送后，必须接收从设备的一个应答信号ACK，即在第9个时钟周期，接收SDA上的低电平。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;主设备发送起始信号后，第一个发送的字节必须是器件地址码，第二个字节为期间单元码，用于实现选择所操作的器件的内部单元。第三个字节开始传送数据。&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        单片机读取EEPROM(AT24C02)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-05-18T05:30:38.000Z" itemprop="datePublished">2012-05-18</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div><div>&nbsp; &nbsp; &nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，<span style="text-align: left; ">在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。</span><span style="text-align: left; ">在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。</span>参见&nbsp;<a href="/stm32-bkp.html">stm32 BKP寄存器操作</a>&nbsp;。</div></div><div> </div><div>单片机掉电保护通常可采用以下三种方法：</div>
+
+<ul>
+<li>一是加接不间断电源，让整个系统在掉电时继续工作。</li>
+<li>二是采用备份电源，掉电后保护系统中全部或部分数据存储单元的内容；</li>
+<li>三是采用EEPROM来保存数据。<div>由于第一种方法体积大、成本高，对单片机系统来说，不宜采用。第二种方法是根据实际需要，掉电时保存一些必要的数据，使系统在电源恢复后，能够继续执行程序。EEPROM既具有ROM掉电不丢失数据的特点，又有RAM随机读写的特点。所以使用EEPROM AT24C02实现掉电保护是最可行的一种方式。</div><div>&nbsp; &nbsp;AT24C02是一种I2C总线结构的芯片。</div><div><img src="/uploads/2012/05/231203730.png" alt="QQ截图20120518125241.png"></div><div> </div><div>I2C总线协议如下：</div></li>
+</ul>
+<ol>
+<li>只有在在总线空闲时才可以启动数据发送。</li>
+<li>在数据传送过程中，当时钟线为高电平时，数据线上必须保持稳定，不允许有跳变；时钟线为高电平时，数据线的任何电平跳变都视为是总线起始或是结束信号。<div><div>&nbsp; &nbsp; &nbsp; <strong>起始信号：</strong>SCL 线是高电平时，SDA 线从高电平向低电平切换；</div><div>　　<strong>停止信号：</strong>SCL 线是高电平时，SDA 线由低电平向高电平切换；</div><div>&nbsp; &nbsp;发送起始信号后，可以以字节为单位发送数据，每个字节必须为8位，高位在前，低位在后。主设备每个字节发送后，必须接收从设备的一个应答信号ACK，即在第9个时钟周期，接收SDA上的低电平。</div><div>&nbsp; &nbsp;主设备发送起始信号后，第一个发送的字节必须是器件地址码，第二个字节为期间单元码，用于实现选择所操作的器件的内部单元。第三个字节开始传送数据。</div></div></li>
+</ol>
+<a id="more"></a>
+<div>&nbsp; &nbsp;器件地址码格式如下：</div><div><img src="/uploads/2012/05/1787393783.png" alt="QQ截图20120518131152.png"></div><div> </div><div>其中前四位是器件的类型，有固定的定义，EPROM为1010；后三位为片选，同类器件可以接8个；R/W为读写控制，R/W=1为从总线读取信息，R/W=0为从总线写入信息。</div><div> </div><div>I2C 读指定单元时序：</div><div> </div><div>开始信号 + 器件地址码（R/W = 0 写） + ACK（接收应答信号）+待读取单元地址+ACK+开始信号+器件地址码（R/W = 1 读） + ACK+读取8位数据+停止信号</div><div> </div><div>I2C 指定单元写时序：</div><div> </div><div>开始信号 + 器件地址码（R/W = 0 写） + ACK（接收应答信号）+待写入单元地址+ACK+写入8位数据&nbsp;+ ACK+停止信号</div><div> </div><div>读写时序时间控制：</div><div><img src="/uploads/2012/05/4004612757.png" alt="QQ截图20120518125424.png"></div><div> </div><div>单片机读取EEPROM(AT24C02)代码：</div><div>at24c02.c</div><div><pre class="brush:cpp;">       #include &lt;reg52.h&gt;<br><br>       #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    #define ADDRS_R  0xA1     //读操作地址<br>    #define ADDRS_W  0xA0     //写操作地址<br><br>    sbit I2C_SCL =  P2^0;<br>    sbit I2C_SDL =  P2^1;<br><br>    sbit I2C_ACK_Led = P2^7;    //接收到正确的ACK相应（低电平），则灯不亮（低电平亮）<br><br>    void  I2C_Delay(uchar n);<br>    void  I2C_Start();<br>    void  I2C_End();<br>    void  I2C_ACK();<br>    void  I2C_WriteByte(uchar var);<br>    uchar I2C_ReadByte();<br>    uchar I2C_Read(uchar addr);<br>    void I2C_Write(uchar addr,uchar var);<br><br>    void I2C_Delay(uchar n)<br>    {<br>        while(–n);                // 2us一次<br>    }<br><br>    void I2C_Start()<br>    {<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 0;<br>        I2C_Delay(1);<br><br>        I2C_SCL = 0;           //每次执行完读写操作后都，拉低SCL ，防止时序混乱<br>        I2C_Delay(1);<br><br>    }<br><br>    void I2C_End()<br>    {<br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>        I2C_SDL = 0;<br>        I2C_Delay(1);<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        I2C_SDL = 1;<br>        I2C_Delay(1);<br>    }<br><br>    void I2C_ACK()                           //EEPROM  字节写入相应，低电平正确<br>    {<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>        I2C_SCL = 1;<br>        I2C_Delay(1);<br>        while(I2C_SDL == 1){ I2C_ACK_Led = 0; }<br>        I2C_ACK_Led = 1;<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br><br>    }<br><br>    void I2C_WriteByte(uchar var)            //单字节写入函数<br>    {<br>        uchar i;<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            I2C_SCL = 0;<br>            I2C_Delay(1);<br>            if(var &amp; 0x80) I2C_SDL = 1; else I2C_SDL = 0;<br>            I2C_Delay(1);<br>            I2C_SCL = 1;<br>            I2C_Delay(1);<br>            var &lt;&lt;=  1;<br>        }<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br>    }<br><br>    uchar I2C_ReadByte()                    //单字节读取函数<br>    {<br>        uchar var,i;<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            var &lt;&lt;= 1;<br>            I2C_SCL = 0;<br>            I2C_Delay(1);<br>            I2C_SCL = 1;<br>            I2C_Delay(1);<br>            if(I2C_SDL == 1)  var |= 0x01;<br>            I2C_Delay(1);<br>        }<br><br>        I2C_SCL = 0;<br>        I2C_Delay(1);<br><br>        return var;<br><br>    }<br><br>    void I2C_Write(uchar addr,uchar var)   //EEPROM 单元写入函数<br>    {<br>           I2C_Start();<br><br>        I2C_WriteByte(ADDRS_W);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(addr);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(var);<br><br>        I2C_ACK();<br><br>        I2C_End();<br><br>    }<br><br>    uchar I2C_Read(uchar addr)         //EEPROM 单元读取函数<br>    {<br>        uchar var;<br><br>        I2C_Start();<br><br>        I2C_WriteByte(ADDRS_W);<br><br>        I2C_ACK();<br><br>        I2C_WriteByte(addr);<br><br>        I2C_ACK();<br><br>        I2C_Start();<br><br>        I2C_WriteByte(ADDRS_R);<br><br>        I2C_ACK();<br><br>        var = I2C_ReadByte();<br><br>        I2C_End();<br><br>        return var;<br><br>    }</pre></div><div>在程序中调用读写函数即可，程序调试使用的是11.0592Mhz的晶振。</div><div> </div><div> </div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&text=单片机读取EEPROM(AT24C02)"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&is_video=false&description=单片机读取EEPROM(AT24C02)"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=单片机读取EEPROM(AT24C02)&body=Check out this article: http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&title=单片机读取EEPROM(AT24C02)"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/05/18/单片机读取EEPROM-AT24C02/&name=单片机读取EEPROM(AT24C02)&description=&lt;div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; 在 arm cortex-m3中 有专门的断电保护寄存器（BKP寄存器） ，&lt;span style=&quot;text-align: left; &quot;&gt;在主电源切断或系统产生复位时间时，BKP寄存器仍然可以再备用电源的支持下保持其内容。&lt;/span&gt;&lt;span style=&quot;text-align: left; &quot;&gt;在实际应用中可以存入重要数据，防止被恶意查看，或用于断电回复。&lt;/span&gt;参见&amp;nbsp;&lt;a href=&quot;/stm32-bkp.html&quot;&gt;stm32 BKP寄存器操作&lt;/a&gt;&amp;nbsp;。&lt;/div&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;单片机掉电保护通常可采用以下三种方法：&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;一是加接不间断电源，让整个系统在掉电时继续工作。&lt;/li&gt;
+&lt;li&gt;二是采用备份电源，掉电后保护系统中全部或部分数据存储单元的内容；&lt;/li&gt;
+&lt;li&gt;三是采用EEPROM来保存数据。&lt;div&gt;由于第一种方法体积大、成本高，对单片机系统来说，不宜采用。第二种方法是根据实际需要，掉电时保存一些必要的数据，使系统在电源恢复后，能够继续执行程序。EEPROM既具有ROM掉电不丢失数据的特点，又有RAM随机读写的特点。所以使用EEPROM AT24C02实现掉电保护是最可行的一种方式。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;AT24C02是一种I2C总线结构的芯片。&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/05/231203730.png&quot; alt=&quot;QQ截图20120518125241.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;I2C总线协议如下：&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol&gt;
+&lt;li&gt;只有在在总线空闲时才可以启动数据发送。&lt;/li&gt;
+&lt;li&gt;在数据传送过程中，当时钟线为高电平时，数据线上必须保持稳定，不允许有跳变；时钟线为高电平时，数据线的任何电平跳变都视为是总线起始或是结束信号。&lt;div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &lt;strong&gt;起始信号：&lt;/strong&gt;SCL 线是高电平时，SDA 线从高电平向低电平切换；&lt;/div&gt;&lt;div&gt;　　&lt;strong&gt;停止信号：&lt;/strong&gt;SCL 线是高电平时，SDA 线由低电平向高电平切换；&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;发送起始信号后，可以以字节为单位发送数据，每个字节必须为8位，高位在前，低位在后。主设备每个字节发送后，必须接收从设备的一个应答信号ACK，即在第9个时钟周期，接收SDA上的低电平。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;主设备发送起始信号后，第一个发送的字节必须是器件地址码，第二个字节为期间单元码，用于实现选择所操作的器件的内部单元。第三个字节开始传送数据。&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

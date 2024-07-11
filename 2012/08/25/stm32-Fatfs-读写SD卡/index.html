@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。 &amp;nbsp; &amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; FatFs (http://elm-chan.org/fsw/ff/00index_e.html)是一个通用的文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 Fatfs 读写SD卡">
+<meta property="og:url" content="http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。 &amp;nbsp; &amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; FatFs (http://elm-chan.org/fsw/ff/00index_e.html)是一个通用的文">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/08/3282268549.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/08/2602045677.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/08/2998887021.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/08/3359893836.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/08/1222938971.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.218Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 Fatfs 读写SD卡">
+<meta name="twitter:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。 &amp;nbsp; &amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; FatFs (http://elm-chan.org/fsw/ff/00index_e.html)是一个通用的文">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/08/3282268549.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 Fatfs 读写SD卡</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/09/09/stm32-驱动-TFT-LCD/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/27/stm32-最小系统/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&text=stm32 Fatfs 读写SD卡"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&is_video=false&description=stm32 Fatfs 读写SD卡"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 Fatfs 读写SD卡&body=Check out this article: http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&name=stm32 Fatfs 读写SD卡&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;img src=&quot;/uploads/2012/08/3282268549.png&quot; alt=&quot;QQ截图20120825031714.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; FatFs (&lt;a href=&quot;http://elm-chan.org/fsw/ff/00index_e.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://elm-chan.org/fsw/ff/00index_e.html&lt;/a&gt;)是一个通用的文件系统模块，用于在小型嵌入式系统中实现FAT文件系统。 FatFs 的编写遵循ANSI C，因此不依赖于硬件平台。它可以嵌入到便宜的微控制器中，如 8051, PIC, AVR, SH, Z80, H8, ARM 等等，不需要做任何修改。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1. SD卡/TF卡 硬件接口&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SD卡有两种操作接口，SDIO和SPI。 使用SDIO口的速度比较快,SPI的速度比较慢 。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;SD卡引脚描述如下： &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;SD卡SPI接法如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/08/2602045677.png&quot; alt=&quot;sd引脚定义.png&quot;&gt;&amp;nbsp;&lt;img src=&quot;/uploads/2012/08/2998887021.png&quot; alt=&quot;stm32_sd.png&quot;&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;我使用的是正点原子的开发板，所以采用的是SPI接口的模式。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;TF卡SDIO 模式和SPI模式 引脚定义：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/08/3359893836.png&quot; alt=&quot;spi-tf.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;可以发现Micro SD卡只有8个引脚是因为比SD卡少了一个Vss。使用TF转SD的卡套套在Micro SD卡上，这样一来大小就和SD卡一样大，这时候卡套上的9个引脚就和SD卡一样了，你可以完全当做SD卡来操作。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;2. SD卡底层驱动&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SD卡的操作比较复杂，需要多看看一些文档 。 这里附上SD底层驱动代码，代码说明详见注释&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Sd卡SPi操作底层代码 ：&amp;nbsp;&lt;a href=&quot;/uploads/2012/08/1162003597.c&quot; title=&quot;sdcard.c&quot;&gt;sdcard.c&lt;/a&gt;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;/uploads/2012/08/2794809198.h&quot; title=&quot;sdcard.h&quot;&gt;sdcard.h&lt;/a&gt;&lt;/div&gt;&lt;div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 Fatfs 读写SD卡
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-08-24T20:06:50.000Z" itemprop="datePublished">2012-08-25</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。</div><div> </div><div>&nbsp; &nbsp;&nbsp;<img src="/uploads/2012/08/3282268549.png" alt="QQ截图20120825031714.png"></div><div> </div><div>&nbsp; &nbsp; FatFs (<a href="http://elm-chan.org/fsw/ff/00index_e.html" target="_blank" rel="noopener">http://elm-chan.org/fsw/ff/00index_e.html</a>)是一个通用的文件系统模块，用于在小型嵌入式系统中实现FAT文件系统。 FatFs 的编写遵循ANSI C，因此不依赖于硬件平台。它可以嵌入到便宜的微控制器中，如 8051, PIC, AVR, SH, Z80, H8, ARM 等等，不需要做任何修改。</div><div> </div><div>1. SD卡/TF卡 硬件接口</div><div> </div><div>SD卡有两种操作接口，SDIO和SPI。 使用SDIO口的速度比较快,SPI的速度比较慢 。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;SD卡引脚描述如下： &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SD卡SPI接法如下：</div><div><img src="/uploads/2012/08/2602045677.png" alt="sd引脚定义.png">&nbsp;<img src="/uploads/2012/08/2998887021.png" alt="stm32_sd.png"></div><div>&nbsp;我使用的是正点原子的开发板，所以采用的是SPI接口的模式。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;TF卡SDIO 模式和SPI模式 引脚定义：</div><div> </div><div><img src="/uploads/2012/08/3359893836.png" alt="spi-tf.png"></div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;可以发现Micro SD卡只有8个引脚是因为比SD卡少了一个Vss。使用TF转SD的卡套套在Micro SD卡上，这样一来大小就和SD卡一样大，这时候卡套上的9个引脚就和SD卡一样了，你可以完全当做SD卡来操作。</div><div> </div><div>2. SD卡底层驱动</div><div> </div><div>SD卡的操作比较复杂，需要多看看一些文档 。 这里附上SD底层驱动代码，代码说明详见注释</div><div> </div><div>Sd卡SPi操作底层代码 ：&nbsp;<a href="/uploads/2012/08/1162003597.c" title="sdcard.c">sdcard.c</a>&nbsp;&nbsp;<a href="/uploads/2012/08/2794809198.h" title="sdcard.h">sdcard.h</a></div><div><a id="more"></a></div><div><div>3. Fatfs 移植</div><div> </div><div><div>FatFs 软件包中相关文件：</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ffconf.h&nbsp;&nbsp;&nbsp;&nbsp; FatFs 模块配置文件</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ff.h &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;FatFs 和应用模块公用的包含文件</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ff.c &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;FatFs 模块</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diskio.h &nbsp; &nbsp; FatFs and disk I/O 模块公用的包含文件</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;integer.h &nbsp; 数据类型定义</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;option &nbsp; &nbsp; &nbsp;可选的外部功能</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diskio.c &nbsp;&nbsp;&nbsp;&nbsp;FatFs 与disk I/O 模块接口层文件(不属于 FatFs 需要由用户提供)</div><div> </div><div><div>FatFs 配置，文件系统的配置项都在 ffconf.h 文件之中：</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1) _FS_TINY ：这个选项在R0.07 版本之中开始出现，在之前的版本都是以独立的文件出现，现在通过一个宏来修改使用起来更方便；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2) _FS_MINIMIZE、_FS_READONLY、_USE_STRFUNC、_USE_MKFS、_USE_FORWARD 这些宏是用来对文件系统进行裁剪</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(3) _CODE_PAGE ：本选项用于设置语言码的类型</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(4) _USE_LFN ：取值为0~3，主要用于长文件名的支持及缓冲区的动态分配：</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;0：不支持长文件名；</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;1：支持长文件名存储的静态分配，一般是存储在BSS 段；</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2：支持长文件名存储的动态分配，存储在栈上；</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;3：支持长文件名存储的动态分配，存储在堆上。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(5) _MAX_LFN ：可存储长文件的最大长度，其值一般为（12~255），但是缓冲区一般占(_MAX_LFN + 1) <em> 2 bytes；</em></div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(6) _LFN_UNICODE ：为1 时才支持unicode 码；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(7) _FS_RPATH ：R0.08a 版本改动配置项，取值范围0~2：</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0：去除相对路径支持和函数；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1：开启相对路径并且开启f_chdrive()和f_chdir()两个函数；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2：在1 的基础上添加f_getcwd()函数。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(8) _VOLUMES ：支持的逻辑设备数目；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(9) _MAX_SS ：扇区缓冲的最大值，其值一般为512；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(10) _MULTI_PARTITION：定义为1 时，支持磁盘多个分区；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(11) _USE_ERASE ：R0.08a 新加入的配置项，设置为1 时，支持扇区擦除；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(12) _WORD_ACCESS ：如果定义为1，则可以使用word 访问；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(13) _FS_REENTRANT ：定义为1 时，文件系统支持重入，但是需要加上跟操作系统信号量相关的几个函数，函数在syscall.c 文件中；</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(14) _FS_SHARE ：文件支持的共享数目。</div></div><div> </div><div><div>Fatfs 开源文件系统 从R0.07e 之后 版本开始就不再提供底层接口文件 diskio.c 模板，这里附上根据</div><div>以上SD卡底层驱动对应的 diskio.c 源码：</div><div> </div><div><pre class="brush:cpp;">#include “common.h”<br>/———————————————————————–<em>/<br>/</em> Inidialize a Drive                                                    <em>/<br><br>DSTATUS disk_initialize (<br>    BYTE drv                /</em> Physical drive nmuber (0..) <em>/<br>)<br>{<br>    u8 state;<br><br>    if(drv)<br>    {<br>        return STA_NOINIT;  //仅支持磁盘0的操作<br>    }<br><br>    state = SD_Init();<br>    if(state == STA_NODISK)<br>    {<br>        return STA_NODISK;<br>    }<br>    else if(state != 0)<br>    {<br>        return STA_NOINIT;  //其他错误：初始化失败<br>    }<br>    else<br>    {<br>        return 0;           //初始化成功<br>    }<br>}<br><br>/</em>———————————————————————–<em>/<br>/</em> Return Disk Status                                                    <em>/<br><br>DSTATUS disk_status (<br>    BYTE drv        /</em> Physical drive nmuber (0..) <em>/<br>)<br>{<br>    if(drv)<br>    {<br>        return STA_NOINIT;  //仅支持磁盘0操作<br>    }<br><br>    //检查SD卡是否插入<br>    if(!SD_DET())<br>    {<br>        return STA_NODISK;<br>    }<br>    return 0;<br>}<br><br>/</em>———————————————————————–<em>/<br>/</em> Read Sector(s)                                                        <em>/<br><br>DRESULT disk_read (<br>    BYTE drv,        /</em> Physical drive nmuber (0..) <em>/<br>    BYTE </em>buff,        /<em> Data buffer to store read data </em>/<br>    DWORD sector,    /<em> Sector address (LBA) </em>/<br>    BYTE count        /<em> Number of sectors to read (1..255) </em>/<br>)<br>{<br>    u8 res=0;<br>    if (drv || !count)<br>    {<br>        return RES_PARERR;  //仅支持单磁盘操作，count不能等于0，否则返回参数错误<br>    }<br>    if(!SD_DET())<br>    {<br>        return RES_NOTRDY;  //没有检测到SD卡，报NOT READY错误<br>    }<br><br>    if(count==1)            //1个sector的读操作<br>    {<br>        res = SD_ReadSingleBlock(sector, buff);<br>    }<br>    else                    //多个sector的读操作<br>    {<br>        res = SD_ReadMultiBlock(sector, buff, count);<br>    }<br>    /<em><br>    do<br>    {<br>        if(SD_ReadSingleBlock(sector, buff)!=0)<br>        {<br>            res = 1;<br>            break;<br>        }<br>        buff+=512;<br>    }while(–count);                                         
+    </em>/<br>    //处理返回值，将SPI_SD_driver.c的返回值转成ff.c的返回值<br>    if(res == 0x00)<br>    {<br>        return RES_OK;<br>    }<br>    else<br>    {<br>        return RES_ERROR;<br>    }<br>}<br><br>/<em>———————————————————————–</em>/<br>/<em> Write Sector(s)                                                       </em>/<br><br>#if _READONLY == 0<br>DRESULT disk_write (<br>    BYTE drv,            /<em> Physical drive nmuber (0..) </em>/<br>    const BYTE <em>buff,    /</em> Data to be written <em>/<br>    DWORD sector,        /</em> Sector address (LBA) <em>/<br>    BYTE count            /</em> Number of sectors to write (1..255) <em>/<br>)<br>{<br>    u8 res;<br><br>    if (drv || !count)<br>    {<br>        return RES_PARERR;  //仅支持单磁盘操作，count不能等于0，否则返回参数错误<br>    }<br>    if(!SD_DET())<br>    {<br>        return RES_NOTRDY;  //没有检测到SD卡，报NOT READY错误<br>    }<br><br>    // 读写操作<br>    if(count == 1)<br>    {<br>        res = SD_WriteSingleBlock(sector, buff);<br>    }<br>    else<br>    {<br>        res = SD_WriteMultiBlock(sector, buff, count);<br>    }<br>    // 返回值转换<br>    if(res == 0)<br>    {<br>        return RES_OK;<br>    }<br>    else<br>    {<br>        return RES_ERROR;<br>    }<br>}<br>#endif /</em> _READONLY <em>/<br><br>/</em>———————————————————————–<em>/<br>/</em> Miscellaneous Functions                                               <em>/<br><br>DRESULT disk_ioctl (<br>    BYTE drv,        /</em> Physical drive nmuber (0..) <em>/<br>    BYTE ctrl,        /</em> Control code <em>/<br>    void </em>buff        /<em> Buffer to send/receive control data </em>/<br>)<br>{<br>    DRESULT res;<br><br>    if (drv)<br>    {<br>        return RES_PARERR;  //仅支持单磁盘操作，否则返回参数错误<br>    }<br><br>    //FATFS目前版本仅需处理CTRL_SYNC，GET_SECTOR_COUNT，GET_BLOCK_SIZ三个命令<br>    switch(ctrl)<br>    {<br>    case CTRL_SYNC:<br>        SD_CS_ENABLE();<br>        if(SD_WaitReady()==0)<br>        {<br>            res = RES_OK;<br>        }<br>        else<br>        {<br>            res = RES_ERROR;<br>        }<br>        SD_CS_DISABLE();<br>        break;<br><br>    case GET_BLOCK_SIZE:<br>        <em>(WORD</em>)buff = 512;<br>        res = RES_OK;<br>        break;<br><br>    case GET_SECTOR_COUNT:<br>        <em>(DWORD</em>)buff = SD_GetCapacity();<br>        res = RES_OK;<br>        break;<br>    default:<br>        res = RES_PARERR;<br>        break;<br>    }<br><br>    return res;<br>}<br><br>/<em>———————————————————————–</em>/<br>/<em> User defined function to give a current time to fatfs module          </em>/<br>/<em> 31-25: Year(0-127 org.1980), 24-21: Month(1-12), 20-16: Day(1-31) </em>/<br>/<em> 15-11: Hour(0-23), 10-5: Minute(0-59), 4-0: Second(0-29 </em>2) <em>/<br>DWORD get_fattime (void)<br>{<br>  return 0;<br>}</em></pre></div></div></div><div>这里的结构函数为Fatfs提供和SD卡的通信接口。 在 最新版本的Fatfs中还加入了对中文文件名的支持，需要修改 &nbsp;ffconf.h &nbsp; &nbsp;</div><div>&nbsp;&nbsp;&nbsp;&nbsp;#define _CODE_PAGE &nbsp; &nbsp;936 &nbsp; //- Simplified Chinese GBK (DBCS, OEM, Windows)&nbsp;</div><div>同时应该添加 &nbsp;option/cc936.c文件。但是这个文件有700多K占相当大的ROM， 像stm32F103RBT6这种小FLASH的MCU根本不行 ，加入当前工程文件中代码将增加160KB 左右。</div><div> </div><div>配置好Stm32的串口和SPI等IO口设置后，就可以使用Fatfs做一些文件操作了。</div><div> </div><div>4. Fatfs 文件操作</div><div> </div><div>文件分配表FAT(File AllocationTable)用来记录文件所在位置的表格.它对于硬盘的使用是非常重要的，假若丢失文件分配表，那么硬盘上的数据就会因无法定位而不能使用了。&nbsp;</div><div> </div><div>Fatfs 文件系统减轻了操作SD卡的工作量，调用其提供的函数就可以方便的操作文件，读写删改等。</div><div>这里提供一个main.c 示例：</div><div><pre class="brush:cpp;">#include “common.h”<br>#include &lt;string.h&gt;<br><br>FRESULT scan_files (char path);<br><br>#define  F_PUTS         1        //测试向文件写入字符串<br>#define  F_READ         1       //测试从文件中读出数据<br>#define  F_UNLINK       0       //测试删除文件<br>#define  SCAN_FILES     1       //测试目录扫描<br><br>FATFS fs;<br>FRESULT res;<br>FIL file;<br>UINT br;<br>BYTE buffer[4096];                //以上变量作为全局变量 可以避免一些Bug<br><br>int main(void)<br>{<br>    u16 i,n;<br><br>    //stm32 初始化<br>    RCC_Configuration();<br>    NVIC_Configuration();<br>    USART_Configuration();<br>    SPI_Configuration();<br>    GPIO_Configuration();<br><br>    //fatfs 操作<br><br>    f_mount(0, &amp;fs);<br><br>    //如果data.txt存在，则打开；否则，创建一个新文件<br>    res = f_open(&amp;file, “0:/data.txt”,FA_OPEN_ALWAYS|FA_READ|FA_WRITE );<br><br>    if(res!=FR_OK)<br>    {<br>        printf(“\r\n f_open() fail .. \r\n”);<br>    }else{<br>        printf(“\r\n f_open() success .. \r\n”);<br>    }<br><br>#if F_READ<br><br>    while(1){                                     //使用f_read读文件<br>        res = f_read(&amp;file, buffer, 1, &amp;br);     //一次读一个字节知道读完全部文件信息<br><br>        if (res == FR_OK )<br>        {<br>            printf(“%s”,buffer);<br>        }else{<br>            printf(“\r\n f_read() fail .. \r\n”);<br>        }<br><br>        if(f_eof(&amp;file)) {break;}<br>    }<br><br>    /<em>if( f_gets(buffer,sizeof(buffer),&amp;file) != NULL)     //使用f_gets读文件    ,存在 Bugs 待调试<br>    {<br>        printf(“%s”,buffer);<br>    }else{<br>        printf(“\r\n f_gets() fail .. \r\n”);<br>    } </em>/<br><br>#endif<br><br>#if F_PUTS<br><br>    //将指针指向文件末<br>    //res = f_lseek(&amp;file,(&amp;file)-&gt;fsize);<br>    res = f_lseek(&amp;file,file.fsize);<br><br>    n = f_puts(“\r\n hello dog ..\r\n”, &amp;file) ;  //向文件末写入字符串<br><br>    if(n&lt;1)  //判断写是否成功<br>    {<br>        printf(“\r\n f_puts() fail .. \r\n”);<br>    }else{<br>        printf(“\r\n f_puts() success .. \r\n”);<br>    }<br><br>#endif<br><br>#if F_UNLINK<br><br>    res = f_unlink(“test.jpg”);       //前提SD下存在一个test.jpg<br><br>    if(res!=FR_OK)<br>    {<br>        printf(“\r\n f_unlink() fail .. \r\n”);<br>    }else{<br>        printf(“\r\n f_unlink() success .. \r\n”);<br>    }<br><br>#endif<br><br>#if SCAN_FILES<br><br>    printf(“\r\n the directory files : \r\n”);<br>    scan_files(“/“);          //扫描根目录<br><br>#endif<br><br>       f_close(&amp;file);<br>    f_mount(0, NULL);<br><br>      while(1);<br>}<br><br>FRESULT scan_files (<br>    char<em> path        /</em> Start node to be scanned (also used as work area) <em>/<br>)<br>{<br>    FRESULT res;<br>    FILINFO fno;<br>    DIR dir;<br>    int i;<br>    char </em>fn;   /<em> This function is assuming non-Unicode cfg. </em>/<br>#if _USE_LFN<br>    static char lfn[_MAX_LFN + 1];<br>    fno.lfname = lfn;<br>    fno.lfsize = sizeof lfn;<br>#endif<br><br>    res = f_opendir(&amp;dir, path);                       /<em> Open the directory </em>/<br>    if (res == FR_OK) {<br>        i = strlen(path);<br>        for (;;) {<br>            res = f_readdir(&amp;dir, &amp;fno);                   /<em> Read a directory item </em>/<br>            if (res != FR_OK || fno.fname[0] == 0) break;  /<em> Break on error or end of dir </em>/<br>            if (fno.fname[0] == ‘.’) continue;             /<em> Ignore dot entry </em>/<br>#if _USE_LFN<br>            fn = <em>fno.lfname ? fno.lfname : fno.fname;<br>#else<br>            fn = fno.fname;<br>#endif<br>            if (fno.fattrib &amp; AM_DIR) {                    /</em> It is a directory <em>/<br>                sprintf(&amp;path[i], “/%s”, fn);<br>                res = scan_files(path);<br>                if (res != FR_OK) break;<br>                path[i] = 0;<br>            } else {                                       /</em> It is a file. <em>/<br>                printf(“\r\n %s/%s \r\n”, path, fn);<br>            }<br>        }<br>    }<br><br>    return res;<br>}<br></em></pre></div></div><div>其中 目录扫描函数 scan_files( char  path) 参数格式如下：</div><div> </div><div><img src="/uploads/2012/08/1222938971.png" alt="QQ截图20120824202000.png"></div><div> </div><div>这里使用到了f_puts()函数，所以必须在ffconf.h 中修改 #define _USE_STRFUNC &nbsp;1</div><div> </div><div> </div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&text=stm32 Fatfs 读写SD卡"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&is_video=false&description=stm32 Fatfs 读写SD卡"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 Fatfs 读写SD卡&body=Check out this article: http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&title=stm32 Fatfs 读写SD卡"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/08/25/stm32-Fatfs-读写SD卡/&name=stm32 Fatfs 读写SD卡&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;读写SD是嵌入式系统中一个比较基础的功能，在很多应用中都可以用得上SD卡。折腾了几天，总算移植成功了 最新版Fatfs（Fatfs R0.09） ，成功读写SD卡下文件。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;img src=&quot;/uploads/2012/08/3282268549.png&quot; alt=&quot;QQ截图20120825031714.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; FatFs (&lt;a href=&quot;http://elm-chan.org/fsw/ff/00index_e.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://elm-chan.org/fsw/ff/00index_e.html&lt;/a&gt;)是一个通用的文件系统模块，用于在小型嵌入式系统中实现FAT文件系统。 FatFs 的编写遵循ANSI C，因此不依赖于硬件平台。它可以嵌入到便宜的微控制器中，如 8051, PIC, AVR, SH, Z80, H8, ARM 等等，不需要做任何修改。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1. SD卡/TF卡 硬件接口&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SD卡有两种操作接口，SDIO和SPI。 使用SDIO口的速度比较快,SPI的速度比较慢 。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;SD卡引脚描述如下： &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;SD卡SPI接法如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/08/2602045677.png&quot; alt=&quot;sd引脚定义.png&quot;&gt;&amp;nbsp;&lt;img src=&quot;/uploads/2012/08/2998887021.png&quot; alt=&quot;stm32_sd.png&quot;&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;我使用的是正点原子的开发板，所以采用的是SPI接口的模式。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;TF卡SDIO 模式和SPI模式 引脚定义：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/08/3359893836.png&quot; alt=&quot;spi-tf.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;可以发现Micro SD卡只有8个引脚是因为比SD卡少了一个Vss。使用TF转SD的卡套套在Micro SD卡上，这样一来大小就和SD卡一样大，这时候卡套上的9个引脚就和SD卡一样了，你可以完全当做SD卡来操作。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;2. SD卡底层驱动&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SD卡的操作比较复杂，需要多看看一些文档 。 这里附上SD底层驱动代码，代码说明详见注释&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Sd卡SPi操作底层代码 ：&amp;nbsp;&lt;a href=&quot;/uploads/2012/08/1162003597.c&quot; title=&quot;sdcard.c&quot;&gt;sdcard.c&lt;/a&gt;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;/uploads/2012/08/2794809198.h&quot; title=&quot;sdcard.h&quot;&gt;sdcard.h&lt;/a&gt;&lt;/div&gt;&lt;div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析 通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制 C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单片机C语言精确延时分析">
+<meta property="og:url" content="http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析 通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制 C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/03/2582817227.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.246Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="单片机C语言精确延时分析">
+<meta name="twitter:description" content="前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析 通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制 C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/03/2582817227.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>单片机C语言精确延时分析</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/03/26/51单片机最小系统制作/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/03/02/单片机温度检测报警程序（ds18b20）/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&text=单片机C语言精确延时分析"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&is_video=false&description=单片机C语言精确延时分析"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=单片机C语言精确延时分析&body=Check out this article: http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&name=单片机C语言精确延时分析&description=&lt;p&gt;前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析&lt;/p&gt;
+&lt;p&gt;通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制&lt;/p&gt;
+&lt;p&gt;C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和 定时器延时&lt;/p&gt;
+&lt;p&gt;但是使用 for 循环   得到的延时效果  不够精确   执行一次 可能会有 10多us  原因已经有人 做了分析&lt;/p&gt;
+&lt;p&gt;一般单片机 C语言编程  需要经过 编译 将其 转为 汇编代码后  再生成16进制文件&lt;/p&gt;
+&lt;p&gt;在keil 下  点击菜单栏  flash -&amp;gt; Configure Flash tools 打开 options 窗口 在 listing下&lt;/p&gt;
+&lt;p&gt;勾选 assembly  Code  选项    可以查看C语言编译生成的 .lst 汇编文件&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/uploads/2012/03/2582817227.png&quot; alt=&quot;keil 设置&quot;&gt;&lt;/p&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        单片机C语言精确延时分析
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-03-09T14:12:09.000Z" itemprop="datePublished">2012-03-09</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <p>前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析</p>
+<p>通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制</p>
+<p>C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和 定时器延时</p>
+<p>但是使用 for 循环   得到的延时效果  不够精确   执行一次 可能会有 10多us  原因已经有人 做了分析</p>
+<p>一般单片机 C语言编程  需要经过 编译 将其 转为 汇编代码后  再生成16进制文件</p>
+<p>在keil 下  点击菜单栏  flash -&gt; Configure Flash tools 打开 options 窗口 在 listing下</p>
+<p>勾选 assembly  Code  选项    可以查看C语言编译生成的 .lst 汇编文件</p>
+<p><img src="/uploads/2012/03/2582817227.png" alt="keil 设置"></p>
+<a id="more"></a>
+<p>而for循环 编译生成的 汇编代码  执行周期较长 不适合做精确延时  这里不做讨论  详见:<a href="http://liclny007.blog.163.com/blog/static/3489715200721534824240/" target="_blank" rel="noopener">51单片机 Keil C 延时程序的简单研究</a></p>
+<p>1.  while(i–) 循环</p>
+<p>编译后对应的 汇编代码如下：</p>
+<p>;—- Variable ‘i’ assigned to Register ‘R6/R7’ —-</p>
+<p>0007         ?C0001:</p>
+<p>0007 EF                MOV     A,R7</p>
+<p>0008 1F                DEC     R7</p>
+<p>0009 AC06              MOV     R4,AR6</p>
+<p>000B 7001              JNZ     ?C0041</p>
+<p>000D 1E                DEC     R6</p>
+<p>000E         ?C0041:</p>
+<p>000E 4C                ORL     A,R4</p>
+<p>000F 70F6              JNZ     ?C0001</p>
+<p>0011         ?C0002:</p>
+<p>0011         ?C0003:</p>
+<p>0011 22                RET</p>
+<p>这里为 i 为unsigned int 情况下的编译结果 通过计算其 执行周期可得 执行一次所需时间为 9us</p>
+<p>当 i 为 unsigned char 无符号字符串 时, 执行一次为6us ; (本数据皆为在keil 4 编译器 12Mhz 晶震下获得 )</p>
+<p>当 i 为 unsigned int 无符号字符串 时, 执行一次为 9us ;</p>
+<p>2. while (–i)循环</p>
+<p>编译后对应的 汇编代码如下：</p>
+<p>;—- Variable ‘i’ assigned to Register ‘R7’ —-</p>
+<p>0000           ?C0004:</p>
+<p>0000 DFFE                DJNZ      R7,?C0004</p>
+<p>0002           ?C0006:</p>
+<p>0002 22                  RET</p>
+<p>这里为 i 为unsigned char  情况下的编译结果 通过计算其 执行周期可得 执行一次所需时间为 2us</p>
+<p>当 i 为 unsigned char 无符号字符串 时, 执行一次 为 2us ;</p>
+<p>当 i 为 unsigned int 无符号字符串 时, 执行一次 需要 8us ;</p>
+<p>3. 通过 定时器 计时</p>
+<p>前两种方法 都忽略了当执行到该程序时需要的跳转时间</p>
+<p>一般在代码中 延时函数 都会单独写成一个函数  比如：</p>
+<p>// 延时函数</p>
+<p>void delay(uint t)                    //每次9us</p>
+<p>{</p>
+<pre><code>while(t--);
+</code></pre><p>}</p>
+<p>方便其他函数调用   但是在其他函数调用的过程中  跳转也需要几微秒的时间 所以当延时时间很小时 可以直接用</p>
+<p><em>nop</em>() （1us）; 替代 或者直接 用 while(–i); 不要调用函数</p>
+<p>定时器计时 时 尤其不能忽略这种因素   程序跳转需要的时间 配置 TH0 TL0  TMOD 等指令都会耗费时间 如果较短时间的延时 当然不适合用这种方法   还需要注意的是 不要将TH0 TL0 的初值计算过程 写在计时函数里</p>
+<p>因为TH0 TL0计算 过程涉及到 乘除法  一个指令就可能耗费 几百us  当然定时的结果 是错误的</p>
+<p>应该在调用 计时函数前 先计算好 TH0 TL0 再传参给计时函数</p>
+<p>eg.</p>
+<p>void timer(uint th0,uint tl0)</p>
+<p>{</p>
+<pre><code>TMOD = 0x01;                     //启用T0 计时器 工作方式1
+
+TH0  = th0;
+
+TL0  = tl0;
+
+EA   = 0;                        //禁止中断
+
+ET0 =0;
+
+TR0  = 1;                         //开始T0计数
+
+while( TF0 == 0 );
+
+TF0  = 0;                         // 清除T0 溢出标志位
+
+TR0  = 0;                         //关闭T0计数
+</code></pre><p>}</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&text=单片机C语言精确延时分析"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&is_video=false&description=单片机C语言精确延时分析"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=单片机C语言精确延时分析&body=Check out this article: http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&title=单片机C语言精确延时分析"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/03/09/单片机C语言精确延时分析/&name=单片机C语言精确延时分析&description=&lt;p&gt;前阵子 琢磨了 ds18b20 温度测控芯片 一直对单片机的延时问题 留有疑惑   花了一下午时间  用 keil 逐步调试和proteus 仿真   对延时问题   做了一些分析&lt;/p&gt;
+&lt;p&gt;通常 单片机在对时间要求精确的情况下 会使用汇编 来实现相应的模块  通过计算其相应的机器周期  命令执行周期 可以得到精确的时间控制&lt;/p&gt;
+&lt;p&gt;C语言下  常用的延时 方法  有 for 循环 和 while() 循环  和 定时器延时&lt;/p&gt;
+&lt;p&gt;但是使用 for 循环   得到的延时效果  不够精确   执行一次 可能会有 10多us  原因已经有人 做了分析&lt;/p&gt;
+&lt;p&gt;一般单片机 C语言编程  需要经过 编译 将其 转为 汇编代码后  再生成16进制文件&lt;/p&gt;
+&lt;p&gt;在keil 下  点击菜单栏  flash -&amp;gt; Configure Flash tools 打开 options 窗口 在 listing下&lt;/p&gt;
+&lt;p&gt;勾选 assembly  Code  选项    可以查看C语言编译生成的 .lst 汇编文件&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/uploads/2012/03/2582817227.png&quot; alt=&quot;keil 设置&quot;&gt;&lt;/p&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

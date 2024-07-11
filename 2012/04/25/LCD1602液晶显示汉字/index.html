@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &amp;nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”; 1602中有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LCD1602液晶显示汉字">
+<meta property="og:url" content="http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &amp;nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”; 1602中有">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/04/4248643945.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/04/420763698.jpg">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.208Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LCD1602液晶显示汉字">
+<meta name="twitter:description" content="使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &amp;nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”; 1602中有">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/04/4248643945.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>LCD1602液晶显示汉字</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/05/12/单片机4-4矩阵键盘/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/04/24/单片机红外接收软件解码/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&text=LCD1602液晶显示汉字"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&is_video=false&description=LCD1602液晶显示汉字"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=LCD1602液晶显示汉字&body=Check out this article: http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&name=LCD1602液晶显示汉字&description=&lt;div&gt;使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &amp;nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。&lt;/div&gt;&lt;div&gt;常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1602中有这样几个区：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;CGRAM 区为用户自定义字符区 &amp;nbsp;&lt;/div&gt;&lt;div&gt;DDRAM 为字符显示地址（位置）数据存贮器&lt;/div&gt;&lt;div&gt;CGROM为 液晶模块内部字符发生存储器&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;使用1602显示汉字 就需要是用到 CGRAM，需要将取模后的点阵字符写入CGRAM ，以备后面读出显示。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1602 使用的显示点阵大小是 5&lt;em&gt;8 ，可以使用取模软件获得文字的点阵显示字符，但是点阵大小最小为8&lt;/em&gt;8， 要取得5*8的字模 只需要空出前三列即可。&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/04/4248643945.png&quot; alt=&quot;字模提取.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        LCD1602液晶显示汉字
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-04-25T03:59:36.000Z" itemprop="datePublished">2012-04-25</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。</div><div>常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”;</div><div> </div><div>1602中有这样几个区：</div><div> </div><div>CGRAM 区为用户自定义字符区 &nbsp;</div><div>DDRAM 为字符显示地址（位置）数据存贮器</div><div>CGROM为 液晶模块内部字符发生存储器</div><div> </div><div>使用1602显示汉字 就需要是用到 CGRAM，需要将取模后的点阵字符写入CGRAM ，以备后面读出显示。</div><div> </div><div>1602 使用的显示点阵大小是 5<em>8 ，可以使用取模软件获得文字的点阵显示字符，但是点阵大小最小为8</em>8， 要取得5*8的字模 只需要空出前三列即可。</div><div><img src="/uploads/2012/04/4248643945.png" alt="字模提取.png"></div><div> </div>
+
+<a id="more"></a>
+<div>将生成的点阵数组保存到CGRAM存储器中，生成自定义字符。1602内部CGRAM用于自定义的字符点阵的存储，总共64字节。由上一步点阵提取可知，每一个字符由8个字节数据组成。所以64字节CGRAM存储器，能够存储8组自定义字符的点阵数组。</div><div>按照CGRAM地址划分为 0－7为第一组，8－15为第二组，依次类推56－63为第8组数据。</div><div>把自定义字符的数组按8个字节一组存储到CGRAM中。</div><div> </div><div><div>自定义字符存储到CGRAM的任意一组以后，每一个组（8个字节）也有一个显示编码。按顺序依次为00H－07H 。显示时，只要调用每一组的编码，即可以显示相应的字符。</div><div>注：内部常用字符显示时，显示编码是从0x20开始的。0x00－0x0f是专门留给自定义字符显示的。0x00－0x07和0x08－0x0f内容是一样的。例如：调用0x01 位置和0x09位置，显示的内容是一样的。</div><div> </div><div>1602显示”你好”：</div><div> </div><div><img src="/uploads/2012/04/420763698.jpg" alt="IMG_20120425_154514.jpg"></div><div> </div><div>51单片机的默认是将变量定义在直接寻址data区，这个区域是片内RAM的低128字节，所以存储的空间有限，所以编程时可以把一些变量编译在 间接寻址的idata区（52是80H~0FFH区域）或者 64 程序存储器 code 区中。</div><div> </div><div>LCD1602显示程序代码：</div><div><pre class="brush:cpp;">    #include &lt;reg52.h&gt;<br>    #include “lcd1602.h”<br><br>    #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    uchar idata words[4][8] = {<br>                        { 0x01,0x02,0x06,0x02,0x02,0x02,0x02,0x00},       //你字左边<br>                        { 0x08,0x0F,0x15,0x04,0x15,0x15,0x04,0x0C},       //你字右边<br>                        { 0x00,0x04,0x1F,0x0A,0x04,0x0A,0x00,0x00},       //好字左边<br>                        { 0x1E,0x02,0x04,0x1F,0x04,0x04,0x0C,0x00}       //好字右边<br>                    };<br><br>    void main()<br>    {<br>        uchar i;<br><br>        LCD_Init();<br><br>        for(i=0;i&lt;4;i++)<br>        {<br>            LCD_CGRAM_WriteByte(words[i],i);<br>            LCD_WriteByte(0x80+i,0);<br>            LCD_WriteByte(i,1);<br>        }<br><br>        LCD_WriteString(“Wrold !!”,2);<br><br>        /<strong>**</strong>这样也可以显示“A”<br><br>        LCD_WriteByte(0xCA,0);<br>        LCD_WriteByte(0x41,1);<br><br>        <strong><strong>***</strong></strong>/<br>        while(1);<br><br>    }<br></pre></div></div><div>lcd1602.h ：</div><div><pre class="brush:cpp;">    #define uchar unsigned  char     // 宏定义uchar 为无符号字符<br>    #define uint  unsigned  int<br><br>    #define DataPin    P0<br><br>    sbit  LCD_RS = P2^4;    //    LCD    数据/ 命令选择 ,高电平时选择数据寄存器<br>    sbit  LCD_RW = P2^5;    //  LCD 读 / 写选择       ,高电平时读操作<br>    sbit  LCD_E  = P2^6;    //  LCD 使能<br>    sbit  IR_DQ  = P2^3;    //    红外接收头数据线<br><br>    void  LCD_BusyCheck(void);<br>    void  LCD_WriteByte(uchar var,bit RS);<br>    void  LCD_Init(void);<br>    void  LCD_WriteString(uchar <em>str,uchar line);<br>    void  LCD_CGRAM_WriteByte(uchar </em>p,uchar num);<br>    void  LCD_Delay(uint n);<br><br>    void LCD_Delay(uint n)<br>    {<br>        while(–n);                // 8us一次<br>    }<br><br>    void LCD_BusyCheck(void)<br>    {<br>        uchar isBusy;<br><br>        LCD_RS = 0;<br>        LCD_RW = 1;<br><br>        LCD_E  = 1;<br>        LCD_Delay(10);<br>        isBusy = DataPin &amp; 0x80;<br>        LCD_E  = 0;<br><br>        if(isBusy == 0x80)<br>        {<br>            LCD_BusyCheck();<br>        }<br>    }<br><br>    void LCD_WriteByte(uchar var,bit RS )       //参数 RS为 LCD数据/ 命令选择 ,高电平时选择数据寄存器<br>    {<br>        LCD_BusyCheck();<br><br>        LCD_RS = RS;<br>        LCD_RW = 0;<br>        DataPin = var;<br><br>        LCD_E = 0;<br>        LCD_Delay(70);                      //必须延时500us左右<br>        LCD_E  = 1;<br>        LCD_Delay(5);<br>        LCD_E = 0;<br><br>    }<br><br>    void LCD_WriteString(uchar <em>str,uchar line)<br>    {<br>        uchar i = 0,addr;<br><br>        if(line == 1) { addr = 0x80;}<br>        if(line == 2) { addr = 0xC0;}<br><br>        while(1)<br>        {<br>            LCD_WriteByte(addr+i,0);       //写入地址<br>            LCD_WriteByte(str[i],1);<br>            i++;<br>            if(i==16 || str[i] == ‘\0’){ break;}<br>        }<br>    }<br><br>    void LCD_CGRAM_WriteByte(uchar </em>p,uchar num)           //将自定义字符写入CGRAM中,最多64字节,uchar num为自定义字符存放位置 0-7<br>    {<br>        uchar i,place;<br><br>        place = 0x40 + 8<em>(num&amp;0x07);                    // num&amp;0x07 保证num取值范围为 0-7<br><br>        for(i=0;i&lt;8;i++)<br>        {<br>            LCD_WriteByte(place+i,0);<br>            LCD_WriteByte(p[i],1);<br>        }<br>    }<br><br>    void LCD_Init(void)<br>    {<br>        LCD_Delay(1875);            //延时15ms<br><br>        LCD_WriteByte(0x38,0);<br><br>        LCD_Delay(625);                //延时5ms<br><br>        LCD_WriteByte(0x38,0);  //配置LCD为4位数据总线,双行显示,5</em>7点阵字符<br><br>        LCD_WriteByte(0x08,0);  //配置LCD关闭显示,无光标,无闪烁<br><br>        LCD_WriteByte(0x01,0);  //LCD清屏<br><br>        LCD_WriteByte(0x06,0);  //LCD光标右移<br><br>        LCD_WriteByte(0x0C,0);  //打开LCD显示<br><br>    }<br><br></pre></div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&text=LCD1602液晶显示汉字"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&is_video=false&description=LCD1602液晶显示汉字"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=LCD1602液晶显示汉字&body=Check out this article: http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&title=LCD1602液晶显示汉字"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/04/25/LCD1602液晶显示汉字/&name=LCD1602液晶显示汉字&description=&lt;div&gt;使用LCD1602 显示字符会比使用七段数码管方便 可显示内容也多的多 &amp;nbsp;1602内部的字符发生器 CGROM中已经存储了160多个字符 ，每一个字符都有一个固定的代码，比如大写的英文字母“A”的代码是“01000001B,显示时把41H的点阵字符显示出来，就可以看到字符“A”。&lt;/div&gt;&lt;div&gt;常用的方法是 写完数据显示地址后 直接写入字符串 “A”,其实直接写入0x41也可以显示“A”;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1602中有这样几个区：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;CGRAM 区为用户自定义字符区 &amp;nbsp;&lt;/div&gt;&lt;div&gt;DDRAM 为字符显示地址（位置）数据存贮器&lt;/div&gt;&lt;div&gt;CGROM为 液晶模块内部字符发生存储器&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;使用1602显示汉字 就需要是用到 CGRAM，需要将取模后的点阵字符写入CGRAM ，以备后面读出显示。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;1602 使用的显示点阵大小是 5&lt;em&gt;8 ，可以使用取模软件获得文字的点阵显示字符，但是点阵大小最小为8&lt;/em&gt;8， 要取得5*8的字模 只需要空出前三列即可。&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/04/4248643945.png&quot; alt=&quot;字模提取.png&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="&amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;DMA（Direct Memory Access）常译为“存储器直接存取”。早在Intel的8086平台上就有了DMA应用了。 &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 一个完整的微控制器通常由CPU、存储器和外设等组件构成。这些组件一般在结构和功能上都是独立的，而各个组件的协调和交互就由CPU完成。如此一来，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 DMA数据搬运 [操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;DMA（Direct Memory Access）常译为“存储器直接存取”。早在Intel的8086平台上就有了DMA应用了。 &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 一个完整的微控制器通常由CPU、存储器和外设等组件构成。这些组件一般在结构和功能上都是独立的，而各个组件的协调和交互就由CPU完成。如此一来，">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/3877113184.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/1277195535.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/4026871028.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.217Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 DMA数据搬运 [操作寄存器+库函数]">
+<meta name="twitter:description" content="&amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;DMA（Direct Memory Access）常译为“存储器直接存取”。早在Intel的8086平台上就有了DMA应用了。 &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 一个完整的微控制器通常由CPU、存储器和外设等组件构成。这些组件一般在结构和功能上都是独立的，而各个组件的协调和交互就由CPU完成。如此一来，">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/3877113184.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 DMA数据搬运 [操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/08/stm32-Flash读写-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&text=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&is_video=false&description=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 DMA数据搬运 [操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&name=stm32 DMA数据搬运 [操作寄存器+库函数]&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 DMA数据搬运 [操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-09T08:05:54.000Z" itemprop="datePublished">2012-07-09</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DMA（Direct Memory Access）常译为“存储器直接存取”。早在Intel的8086平台上就有了DMA应用了。</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp; 一个完整的微控制器通常由CPU、存储器和外设等组件构成。这些组件一般在结构和功能上都是独立的，而各个组件的协调和交互就由CPU完成。如此一来，CPU作为整个芯片的核心，其处理的工作量是很大的。如果CPU先从A外设拿到一个数据送给B外设使用，同时C外设又需要D外设提供一个数据。。。这样的数据搬运工作将使CPU的负荷显得相当繁重。</div><div> </div><div>&nbsp; &nbsp; &nbsp; &nbsp;严格的说，搬运数据只是CPU的比较不重要的一种工作。CPU最重要的工作室进行数据运算，从加减乘除到一些高级的运算，包括浮点、积分、微分、FFT等。CPU还需要负责复杂的中断申请和响应，以保证芯片的实时性能。</div><div> </div><div>&nbsp; &nbsp; 理论上常见的控制外设，比如Usart、I2C、SPI甚至是USB等通信接口，单纯的利用CPU进行协议模拟也是可以实现的，比如51单片机经常使用I/O口模拟I2C协议通信。但这样既浪费了CPU的资源，同时实现后的性能表现往往和使用专门的硬件模块实现的效果相差甚远。从这个角度来看，各个外设控制器的存在，无疑降低了CPU的负担，解放了CPU的资源。</div><div>&nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; 数据搬运这一工作占用了大部分的CPU资源，成为了降低CPU的工作效率的主要原因之一。于是需要一种硬件结构分担CPU这一职能 —— DMA。</div><div> </div><div>&nbsp; &nbsp; 从数据搬运的角度看，如果要把存储地址A的数值赋给另外一个地址上B的变量，CPU实现过程为首先读出A地址上的数据存储在一个中间变量，然后再转送到B地址的变量上。使用DMA则不需要中间变量，直接将A地址的数值传送到B地址的变量里。无疑减轻了CPU的负担，也提高了数据搬运的效率。</div><div> </div><div>stm32中 DMA1有7个通道，DMA2有5个通道。DMA挂载的时钟为AHB总线,其时钟为72Mhz，所以可以实现高速数据搬运。</div><div> </div><div>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stm32的DMA1通道一览表</div><div><img src="/uploads/2012/07/3877113184.png" alt="DMA1.png"></div><div> </div><div>本例实现使用CPU和DMA搬运同一组数据，通过计时，比较两者的搬运效率。</div><div> </div><div><strong>直接操作寄存器</strong></div><div> </div><div><strong>DMA的中断状态寄存器（DMA_ISR）：</strong></div><div><img src="/uploads/2012/07/1277195535.png" alt="DMA_ISR.png"></div><div> </div><div>TEIFx：通道x的传输错误标志(x = 1 … 7) (Channel x transfer error flag) 硬件设置这些位。在DMA_IFCR寄存器的相应位写入’1’可以清除这里对应的标志位。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0：在通道x没有传输错误(TE)； &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1：在通道x发生了传输错误(TE)。</div><div> </div><div>HTIFx：通道x的半传输标志(x = 1 … 7) (Channel x half transfer flag) 硬件设置这些位。在DMA_IFCR寄存器的相应位写入’1’可以清除这里对应的标志位。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0：在通道x没有半传输事件(HT)； &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1：在通道x产生了半传输事件(HT)。</div><div> </div><div>TCIFx：通道x的传输完成标志(x = 1 … 7) (Channel x transfer complete flag) 硬件设置这些位。在DMA_IFCR寄存器的相应位写入’1’可以清除这里对应的标志位。</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0：在通道x没有传输完成事件(TC)； &nbsp; &nbsp; &nbsp; 1：在通道x产生了传输完成事件(TC)。</div><div> </div><div><strong>DMA_IFCR中断标志清除寄存器：</strong></div><div> </div><div>结构类似DMA_ISR。</div><div> </div><div>CTEIFx：清除通道x的传输错误标志(x = 1 … 7) (Channel x transfer error clear) 这些位由软件设置和清除。 &nbsp;&nbsp;&nbsp;&nbsp;0：不起作用&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1：清除DMA_ISR寄存器中的对应TEIF标志。</div><div> </div><div>CHTIFx：清除通道x的半传输标志(x = 1 … 7) (Channel x half transfer clear) 这些位由软件设置和清除。 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0：不起作用 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1：清除DMA_ISR寄存器中的对应HTIF标志。</div><div> </div><div>CTCIFx：清除通道x的传输完成标志(x = 1 … 7) (Channel x transfer complete clear) 这些位由软件设置和清除。 0：不起作用 &nbsp; &nbsp; &nbsp; &nbsp;1：清除DMA_ISR寄存器中的对应TCIF标志。</div><div> </div><div>CGIFx：清除通道x的全局中断标志(x = 1 … 7) (Channel x global interrupt clear) 这些位由软件设置和清除。 &nbsp; &nbsp;0：不起作用 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1：清除DMA_ISR寄存器中的对应的GIF、TEIF、HTIF和TCIF标志。</div><div> </div><div><strong>DMA通道配置寄存器（DMA_CCRx）：</strong></div><div> </div><div><img src="/uploads/2012/07/4026871028.png" alt="DMA_CCRx.png"></div><div> </div><div>MEM2MEM：存储器到存储器模式 (Memory to memory mode) 该位由软件设置和清除。 0：非存储器到存储器模式； 1：启动存储器到存储器模式。</div><div> </div><div>PL：通道优先级 (Channel priority level) &nbsp;这些位由软件设置和清除。&nbsp;00：低 01：中 10：高 11：最高</div><div> </div><div>MSIZE：存储器数据宽度 (Memory size) 这些位由软件设置和清除。 00：8位 01：16位 10：32位 11：保留</div><div> </div><div>PSIZE：外设数据宽度 (Peripheral size) &nbsp;这些位由软件设置和清除。 00：8位 01：16位 10：32位 11：保留</div><div> </div><div>MINC：存储器地址增量模式 (Memory increment mode) &nbsp;该位由软件设置和清除。 0：不执行存储器地址增量操作 1：执行存储器地址增量操作</div><div> </div><div>PINC：外设地址增量模式 (Peripheral increment mode) 该位由软件设置和清除。 0：不执行外设地址增量操作 1：执行外设地址增量操作</div><div> </div><div>CIRC：循环模式 (Circular mode) &nbsp;该位由软件设置和清除。 0：不执行循环操作 1：执行循环操作</div><div> </div><div>DIR：数据传输方向 (Data transfer direction) &nbsp; 该位由软件设置和清除。 0：从外设读 1：从存储器读</div><div> </div><div>TEIE：允许传输错误中断 (Transfer error interrupt enable) &nbsp;该位由软件设置和清除。 0：禁止TE中断 0：允许TE中断</div><div> </div><div>HTIE：允许半传输中断 (Half transfer interrupt enable) 该位由软件设置和清除。 0：禁止HT中断 0：允许HT中断</div><div> </div><div>TCIE：允许传输完成中断 (Transfer complete interrupt enable) 该位由软件设置和清除。 0：禁止TC中断 0：允许TC中断</div><div> </div><div>EN：通道开启 (Channel enable) 该位由软件设置和清除。 0：通道不工作 1：通道开启</div><div> </div><div><strong>DMA通道x传输数量寄存器(DMA_CNDTRx)(x = 1…7)</strong></div><div> </div><div>低16位有效。这个寄存器控制通道每次传输的数据量，数据传输数量为0至65535。该寄存器会随着传输的进行而递减，为0表示已经发送完成。</div><div> </div><div><strong>DMA外设地址寄存器（DMA_CPARx）</strong></div><div>32位寄存器。外设数据寄存器的基地址，作为数据传输的源或目标。&nbsp;</div><div> </div><div><strong>DMA存储地址寄存器(DMA_CMARx)</strong></div><div>存储器地址[31:0],存储器地址作为数据传输的源或目标。</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="noopener">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “usart.h”<br>#include “dma.h”<br>#include “tim.h”<br>#include “string.h”<br><br>#define LED1 PAout(4)<br>#define LED2 PAout(5)<br>#define LED3 PAout(6)<br><br>void Gpio_Init(void);<br><br>//数据源<br>uc32 SRC_Const_Buffer[32] =<br>{<br>    0x01020304,0x05060708,0x090A0B0C,0x0D0E0F10,<br>    0x11121314,0x15161718,0x191A1B1C,0x1D1E1F20,<br>    0x21222324,0x25262728,0x292A2B2C,0x2D2E2F30,<br>    0x31323334,0x35363738,0x393A3B3C,0x3D3E3F40,<br>    0x41424344,0x45464748,0x494A4B4C,0x4D4E4F50,<br>    0x51525354,0x55565758,0x595A5B5C,0x5D5E5F60,<br>    0x61626364,0x65666768,0x696A6B6C,0x6D6E6F70,<br>    0x71727374,0x75767778,0x797A7B7C,0x7D7E7F80<br>};<br><br>//目标位置<br>u32 DST_Buffer[32];<br><br>int main(void)<br>{<br>    u8 i=0;<br>    u16 StartTime=0,CPUSpendTime=0,DMASpendTime=0;;<br><br>    Rcc_Init(9);                            //系统时钟设置<br><br>    Usart1_Init(72,9600);<br><br>    Tim_Init(TIM_2,65535,71);            //初始化TIM2定时器，设定重装值和分频值,计时时间为1us/次<br><br>    Dma_Init(DMA1_Channel1,(u32)SRC_Const_Buffer,(u32)DST_Buffer);    //初始化DMA,外设地址示例 &amp;USART1-&gt;DR<br><br>    Nvic_Init(1,0,DMA1_Channel1_IRQChannel,4);      //设置抢占优先级为0，响应优先级为0，中断分组为4<br><br>    Gpio_Init();<br><br>    StartTime = TIM2-&gt;CNT;<br><br>    while(i&lt;32)                             //CPU搬运<br>    {<br>        DST_Buffer[i]=SRC_Const_Buffer[i];<br>        i++;<br>    }<br><br>    CPUSpendTime = TIM2-&gt;CNT - StartTime;<br><br>    printf(“\r\n the CPU spend : %dus! \r\n”,CPUSpendTime);<br><br>    if(strncmp((const char <em>)SRC_Const_Buffer,(const char </em>)DST_Buffer,32) ==0)      //验证传输效果，判断两数组是否相同<br>    {<br>        printf(“\r\n CPU Transmit Success! \r\n”);<br>    }else{<br>        printf(“\r\n CPU Transmit Fail! \r\n”);<br>    }<br><br>    i=0;<br><br>    while(i&lt;32)                            //清空目标数组，准备DMA搬运<br>    {<br>        DST_Buffer[i]=0;<br>        i++;<br>    }<br><br>    StartTime = TIM2-&gt;CNT;<br><br>    Dma_Enable(DMA1_Channel1,32);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//DMA搬运<br><br>    while( DMA1_Channel1 -&gt; CNDTR != 0);        //等待传输完成<br><br>    DMASpendTime= TIM2-&gt;CNT - StartTime;<br><br>    printf(“\r\n the DMA spend : %dus! \r\n”,DMASpendTime);<br><br>    if(strncmp((const char <em>)SRC_Const_Buffer,(const char </em>)DST_Buffer,32) ==0)      //验证传输效果，判断两数组是否相同<br>    {<br>        printf(“\r\n DMA Transmit Success! \r\n”);<br>    }else{<br>        printf(“\r\n DMA Transmit Fail! \r\n”);<br>    }<br><br>    while(1);<br>}<br><br>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR|=1&lt;&lt;2;    //使能PORTA时钟<br><br>    GPIOA-&gt;CRL&amp;=0x0000FFFF; // PA0~3设置为浮空输入，PA4~7设置为推挽输出<br>    GPIOA-&gt;CRL|=0x33334444;<br><br>    //USART1 串口I/O设置<br><br>    GPIOA -&gt; CRH&amp;=0xFFFFF00F;   //设置USART1 的Tx(PA.9)为第二功能推挽，50MHz；Rx(PA.10)为浮空输入<br>    GPIOA -&gt; CRH|=0x000008B0;<br><br>}<br></pre><div>User/stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”<br>#include “system.h”<br>#include “stdio.h”<br><br>#define LED1 PAout(4)<br>#define LED2 PAout(5)<br>#define LED3 PAout(6)<br>#define LED4 PAout(7)<br><br>void DMAChannel1_IRQHandler(void)  //和启动文件有关,STM32F10x.s中 和  STM32F10x_md.s DMA中断接口函数不同<br>{<br><br>    if( DMA1 -&gt;ISR &amp; (1&lt;&lt;1))        //传输完成中断<br>    {<br><br>        LED1 = 1;<br>        DMA1-&gt;IFCR |= 1&lt;&lt;1;    //清除传输完成中断<br>    }<br><br>    if( DMA1 -&gt;ISR &amp; (1&lt;&lt;2))        //半传输完成中断<br>    {<br><br>        DMA1 -&gt;IFCR |= 1&lt;&lt;2;    //清除半传输完成中断<br>    }<br><br>    if( DMA1 -&gt;ISR &amp; (1&lt;&lt;3))        //传输错误中断<br>    {<br>        LED4 =1 ;<br>        DMA1 -&gt;IFCR |= 1&lt;&lt;3;    //清除传输错误中断<br>    }<br><br>    DMA1 -&gt;IFCR |= 1&lt;&lt;0;        //清除此通道的中断<br>}<br></pre><div>Library/src/dma.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “dma.h”<br><br>//DMA通道初始化函数<br>//传输方向：存储器 -&gt; 存储器模式 ,32位数据模式,存储器增量模式<br>//参数说明：<br>//            DMA_CHx         ：选择DMA控制器通道,DMA1有1-7，DMA2有1-4<br>//            P_Adress     ：外设地址<br>//            M_Adress     ：存储器地址<br><br>void Dma_Init(DMA_Channel_TypeDef <em> DMA_CHx,u32 P_Address ,u32 M_Address)<br>{<br><br>    RCC-&gt;AHBENR |= 1&lt;&lt;0;<br><br>    DMA_CHx -&gt; CCR  &amp;= 0xFFFF0000;        //复位<br><br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;1;            //允许传输完成中断<br>    //DMA_CHx -&gt; CCR  |= 1&lt;&lt;2;            //允许半传输中断<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;3;            //允许传输错误中断 读写一个保留的地址区域,将会产生DMA传输错误<br><br>    //设定数据传输方向<br>    DMA_CHx -&gt; CCR  |= 0&lt;&lt;4;            //设定数据传输方向   0：从外设读 1：从存储器读<br>    DMA_CHx -&gt; CCR  |= 0&lt;&lt;5;            //0：不执行循环操作 1：执行循环操作<br><br>    //设定地址增量<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;6;            //0：不执行外设地址增量操作 1：执行外设地址增量操作<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;7;            //0：不执行存储器地址增量操作 1：执行存储器地址增量操作<br><br>    //设定外设数据宽度    S<br>    DMA_CHx -&gt; CCR  |= 0&lt;&lt;8;            //外设数据宽度,由[9:8]两位控制<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;9;            //00：8位 01：16位 10：32位 11：保留<br><br>    //设定存储数据宽度<br>    DMA_CHx -&gt; CCR  |= 0&lt;&lt;10;            //存储器数据宽度,由[11:10]两位控制<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;11;            //00：8位 01：16位 10：32位 11：保留<br><br>    //设定为中等优先级<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;12;            //通道优先级,由[13:12]两位控制<br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;13;            //00：低 01：中 10：高 11：最高<br><br>    DMA_CHx -&gt; CCR  |= 1&lt;&lt;14;            //0：非存储器到存储器模式； 1：启动存储器到存储器模式。<br><br>    //必须配置好通道后配置地址<br>    DMA_CHx -&gt; CPAR = (u32)P_Address;    //设定外设寄存器地址<br>    DMA_CHx -&gt; CMAR = (u32)M_Address;    //设定数据存储器地址<br><br>}<br><br>//DMA通道使能<br>//参数说明：<br>//            DMA_CHx         ：选择DMA控制器通道,DMA1有1-7，DMA2有1-4<br>//            Number       ：数据传输量<br>void Dma_Enable(DMA_Channel_TypeDef </em> DMA_CHx,u16 Number)<br>{<br>    DMA_CHx -&gt; CCR &amp;= ~(1&lt;&lt;0);        //关闭上一次DMA传输<br>    DMA_CHx    -&gt; CNDTR = Number;        //数据传输量<br>    DMA_CHx -&gt; CCR |= 1&lt;&lt;0;            //开始DMA传输<br>}</pre><div>Library/inc/dma.h</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br><br>void Dma_Init(DMA_Channel_TypeDef <em> DMA_CHx,u32 P_Adress ,u32 M_Address);<br>void Dma_Enable(DMA_Channel_TypeDef </em> DMA_CHx,u16 Number);<br></pre></div></div><div>直接操作寄存器输出：</div><div><div> </div><div>&nbsp;the CPU spend : 972us!&nbsp;</div><div>&nbsp;CPU Transmit Success!&nbsp;</div><div> </div><div>&nbsp;the DMA spend : 5us!&nbsp;</div><div>&nbsp;DMA Transmit Success!&nbsp;</div></div></div></div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>mian.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br>#include “stdio.h”<br>#include “string.h”<br><br>#define     PRINTF_ON  1<br>#define  BufferSize  32<br><br>vu16 LeftDataCounter;<br>vu32 Tick;<br><br>uc32 SRC_Const_Buffer[BufferSize] =<br>{<br>    0x01020304,0x05060708,0x090A0B0C,0x0D0E0F10,<br>    0x11121314,0x15161718,0x191A1B1C,0x1D1E1F20,<br>    0x21222324,0x25262728,0x292A2B2C,0x2D2E2F30,<br>    0x31323334,0x35363738,0x393A3B3C,0x3D3E3F40,<br>    0x41424344,0x45464748,0x494A4B4C,0x4D4E4F50,<br>    0x51525354,0x55565758,0x595A5B5C,0x5D5E5F60,<br>    0x61626364,0x65666768,0x696A6B6C,0x6D6E6F70,<br>    0x71727374,0x75767778,0x797A7B7C,0x7D7E7F80<br>};<br><br>u32 DST_Buffer[BufferSize];<br>u8 i=0,DMASpendTime=0,CPUSpendTime=0;<br><br>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void NVIC_Configuration(void);<br>void USART_Configuration(void);<br>void DMA_Configuration(void);<br><br>int main(void)<br>{<br>      RCC_Configuration();<br>      GPIO_Configuration();<br>    NVIC_Configuration();<br>    USART_Configuration();<br>    DMA_Configuration();<br><br>    SysTick_Config(72);<br><br>    Tick = 0;<br>    while(i&lt;BufferSize)<br>    {<br>        DST_Buffer[i]=SRC_Const_Buffer[i];<br>        CPUSpendTime = Tick;<br>        i++;<br>    }<br>    i=0;<br>      while(i&lt;BufferSize)<br>    {<br>        DST_Buffer[i]=0;<br>        i++;<br>    }<br><br>    Tick = 0;<br>    DMA_Cmd(DMA1_Channel6,ENABLE);<br>    while(LeftDataCounter != 0);    //等待传输完成<br>    DMASpendTime = Tick;<br><br>    if(strncmp((const char <em>)SRC_Const_Buffer,(const char </em>)DST_Buffer,BufferSize) ==0)<br>    {<br>        printf(“\r\n Transmit Success! \r\n”);<br>    }else{<br>         printf(“\r\n Transmit Fail! \r\n”);<br>    }<br><br>    printf(“\r\n the CPU spend : %dus! \r\n”,CPUSpendTime);<br>    printf(“\r\n the DMA spend : %dus! \r\n”,DMASpendTime);<br><br>}<br><br>void DMA_Configuration(void)<br>{<br>    DMA_InitTypeDef DMA_InitStructure;<br><br>    DMA_DeInit(DMA1_Channel6);<br>    DMA_InitStructure.DMA_PeripheralBaseAddr = (u32) SRC_Const_Buffer;<br>    DMA_InitStructure.DMA_MemoryBaseAddr = (u32) DST_Buffer;<br>    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;<br>    DMA_InitStructure.DMA_BufferSize = BufferSize;<br>    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Enable;<br>    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;<br>    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;<br>    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;<br>    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;<br>    DMA_InitStructure.DMA_Priority = DMA_Priority_High;<br>    DMA_InitStructure.DMA_M2M = DMA_M2M_Enable;<br>    DMA_Init(DMA1_Channel6,&amp;DMA_InitStructure);<br><br>    DMA_ITConfig(DMA1_Channel6,DMA_IT_TC,ENABLE);<br>}<br><br>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;<br>       GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br>     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br><br>}<br><br>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;<br><br>      /<em> 复位系统时钟设置</em>/<br>      RCC_DeInit();<br>      /<em> 开启HSE</em>/<br>      RCC_HSEConfig(RCC_HSE_ON);<br>      /<em> 等待HSE起振并稳定</em>/<br>      HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    /<em> 判断HSE起是否振成功，是则进入if()内部 </em>/<br>      if(HSEStartUpStatus == SUCCESS)<br>      {<br>        /<em> 选择HCLK（AHB）时钟源为SYSCLK 1分频 </em>/<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br>        /<em> 选择PCLK2时钟源为 HCLK（AHB） 1分频 </em>/<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br>        /<em> 选择PCLK1时钟源为 HCLK（AHB） 2分频 </em>/<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br>        /<em> 设置FLASH延时周期数为2 </em>/<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        /<em> 使能FLASH预取缓存 </em>/<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br>        /<em> 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz </em> 9 = 72MHz <em>/<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        /</em> 使能PLL <em>/<br>        RCC_PLLCmd(ENABLE);<br>        /</em> 等待PLL输出稳定 <em>/<br>        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        /</em> 选择SYSCLK时钟源为PLL <em>/<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        /</em> 等待PLL成为SYSCLK时钟源 <em>/<br>        while(RCC_GetSYSCLKSource() != 0x08);<br>      }<br>      /</em> 打开APB2总线上的GPIOA时钟<em>/<br>      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1, ENABLE);<br>    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);<br><br>    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR|RCC_APB1Periph_BKP|RCC_APB1Periph_WWDG, ENABLE);<br><br>}<br><br>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;<br><br>    USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;<br>    USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;<br>    USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;<br>    USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;<br>    USART_ClockInit(USART1 , &amp;USART_ClockInitStructure);<br><br>    USART_InitStructure.USART_BaudRate = 9600;<br>    USART_InitStructure.USART_WordLength = USART_WordLength_8b;<br>    USART_InitStructure.USART_StopBits = USART_StopBits_1;<br>    USART_InitStructure.USART_Parity = USART_Parity_No;<br>    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<br>    USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;<br>    USART_Init(USART1,&amp;USART_InitStructure);<br><br>     USART_Cmd(USART1,ENABLE);<br>}<br><br>void NVIC_Configuration(void)<br>{<br>    NVIC_InitTypeDef NVIC_InitStructure;<br><br>    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);<br><br>    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel6_IRQn;<br>    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;<br>    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;<br>    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;<br>    NVIC_Init(&amp;NVIC_InitStructure);<br>}<br><br>#if     PRINTF_ON<br><br>int fputc(int ch,FILE </em>f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}<br><br>#endif<br></pre><div>stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”<br>#include “stdio.h”<br><br>extern vu32 Tick;<br>extern vu16 LeftDataCounter;<br><br>void SysTick_Handler(void)<br>{<br>     Tick++;<br>}<br><br>void DMA1_Channel6_IRQHandler(void)<br>{<br><br>    LeftDataCounter = DMA_GetCurrDataCounter(DMA1_Channel6);   //获取剩余待传输数据<br>    DMA_ClearITPendingBit(DMA1_IT_GL6);<br>}<br></pre></div></div><div>库函数输出：</div><div><div> </div><div>&nbsp;Transmit Success!&nbsp;</div><div>&nbsp;the CPU spend : 68us!&nbsp;</div><div>&nbsp;the DMA spend : 7us!&nbsp;</div><div> </div></div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&text=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&is_video=false&description=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 DMA数据搬运 [操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&title=stm32 DMA数据搬运 [操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/09/stm32-DMA数据搬运-操作寄存器-库函数/&name=stm32 DMA数据搬运 [操作寄存器+库函数]&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

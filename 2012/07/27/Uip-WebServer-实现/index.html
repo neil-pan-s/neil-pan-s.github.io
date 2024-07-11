@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。 要运行Uip的WebServer 只需要:1. 修改uip-con.h 里的#inlcude “webserver.h” &amp;nbsp;去除其注释2. 在User/main.c 里加入&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp;httpd_init(); &amp;nbsp; //初始化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Uip WebServer 实现">
+<meta property="og:url" content="http://neil-pan.com/2012/07/27/Uip-WebServer-实现/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。 要运行Uip的WebServer 只需要:1. 修改uip-con.h 里的#inlcude “webserver.h” &amp;nbsp;去除其注释2. 在User/main.c 里加入&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp;httpd_init(); &amp;nbsp; //初始化">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/2241307800.jpg">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.212Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Uip WebServer 实现">
+<meta name="twitter:description" content="Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。 要运行Uip的WebServer 只需要:1. 修改uip-con.h 里的#inlcude “webserver.h” &amp;nbsp;去除其注释2. 在User/main.c 里加入&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp;httpd_init(); &amp;nbsp; //初始化">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/2241307800.jpg">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>Uip WebServer 实现</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/27/stm32-最小系统/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/27/Uip-WebClient-实现/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&text=Uip WebServer 实现"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&is_video=false&description=Uip WebServer 实现"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Uip WebServer 实现&body=Check out this article: http://neil-pan.com/2012/07/27/Uip-WebServer-实现/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&name=Uip WebServer 实现&description=&lt;div&gt;Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;要运行Uip的WebServer 只需要:&lt;/div&gt;&lt;div&gt;1. 修改uip-con.h 里的#inlcude “webserver.h” &amp;nbsp;去除其注释&lt;/div&gt;&lt;div&gt;2. 在User/main.c 里加入&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp;httpd_init(); &amp;nbsp; //初始化服务器&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Uip+ stm32移植参见&amp;nbsp;&lt;a href=&quot;http://www.ichanging.org/uip-stm32.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Uip + Stm32移植问题总结&lt;/a&gt;&lt;span style=&quot;text-align: left; &quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;浏览器访问 Uip WebServer 页面：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/2241307800.jpg&quot; alt=&quot;6581bcdegw1dv93b6puvhj.jpg&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;分析下 Uip Webserver 的运行过程,Uip WebServer使用到相关文件如下：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;httpd.c &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;/div&gt;&lt;div&gt;httpd.c中定义了一些字符阿斯克码，含义如下&lt;/div&gt;&lt;div&gt;&lt;br&gt;        #define ISO_nl      0x0a     // 换行&lt;br&gt;        #define ISO_space   0x20     // 空格&lt;br&gt;        #define ISO_bang    0x21     // !&lt;br&gt;        #define ISO_percent 0x25     // %&lt;br&gt;        #define ISO_period  0x2e   // .&lt;br&gt;        #define ISO_slash   0x2f     // /&lt;br&gt;        #define ISO_colon   0x3a     // :&lt;br&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;当Uip接收到Uip接收到底层传递的数据,将接收到的数据通过调用http_appcall(),传递给Webserver处理，再通过handle_connection(）先后调用handle_input(）函数和handle_output()函数&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Uip WebServer 实现
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-26T17:10:38.000Z" itemprop="datePublished">2012-07-27</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。</div><div> </div><div>要运行Uip的WebServer 只需要:</div><div>1. 修改uip-con.h 里的#inlcude “webserver.h” &nbsp;去除其注释</div><div>2. 在User/main.c 里加入&nbsp;&nbsp; &nbsp; &nbsp;httpd_init(); &nbsp; //初始化服务器</div><div> </div><div>Uip+ stm32移植参见&nbsp;<a href="http://www.ichanging.org/uip-stm32.html" target="_blank" rel="noopener">Uip + Stm32移植问题总结</a><span style="text-align: left; ">&nbsp;</span></div><div> </div><div>浏览器访问 Uip WebServer 页面：</div><div> </div><div><img src="/uploads/2012/07/2241307800.jpg" alt="6581bcdegw1dv93b6puvhj.jpg"></div><div> </div><div>分析下 Uip Webserver 的运行过程,Uip WebServer使用到相关文件如下：</div><div> </div><div>httpd.c &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div><div>httpd.c中定义了一些字符阿斯克码，含义如下</div><div><br>        #define ISO_nl      0x0a     // 换行<br>        #define ISO_space   0x20     // 空格<br>        #define ISO_bang    0x21     // !<br>        #define ISO_percent 0x25     // %<br>        #define ISO_period  0x2e   // .<br>        #define ISO_slash   0x2f     // /<br>        #define ISO_colon   0x3a     // :<br><br></div><div>当Uip接收到Uip接收到底层传递的数据,将接收到的数据通过调用http_appcall(),传递给Webserver处理，再通过handle_connection(）先后调用handle_input(）函数和handle_output()函数</div>
+
+<a id="more"></a>
+<div>handle_input(）主要作用是分析http数据流：</div>
+
+<pre><code>static  PT_THREAD(handle_input(struct httpd_state *s))        //分析http数据流, http数据流格式(eg. &quot;GET /6?user=123 HTTP/ ...&quot;)
+{
+char * ptr;
+
+PSOCK_BEGIN(&amp;s-&gt;sin);
+
+//取出到下一个空格号之前的数据
+PSOCK_READTO(&amp;s-&gt;sin, ISO_space);                   //Uip使用这个函数从http数据流中剥离数据
+
+
+if(strncmp(s-&gt;inputbuf, http_get, 4) != 0) {             //判断数据流前4位字符是否为&quot;GET &quot;，判断是否为GET传参
+    PSOCK_CLOSE_EXIT(&amp;s-&gt;sin);
+}
+
+PSOCK_READTO(&amp;s-&gt;sin, ISO_space);
+
+if(s-&gt;inputbuf[0] != ISO_slash) {                  
+    PSOCK_CLOSE_EXIT(&amp;s-&gt;sin);
+}
+
+if(s-&gt;inputbuf[1] == ISO_space) {                     //请求路径为 &quot;/ &quot; (eg. 192.168.1.15/ ) 更新请求页面filename 为/index.html
+    strncpy(s-&gt;filename, http_index_html, sizeof(s-&gt;filename));
+} else {                                          //根据请求路径,更新结构体中filename为相应页面名称
+    s-&gt;inputbuf[PSOCK_DATALEN(&amp;s-&gt;sin) - 1] = 0;
+    strncpy(s-&gt;filename, &amp;s-&gt;inputbuf[0], sizeof(s-&gt;filename));       
+}
+
+/*  httpd_log_file(uip_conn-&gt;ripaddr, s-&gt;filename);*/
+
+s-&gt;state = STATE_OUTPUT;
+
+while(1) {
+    PSOCK_READTO(&amp;s-&gt;sin, ISO_nl);
+
+    if(strncmp(s-&gt;inputbuf, http_referer, 8) == 0) {
+        s-&gt;inputbuf[PSOCK_DATALEN(&amp;s-&gt;sin) - 2] = 0;
+        /*      httpd_log(&amp;s-&gt;inputbuf[9]);*/
+    }
+}
+
+PSOCK_END(&amp;s-&gt;sin);
+}
+</code></pre><div>分析数据得出访问页面的名字,存入一个全局的结构体中，handle_output()函数根据这个结构体获得要输出的页面名字，做相应处理：</div>
+
+<pre><code>static PT_THREAD(handle_output(struct httpd_state *s))
+{
+    char *ptr;
+
+    PT_BEGIN(&amp;s-&gt;outputpt);
+
+    if(!httpd_fs_open(s-&gt;filename, &amp;s-&gt;file)) {            //没有此页面,打开404页面
+        httpd_fs_open(http_404_html, &amp;s-&gt;file);
+        strcpy(s-&gt;filename, http_404_html);
+        PT_WAIT_THREAD(&amp;s-&gt;outputpt,
+                send_headers(s,
+                http_header_404));
+        PT_WAIT_THREAD(&amp;s-&gt;outputpt,
+                send_file(s));
+    } else {                                 //正常打印相应页面
+        PT_WAIT_THREAD(&amp;s-&gt;outputpt,                         
+                send_headers(s,
+                http_header_200));
+        ptr = strchr(s-&gt;filename, ISO_period);                //查找字符串s-&gt;filename中首次出现字符ISO_period的位置,返回首次出现c的位置的指针
+        if(ptr != NULL &amp;&amp; strncmp(ptr, http_shtml, 6) == 0) {     //判断是否为 .shtml网页文件    
+            PT_INIT(&amp;s-&gt;scriptpt);
+            PT_WAIT_THREAD(&amp;s-&gt;outputpt, handle_script(s));    //若为 .shtml页面,则调用handle_script()生成动态网页
+        } else {                            //不是 .shtml(eg.  /index.html),输出该页面数据
+            PT_WAIT_THREAD(&amp;s-&gt;outputpt,
+                    send_file(s));
+        }
+    }
+    PSOCK_CLOSE(&amp;s-&gt;sout);
+    PT_END(&amp;s-&gt;outputpt);
+}
+</code></pre><p>httpd_fs_open(）定义于httpd-fs.c,用于读取相应页面的数据，将页面数据存入全局结构体中，是实现路由遍历的关键函数：</p>
+<pre><code>int  httpd_fs_open(const char *name, struct httpd_fs_file *file)
+{
+#if HTTPD_FS_STATISTICS
+  u16_t i = 0;
+#endif /* HTTPD_FS_STATISTICS */
+  struct httpd_fsdata_file_noconst *f;
+  //遍历所有的页面数据, 方便校验是否存在该页面
+for(f = (struct httpd_fsdata_file_noconst *)HTTPD_FS_ROOT;        //HTTPD_FS_ROOT 定义于httpd-fsdata.c, 定义了遍历入口 
+    f != NULL; 
+    f = (struct httpd_fsdata_file_noconst *)f-&gt;next) {             //加载下一个页面数据 ,遍历顺序由httpd_fsdata_file结构体中 next决定(见 httpd-fsdata.c)                                                          
+        if(httpd_fs_strcmp(name, f-&gt;name) == 0) {                  //校验请求的页面是否为此页面 
+            file-&gt;data = f-&gt;data; 
+            file-&gt;len = f-&gt;len; 
+        #if HTTPD_FS_STATISTICS 
+                ++count[i]; 
+        #endif /* HTTPD_FS_STATISTICS */ 
+            return 1;
+         } 
+    #if HTTPD_FS_STATISTICS 
+        ++i; 
+    #endif /* HTTPD_FS_STATISTICS */ 
+} 
+return 0; 
+}
+</code></pre><p>http-fsdata.c 中包含了所有页面的数据。这里的页面数据都转换为ACAll存在数组中，还包括了层叠样式表 （.css文件) 和图片。其数组结构如下：</p>
+<pre><code>static const unsigned char data_404_html[] = {
+/* /404.html */
+0x2f, 0x34, 0x30, 0x34, 0x2e, 0x68, 0x74, 0x6d, 0x6c, 0,//文件名  /404.html
+0x3c, 0x68, 0x74, 0x6d, 0x6c, 0x3e, 0xa, 0x20, 0x20, 0x3c,            //html文件转码为16进制数据(ASCLL)
+0x62, 0x6f, 0x64, 0x79, 0x20, 0x62, 0x67, 0x63, 0x6f, 0x6c, 
+0x6f, 0x72, 0x3d, 0x22, 0x77, 0x68, 0x69, 0x74, 0x65, 0x22, 
+0x3e, 0xa, 0x20, 0x20, 0x20, 0x20, 0x3c, 0x63, 0x65, 0x6e, 
+0x74, 0x65, 0x72, 0x3e, 0xa, 0x20, 0x20, 0x20, 0x20, 0x20, 
+0x20, 0x3c, 0x68, 0x31, 0x3e, 0x34, 0x30, 0x34, 0x20, 0x2d, 
+0x20, 0x66, 0x69, 0x6c, 0x65, 0x20, 0x6e, 0x6f, 0x74, 0x20, 
+0x66, 0x6f, 0x75, 0x6e, 0x64, 0x3c, 0x2f, 0x68, 0x31, 0x3e, 
+0xa, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x3c, 0x68, 0x33, 
+0x3e, 0x47, 0x6f, 0x20, 0x3c, 0x61, 0x20, 0x68, 0x72, 0x65, 
+0x66, 0x3d, 0x22, 0x2f, 0x22, 0x3e, 0x68, 0x65, 0x72, 0x65, 
+0x3c, 0x2f, 0x61, 0x3e, 0x20, 0x69, 0x6e, 0x73, 0x74, 0x65, 
+0x61, 0x64, 0x2e, 0x3c, 0x2f, 0x68, 0x33, 0x3e, 0xa, 0x20, 
+0x20, 0x20, 0x20, 0x3c, 0x2f, 0x63, 0x65, 0x6e, 0x74, 0x65, 
+0x72, 0x3e, 0xa, 0x20, 0x20, 0x3c, 0x2f, 0x62, 0x6f, 0x64, 
+0x79, 0x3e, 0xa, 0x3c, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3e, 
+0};
+</code></pre><p>需要注意的是以下的一段程序：<br></p>
+<pre><code>//结构体格式说明:      下一个页面地址(用于遍历网页)    ,网页name地址      ,html数据起始地址          ,html数据长度
+//其中的加减操作是为了去除文件名的长度
+const struct httpd_fsdata_file file_processes_shtml[] = {{NULL, data_processes_shtml, data_processes_shtml + 17, sizeof(data_processes_shtml) - 17}};
+
+const struct httpd_fsdata_file file_404_html[] = {{file_processes_shtml, data_404_html, data_404_html + 10, sizeof(data_404_html) - 10}};
+
+const struct httpd_fsdata_file file_files_shtml[] = {{file_404_html, data_files_shtml, data_files_shtml + 13, sizeof(data_files_shtml) - 13}};
+
+const struct httpd_fsdata_file file_footer_html[] = {{file_files_shtml, data_footer_html, data_footer_html + 13, sizeof(data_footer_html) - 13}};
+
+const struct httpd_fsdata_file file_header_html[] = {{file_footer_html, data_header_html, data_header_html + 13, sizeof(data_header_html) - 13}};
+
+const struct httpd_fsdata_file file_index_html[] = {{file_header_html, data_index_html, data_index_html + 12, sizeof(data_index_html) - 12}};
+
+const struct httpd_fsdata_file file_style_css[] = {{file_index_html, data_style_css, data_style_css + 11, sizeof(data_style_css) - 11}};
+
+const struct httpd_fsdata_file file_tcp_shtml[] = {{file_style_css, data_tcp_shtml, data_tcp_shtml + 11, sizeof(data_tcp_shtml) - 11}};
+
+const struct httpd_fsdata_file file_fade_png[] = {{file_tcp_shtml, data_fade_png, data_fade_png + 10, sizeof(data_fade_png) - 10}};
+
+const struct httpd_fsdata_file file_stats_shtml[] = {{file_fade_png, data_stats_shtml, data_stats_shtml + 13, sizeof(data_stats_shtml) - 13}};
+
+#define HTTPD_FS_ROOT file_stats_shtml      //设定路由遍历入口页面,一定要保证所有页面都遍历过一次
+
+#define HTTPD_FS_NUMFILES 10                //设定页面数量
+</code></pre><p>在 httpd_fs_open() 首先加载 file_stats_shtml页面数据 再加载file_stats_shtml结构体中下一个网页的数据 也就是file_fade_png的数据，同理 file_fade_png加载后一个页面数据  即 file_tcp_shtml数据 。。。 这样循环一次 就会加载所有的页面，实现里有遍历</p>
+<p>Uip WebServer的动态网页生成</p>
+<p>在uip/apps/Webserver/http-fs/下有Webserver 页面未转码的html文件，其中有很多 %！ 和 %!: 字符 ：</p>
+<pre><code>%!: /header.html
+&lt;h1&gt;Network statistics&lt;/h1&gt;
+&lt;center&gt;
+&lt;table width=&quot;300&quot; border=&quot;0&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;pre&gt;
+IP           Packets received
+             Packets sent
+         Packets dropped
+IP errors    IP version/header length
+             IP length, high byte
+             IP length, low byte
+             IP fragments
+             Header checksum
+             Wrong protocol
+ICMP         Packets received
+             Packets sent
+             Packets dropped
+             Type errors
+TCP          Packets received
+             Packets sent
+             Packets dropped
+             Checksum errors
+             Data packets without ACKs
+             Resets
+             Retransmissions
+         No connection avaliable
+         Connection attempts to closed ports
+&lt;/pre&gt;&lt;/td&gt;&lt;td&gt;&lt;pre&gt;%! net-stats
+&lt;/pre&gt;&lt;/table&gt;
+&lt;/center&gt;
+%!: /footer.html
+</code></pre><div>这是实现动态页面的关键。</div><div> </div><div>handle_output(）函数中，找到相应页面数据后，若页面为.shtml，则会调用handle_script(）函数：</div>
+
+<pre><code>    static  PT_THREAD(handle_script(struct httpd_state *s))                                   
+    {
+    char *ptr;
+    PT_BEGIN(&amp;s-&gt;scriptpt);
+
+    while(s-&gt;file.len &gt; 0) {
+
+/* Check if we should start executing a script. */        //检测当前html数据(定义于httpd-fsdata.c)中是否存在字符 %! 和 %!:
+if(*s-&gt;file.data == ISO_percent &amp;&amp;
+   *(s-&gt;file.data + 1) == ISO_bang) {                    
+  s-&gt;scriptptr = s-&gt;file.data + 3;                        
+  s-&gt;scriptlen = s-&gt;file.len - 3;
+  if(*(s-&gt;scriptptr - 1) == ISO_colon) {                //若为 %!:  根据其后变量名,打开并输出相应文件 
+httpd_fs_open(s-&gt;scriptptr + 1, &amp;s-&gt;file);                //eg.  %!: /header.html  打印/header.html
+PT_WAIT_THREAD(&amp;s-&gt;scriptpt, send_file(s));
+  } else {                                    //若为 %!   根据其后变量名,调用相应处理程序(定义于httpd-cgi.c)
+PT_WAIT_THREAD(&amp;s-&gt;scriptpt,                        //eg. %! file-stats        调用file-stats 绑定的file_stats()函数,打印出相关数据,实现动态网页
+           httpd_cgi(s-&gt;scriptptr)(s, s-&gt;scriptptr));
+  }
+  next_scriptstate(s);
+
+  /* The script is over, so we reset the pointers and continue
+ sending the rest of the file. */
+  s-&gt;file.data = s-&gt;scriptptr;
+  s-&gt;file.len = s-&gt;scriptlen;
+} else {                                                //当前html数据不存在 %! 和 %!
+  /* See if we find the start of script marker in the block of HTML
+ to be sent. */
+
+...略去
+</code></pre><p>uip 载入html数据的方法类似网页里的模板引擎的实现方法。当页面输出时，检测到有字符串 %! 和 %！: 时，则调用相应的cgi程序（httpd-cgi.c）处理，在httpd-cgi.c中做相应的数据处理，实现动态网页。</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&text=Uip WebServer 实现"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&is_video=false&description=Uip WebServer 实现"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Uip WebServer 实现&body=Check out this article: http://neil-pan.com/2012/07/27/Uip-WebServer-实现/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&title=Uip WebServer 实现"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/27/Uip-WebServer-实现/&name=Uip WebServer 实现&description=&lt;div&gt;Uip的Webserver比较复杂，用c语言实现一个简单服务器的所有功能，路由功能，GET传参，动态页面生成等。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;要运行Uip的WebServer 只需要:&lt;/div&gt;&lt;div&gt;1. 修改uip-con.h 里的#inlcude “webserver.h” &amp;nbsp;去除其注释&lt;/div&gt;&lt;div&gt;2. 在User/main.c 里加入&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp;httpd_init(); &amp;nbsp; //初始化服务器&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Uip+ stm32移植参见&amp;nbsp;&lt;a href=&quot;http://www.ichanging.org/uip-stm32.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Uip + Stm32移植问题总结&lt;/a&gt;&lt;span style=&quot;text-align: left; &quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;浏览器访问 Uip WebServer 页面：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/2241307800.jpg&quot; alt=&quot;6581bcdegw1dv93b6puvhj.jpg&quot;&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;分析下 Uip Webserver 的运行过程,Uip WebServer使用到相关文件如下：&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;httpd.c &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;/div&gt;&lt;div&gt;httpd.c中定义了一些字符阿斯克码，含义如下&lt;/div&gt;&lt;div&gt;&lt;br&gt;        #define ISO_nl      0x0a     // 换行&lt;br&gt;        #define ISO_space   0x20     // 空格&lt;br&gt;        #define ISO_bang    0x21     // !&lt;br&gt;        #define ISO_percent 0x25     // %&lt;br&gt;        #define ISO_period  0x2e   // .&lt;br&gt;        #define ISO_slash   0x2f     // /&lt;br&gt;        #define ISO_colon   0x3a     // :&lt;br&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;当Uip接收到Uip接收到底层传递的数据,将接收到的数据通过调用http_appcall(),传递给Webserver处理，再通过handle_connection(）先后调用handle_input(）函数和handle_output()函数&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

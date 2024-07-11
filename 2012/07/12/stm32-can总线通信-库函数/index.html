@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 can总线通信[库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/3744164432.gif">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.229Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 can总线通信[库函数]">
+<meta name="twitter:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/3744164432.gif">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 can总线通信[库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/14/stm32-SPI通信-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/12/stm32-i2c通信-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&text=stm32 can总线通信[库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&is_video=false&description=stm32 can总线通信[库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 can总线通信[库函数]&body=Check out this article: http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&name=stm32 can总线通信[库函数]&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和振动大的工业环境。相比于I2C和SPI总线结构，can总线定义了更为优秀的物理层、数据链路层，并拥有种类丰富、繁简不一的上层协议。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; CAN总线的物理连接只需要两根线，通常称为CAN_H和CAN_L,通常查分信号进行数据的传输。&amp;nbsp;CAN总线有两种电平，分为隐性电平和显性电平，这两种电平表现为“与”的关系。&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;若隐性电平相遇，则总线表现为隐性电平。&lt;/li&gt;
+&lt;li&gt;若显性电平相遇，则总线表现为显性电平。&lt;/li&gt;
+&lt;li&gt;若隐性电平和显性电平相遇，则总线表现为显性电平。&lt;div&gt;CAN总线的典型拓扑结构如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/3744164432.gif&quot; alt=&quot;12KS3133950-12D9.gif&quot;&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN总线网络是一种多主机网络，在总线处于空闲时，任何一个节点都可以申请成为主机，向总线发送消息，最先访问总线的节点单元可以获得总线的控制权。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线的所有消息都是以固定的形式打包发送的。两个以上的节点单元同时发送数据时，根据节点标志符决定各自优先关系。CAN总线并没有类似其他的总线上的地址的概念，在总线上增加节点时，连接节点的其他单元软硬件什么都不需要改变。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线的通信速率和总线长度有关，在总线长度小于40m的场合中，数据传输速率可以达到1Mbps，即便长度达到1000m,数据传输数率也可以达到50Kbps，无论在数率和传输距离上都由于常见的RS232、RS485和I2C总线。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线在理论上节点数没有上限，但是实际中受到总线上的时间延时和电气负载的限制。降低节点数可以增大通信速率。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; Stm32 至少配备一个CAN总线控制器，最高速率可以达到1Mbps，支持11位的标准帧格式和29为的拓展帧格式的接收和发送，具备三个邮箱和2个接收FIFO,此外还有3级可编程滤波器。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;本例主要实现使用stm32的CAN总线实现数据的发送和接收，使用串口观察数据。&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 can总线通信[库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-12T14:04:25.000Z" itemprop="datePublished">2012-07-12</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和振动大的工业环境。相比于I2C和SPI总线结构，can总线定义了更为优秀的物理层、数据链路层，并拥有种类丰富、繁简不一的上层协议。</div><div>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; CAN总线的物理连接只需要两根线，通常称为CAN_H和CAN_L,通常查分信号进行数据的传输。&nbsp;CAN总线有两种电平，分为隐性电平和显性电平，这两种电平表现为“与”的关系。</div>
+
+<ul>
+<li>若隐性电平相遇，则总线表现为隐性电平。</li>
+<li>若显性电平相遇，则总线表现为显性电平。</li>
+<li>若隐性电平和显性电平相遇，则总线表现为显性电平。<div>CAN总线的典型拓扑结构如下：</div><div><img src="/uploads/2012/07/3744164432.gif" alt="12KS3133950-12D9.gif"></div><div>&nbsp;&nbsp;&nbsp;&nbsp;CAN总线网络是一种多主机网络，在总线处于空闲时，任何一个节点都可以申请成为主机，向总线发送消息，最先访问总线的节点单元可以获得总线的控制权。</div><div> </div><div>&nbsp; &nbsp; CAN总线的所有消息都是以固定的形式打包发送的。两个以上的节点单元同时发送数据时，根据节点标志符决定各自优先关系。CAN总线并没有类似其他的总线上的地址的概念，在总线上增加节点时，连接节点的其他单元软硬件什么都不需要改变。</div><div> </div><div>&nbsp; &nbsp; CAN总线的通信速率和总线长度有关，在总线长度小于40m的场合中，数据传输速率可以达到1Mbps，即便长度达到1000m,数据传输数率也可以达到50Kbps，无论在数率和传输距离上都由于常见的RS232、RS485和I2C总线。</div><div>&nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; CAN总线在理论上节点数没有上限，但是实际中受到总线上的时间延时和电气负载的限制。降低节点数可以增大通信速率。</div><div> </div><div>&nbsp; &nbsp; Stm32 至少配备一个CAN总线控制器，最高速率可以达到1Mbps，支持11位的标准帧格式和29为的拓展帧格式的接收和发送，具备三个邮箱和2个接收FIFO,此外还有3级可编程滤波器。</div><div> </div><div><strong>本例主要实现使用stm32的CAN总线实现数据的发送和接收，使用串口观察数据。</strong></div><div> </div></li>
+</ul>
+<a id="more"></a>
+<div><strong>库函数操作</strong></div><div> </div><div><div>CAN 通信 过滤器 和 屏蔽器 ：</div><div> </div><div>例如设置某接收滤波寄存器00000000001(11位),接收屏蔽寄存器11111111101(11位),则该对组合会拒绝接收00000000011和00000000001之外所有的标识符对应的CAN帧,因为屏蔽器规定第二位(为0)以外的所有标识符位要严格匹配(与滤波器值一致),第二位的滤波器值和收到的CAN标识符第二位值是否一致都可以.</div><div> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”<br>#include “stdio.h”<br><br>#define     PRINTF_ON  1<br><br>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void USART_Configuration(void);<br>void CAN_Configuration(void);<br>void NVIC_Configuration(void);<br><br>u8 TransmitMailbox = 0;<br>CanTxMsg TxMessage;<br>CanRxMsg RxMessage;<br><br>int main(void)<br>{<br>      RCC_Configuration();<br>    GPIO_Configuration();<br>    USART_Configuration();<br>    CAN_Configuration();<br><br>    TxMessage.ExtId = 0x00AA0000;<br>    TxMessage.RTR = CAN_RTR_DATA;<br>    TxMessage.IDE = CAN_ID_EXT;<br>    TxMessage.DLC = 8;<br>    TxMessage.Data[0] = 0x00;<br>    TxMessage.Data[1] = 0x12;<br>    TxMessage.Data[2] = 0x34;<br>    TxMessage.Data[3] = 0x56;<br>    TxMessage.Data[4] = 0x78;<br>    TxMessage.Data[5] = 0xAB;<br>    TxMessage.Data[6] = 0xCD;<br>    TxMessage.Data[7] = 0xEF;<br><br>    TransmitMailbox = CAN_Transmit(CAN1,&amp;TxMessage);<br>    while(CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK);<br>    printf(“\r\n The CAN has send data: %d ,%d,%d ,%d,%d ,%d,%d ,%d \r\n”,<br>        TxMessage.Data[0],<br>        TxMessage.Data[1],<br>        TxMessage.Data[2],<br>        TxMessage.Data[3],<br>        TxMessage.Data[4],<br>        TxMessage.Data[5],<br>        TxMessage.Data[6],<br>        TxMessage.Data[7]<br>    );<br><br>    while(CAN_MessagePending(CAN1,CAN_FIFO0) == 0);<br><br>    //RxMessage.StdId = 0x00;<br>    RxMessage.IDE = CAN_ID_EXT;<br>    RxMessage.DLC = 0;<br>    RxMessage.Data[0] = 0x00;<br>    RxMessage.Data[1] = 0x00;<br>    RxMessage.Data[2] = 0x00;<br>    RxMessage.Data[3] = 0x00;<br>    RxMessage.Data[4] = 0x00;<br>    RxMessage.Data[5] = 0x00;<br>    RxMessage.Data[6] = 0x00;<br>    RxMessage.Data[7] = 0x00;<br><br>    CAN_Receive(CAN1,CAN_FIFO0,&amp;RxMessage);<br>    printf(“\r\n The CAN　has receive data : %d,%d,%d,%d,%d,%d,%d,%d \r\n”,<br>        RxMessage.Data[0],<br>        RxMessage.Data[1],<br>        RxMessage.Data[2],<br>        RxMessage.Data[3],<br>        RxMessage.Data[4],<br>        RxMessage.Data[5],<br>        RxMessage.Data[6],<br>        RxMessage.Data[7]<br>    );<br><br>    while(1);<br>}<br><br>void CAN_Configuration(void)<br>{<br>    CAN_InitTypeDef CAN_InitStructure;<br>    CAN_FilterInitTypeDef CAN_FilterInitStructure;<br><br>    CAN_DeInit(CAN1);<br>    CAN_StructInit(&amp;CAN_InitStructure);<br><br>    CAN_InitStructure.CAN_TTCM = DISABLE;<br>    CAN_InitStructure.CAN_ABOM = DISABLE;<br>    CAN_InitStructure.CAN_AWUM = DISABLE;<br>    CAN_InitStructure.CAN_NART = DISABLE;<br>    CAN_InitStructure.CAN_RFLM = DISABLE;<br>    CAN_InitStructure.CAN_TXFP = DISABLE;<br>    CAN_InitStructure.CAN_Mode = CAN_Mode_LoopBack;<br>    CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;<br>    CAN_InitStructure.CAN_BS1 = CAN_BS1_8tq;<br>    CAN_InitStructure.CAN_BS2 = CAN_BS2_7tq;<br>    CAN_Init(CAN1,&amp;CAN_InitStructure);<br><br>    CAN_FilterInitStructure.CAN_FilterNumber = 0;<br>    CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;<br>    CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;<br>    CAN_FilterInitStructure.CAN_FilterIdHigh = 0x00AA &lt;&lt; 3;            //匹配过滤寄存器,因为数据标志符段 还有 IDE ,RTR 和一个补零位  所以左移三位<br>    CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;<br>    CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x00FF &lt;&lt; 3 ;        //匹配屏蔽寄存器<br>    CAN_FilterInitStructure.CAN_FilterFIFOAssignment = 0;<br>    CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;<br><br>    CAN_FilterInit(&amp;CAN_FilterInitStructure);<br><br>}<br><br>void GPIO_Configuration(void)<br>{<br>    GPIO_InitTypeDef    GPIO_InitStructure;<br><br>     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;<br>      GPIO_Init(GPIOB , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOB , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br><br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure);<br>}<br><br>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;<br><br>      /<em> 复位系统时钟设置</em>/<br>      RCC_DeInit();<br>      /<em> 开启HSE</em>/<br>      RCC_HSEConfig(RCC_HSE_ON);<br>      /<em> 等待HSE起振并稳定</em>/<br>      HSEStartUpStatus = RCC_WaitForHSEStartUp();<br>    /<em> 判断HSE起是否振成功，是则进入if()内部 </em>/<br>      if(HSEStartUpStatus == SUCCESS)<br>      {<br>        /<em> 选择HCLK（AHB）时钟源为SYSCLK 1分频 </em>/<br>        RCC_HCLKConfig(RCC_SYSCLK_Div1);<br>        /<em> 选择PCLK2时钟源为 HCLK（AHB） 1分频 </em>/<br>        RCC_PCLK2Config(RCC_HCLK_Div1);<br>        /<em> 选择PCLK1时钟源为 HCLK（AHB） 2分频 </em>/<br>        RCC_PCLK1Config(RCC_HCLK_Div2);<br>        /<em> 设置FLASH延时周期数为2 </em>/<br>        FLASH_SetLatency(FLASH_Latency_2);<br>        /<em> 使能FLASH预取缓存 </em>/<br>        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);<br>        /<em> 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz </em> 9 = 72MHz <em>/<br>        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);<br>        /</em> 使能PLL <em>/<br>        RCC_PLLCmd(ENABLE);<br>        /</em> 等待PLL输出稳定 <em>/<br>        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);<br>        /</em> 选择SYSCLK时钟源为PLL <em>/<br>        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);<br>        /</em> 等待PLL成为SYSCLK时钟源 <em>/<br>        while(RCC_GetSYSCLKSource() != 0x08);<br>      }<br>      /</em> 打开APB2总线上的GPIOA时钟<em>/<br>      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1, ENABLE);<br><br>    //RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);<br><br>    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1,ENABLE);<br>    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR|RCC_APB1Periph_BKP|RCC_APB1Periph_WWDG|RCC_APB1Periph_SPI2|RCC_APB1Periph_I2C1|RCC_APB1Periph_I2C2, ENABLE);<br><br>}<br><br>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;<br><br>    USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;<br>    USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;<br>    USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;<br>    USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;<br>    USART_ClockInit(USART1 , &amp;USART_ClockInitStructure);<br><br>    USART_InitStructure.USART_BaudRate = 9600;<br>    USART_InitStructure.USART_WordLength = USART_WordLength_8b;<br>    USART_InitStructure.USART_StopBits = USART_StopBits_1;<br>    USART_InitStructure.USART_Parity = USART_Parity_No;<br>    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<br>    USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;<br>    USART_Init(USART1,&amp;USART_InitStructure);<br><br>     USART_Cmd(USART1,ENABLE);<br>}<br><br>#if     PRINTF_ON<br><br>int fputc(int ch,FILE </em>f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}<br><br>#endif<br></pre></div><div> </div></div><div> </div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&text=stm32 can总线通信[库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&is_video=false&description=stm32 can总线通信[库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 can总线通信[库函数]&body=Check out this article: http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&title=stm32 can总线通信[库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/12/stm32-can总线通信-库函数/&name=stm32 can总线通信[库函数]&description=&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN是控制器局域网络(Controller Area Network, CAN)的简称，是由研发和生产汽车电子产品著称的德国BOSCH公司开发了的，并最终成为国际标准（ISO118?8）。近年来，其所具有的高可靠性和良好的错误检测能力受到重视，被广泛应用于汽车计算机控制系统和环境温度恶劣、电磁辐射强和振动大的工业环境。相比于I2C和SPI总线结构，can总线定义了更为优秀的物理层、数据链路层，并拥有种类丰富、繁简不一的上层协议。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; CAN总线的物理连接只需要两根线，通常称为CAN_H和CAN_L,通常查分信号进行数据的传输。&amp;nbsp;CAN总线有两种电平，分为隐性电平和显性电平，这两种电平表现为“与”的关系。&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;若隐性电平相遇，则总线表现为隐性电平。&lt;/li&gt;
+&lt;li&gt;若显性电平相遇，则总线表现为显性电平。&lt;/li&gt;
+&lt;li&gt;若隐性电平和显性电平相遇，则总线表现为显性电平。&lt;div&gt;CAN总线的典型拓扑结构如下：&lt;/div&gt;&lt;div&gt;&lt;img src=&quot;/uploads/2012/07/3744164432.gif&quot; alt=&quot;12KS3133950-12D9.gif&quot;&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;CAN总线网络是一种多主机网络，在总线处于空闲时，任何一个节点都可以申请成为主机，向总线发送消息，最先访问总线的节点单元可以获得总线的控制权。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线的所有消息都是以固定的形式打包发送的。两个以上的节点单元同时发送数据时，根据节点标志符决定各自优先关系。CAN总线并没有类似其他的总线上的地址的概念，在总线上增加节点时，连接节点的其他单元软硬件什么都不需要改变。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线的通信速率和总线长度有关，在总线长度小于40m的场合中，数据传输速率可以达到1Mbps，即便长度达到1000m,数据传输数率也可以达到50Kbps，无论在数率和传输距离上都由于常见的RS232、RS485和I2C总线。&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; CAN总线在理论上节点数没有上限，但是实际中受到总线上的时间延时和电气负载的限制。降低节点数可以增大通信速率。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; Stm32 至少配备一个CAN总线控制器，最高速率可以达到1Mbps，支持11位的标准帧格式和29为的拓展帧格式的接收和发送，具备三个邮箱和2个接收FIFO,此外还有3级可编程滤波器。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;本例主要实现使用stm32的CAN总线实现数据的发送和接收，使用串口观察数据。&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

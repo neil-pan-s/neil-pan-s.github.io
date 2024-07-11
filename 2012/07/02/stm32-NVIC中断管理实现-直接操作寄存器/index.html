@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="&amp;nbsp; &amp;nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm3">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 NVIC中断管理实现[直接操作寄存器]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="&amp;nbsp; &amp;nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm3">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/04/2959854668.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/929251674.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.220Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 NVIC中断管理实现[直接操作寄存器]">
+<meta name="twitter:description" content="&amp;nbsp; &amp;nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm3">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/04/2959854668.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 NVIC中断管理实现[直接操作寄存器]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/02/stm32-外部中断嵌套-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&text=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&is_video=false&description=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 NVIC中断管理实现[直接操作寄存器]&body=Check out this article: http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&name=stm32 NVIC中断管理实现[直接操作寄存器]&description=&lt;div&gt;&amp;nbsp; &amp;nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm32的&lt;strong&gt;中断优先级分组&lt;/strong&gt;是怎么回事。要理解优先级分组，就要先理解什么是&lt;strong&gt;先占优先级&lt;/strong&gt;，和&lt;strong&gt;次占优先级&lt;/strong&gt;。 &amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;strong&gt;先占优先级&lt;/strong&gt;的概念等同于51单片机中的中断。假设有两中断先后触发，已经在执行的中断先占优先级如果没有后触发的中断 先占优先级更高，就会先处理先占优先级高的中断。也就是说又有较高的先占优先级的中断可以打断先占优先级较低的中断。这是实现中断嵌套的基础。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;strong&gt;次占优先级&lt;/strong&gt;只在同一先占优先级的中断同时触发时起作用，先占优先级相同，则优先执行次占优先级较高的中断。次占优先级不会造成中断嵌套。 如果中断的两个优先级都一致，则优先执行位于中断向量表中位置较高的中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;em&gt;还需要注意的一点是 这里的中断优先级 高是指 &amp;nbsp;是指是否更接近0级，0级优先级是最高的。&lt;/em&gt;&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;那么最低的优先级可以是多少？这就涉及了优先级分组的概念。 stm32 通过一个中断向量控制器（NVIC），来分配先占优先级和次占优先级的数量。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;arm cortex-m3 内核中拥有一个3位宽度的的PRIGROUP数据区，用来指示一个8位数据序列中的小数点的位置从而表示中断优先级的分组。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;举个例子可以更好的理解：&amp;nbsp;如果PRIGROUP 数据位000 &amp;nbsp;即为0 &amp;nbsp;说明8位数据序列中小数位置在第1位的左边 &amp;nbsp;为xxxxxxx.y &amp;nbsp; 用于表示中断优先级的分组的含义就是 &amp;nbsp; 用7位的数据宽度来表示 &amp;nbsp;先占优先级的数量 即为128 &amp;nbsp;用1位的数据宽度来表示 次占优先级数量 即为 2&amp;nbsp;&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 NVIC中断管理实现[直接操作寄存器]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-02T12:54:33.000Z" itemprop="datePublished">2012-07-02</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>&nbsp; &nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。</div><div> </div><div>&nbsp;&nbsp;&nbsp;&nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm32的<strong>中断优先级分组</strong>是怎么回事。要理解优先级分组，就要先理解什么是<strong>先占优先级</strong>，和<strong>次占优先级</strong>。 &nbsp;</div><div> </div><div>&nbsp; &nbsp;&nbsp;<strong>先占优先级</strong>的概念等同于51单片机中的中断。假设有两中断先后触发，已经在执行的中断先占优先级如果没有后触发的中断 先占优先级更高，就会先处理先占优先级高的中断。也就是说又有较高的先占优先级的中断可以打断先占优先级较低的中断。这是实现中断嵌套的基础。</div><div> </div><div>&nbsp; &nbsp;&nbsp;<strong>次占优先级</strong>只在同一先占优先级的中断同时触发时起作用，先占优先级相同，则优先执行次占优先级较高的中断。次占优先级不会造成中断嵌套。 如果中断的两个优先级都一致，则优先执行位于中断向量表中位置较高的中断。</div><div> </div><div><strong><em>还需要注意的一点是 这里的中断优先级 高是指 &nbsp;是指是否更接近0级，0级优先级是最高的。</em></strong></div><div> </div><div>那么最低的优先级可以是多少？这就涉及了优先级分组的概念。 stm32 通过一个中断向量控制器（NVIC），来分配先占优先级和次占优先级的数量。</div><div> </div><div>arm cortex-m3 内核中拥有一个3位宽度的的PRIGROUP数据区，用来指示一个8位数据序列中的小数点的位置从而表示中断优先级的分组。</div><div> </div><div>举个例子可以更好的理解：&nbsp;如果PRIGROUP 数据位000 &nbsp;即为0 &nbsp;说明8位数据序列中小数位置在第1位的左边 &nbsp;为xxxxxxx.y &nbsp; 用于表示中断优先级的分组的含义就是 &nbsp; 用7位的数据宽度来表示 &nbsp;先占优先级的数量 即为128 &nbsp;用1位的数据宽度来表示 次占优先级数量 即为 2&nbsp;</div>
+
+<a id="more"></a>
+<div> </div><div>所以arm cortex-m3中有2的三次方 即为8个优先级分组 。&nbsp;</div><div> </div><div>但是stm32中只有5个优先级分组，表示方法略有不同，参照下表：</div><div> </div><div><img src="/uploads/2012/04/2959854668.png" alt="NVIC_table.png"></div><div> </div><div>&nbsp; &nbsp; MDK中定义的中断相关的寄存器结构体为：<p></p><div>typedef struct</div><div>{</div><div>&nbsp; vu32 ISER[2];</div><div>&nbsp; u32 &nbsp;RESERVED0[30];</div><div>&nbsp; vu32 ICER[2];</div><div>&nbsp; u32 &nbsp;RSERVED1[30];</div><div>&nbsp; vu32 ISPR[2];</div><div>&nbsp; u32 &nbsp;RESERVED2[30];</div><div>&nbsp; vu32 ICPR[2];</div><div>&nbsp; u32 &nbsp;RESERVED3[30];</div><div>&nbsp; vu32 IABR[2];</div><div>&nbsp; u32 &nbsp;RESERVED4[62];</div><div>&nbsp; vu32 IPR[15];</div><div>} NVIC_TypeDef;</div><div> </div><div><strong>ISER[2]:中断使能寄存器组</strong></div><div> </div><div>stm32可屏蔽中断共有60个，这里用了两个32位的寄存器，可以表示64个中断。stm32只用了前60位。 若要使能某个中断，则必须设置相应的ISER位为1。</div><div>具体每一位对应的中断关系如下：（参见 MDK下的&nbsp;<span style="text-align: left; ">stm32f10x_nvic.h</span>）</div><div><pre class="brush:cpp;">#define WWDG_IRQChannel              ((u8)0x00)  /<em> Window WatchDog Interrupt </em>/<br>#define PVD_IRQChannel               ((u8)0x01)  /<em> PVD through EXTI Line detection Interrupt </em>/<br>#define TAMPER_IRQChannel            ((u8)0x02)  /<em> Tamper Interrupt </em>/<br>#define RTC_IRQChannel               ((u8)0x03)  /<em> RTC global Interrupt </em>/<br>#define FLASH_IRQChannel             ((u8)0x04)  /<em> FLASH global Interrupt </em>/<br>#define RCC_IRQChannel               ((u8)0x05)  /<em> RCC global Interrupt </em>/<br>#define EXTI0_IRQChannel             ((u8)0x06)  /<em> EXTI Line0 Interrupt </em>/<br>#define EXTI1_IRQChannel             ((u8)0x07)  /<em> EXTI Line1 Interrupt </em>/<br>#define EXTI2_IRQChannel             ((u8)0x08)  /<em> EXTI Line2 Interrupt </em>/<br>#define EXTI3_IRQChannel             ((u8)0x09)  /<em> EXTI Line3 Interrupt </em>/<br>#define EXTI4_IRQChannel             ((u8)0x0A)  /<em> EXTI Line4 Interrupt </em>/<br>#define DMA1_Channel1_IRQChannel     ((u8)0x0B)  /<em> DMA1 Channel 1 global Interrupt </em>/<br>#define DMA1_Channel2_IRQChannel     ((u8)0x0C)  /<em> DMA1 Channel 2 global Interrupt </em>/<br>#define DMA1_Channel3_IRQChannel     ((u8)0x0D)  /<em> DMA1 Channel 3 global Interrupt </em>/<br>#define DMA1_Channel4_IRQChannel     ((u8)0x0E)  /<em> DMA1 Channel 4 global Interrupt </em>/<br>#define DMA1_Channel5_IRQChannel     ((u8)0x0F)  /<em> DMA1 Channel 5 global Interrupt </em>/<br>#define DMA1_Channel6_IRQChannel     ((u8)0x10)  /<em> DMA1 Channel 6 global Interrupt </em>/<br>#define DMA1_Channel7_IRQChannel     ((u8)0x11)  /<em> DMA1 Channel 7 global Interrupt </em>/<br>#define ADC1_2_IRQChannel            ((u8)0x12)  /<em> ADC1 et ADC2 global Interrupt </em>/<br>#define USB_HP_CAN_TX_IRQChannel     ((u8)0x13)  /<em> USB High Priority or CAN TX Interrupts </em>/<br>#define USB_LP_CAN_RX0_IRQChannel    ((u8)0x14)  /<em> USB Low Priority or CAN RX0 Interrupts </em>/<br>#define CAN_RX1_IRQChannel           ((u8)0x15)  /<em> CAN RX1 Interrupt </em>/<br>#define CAN_SCE_IRQChannel           ((u8)0x16)  /<em> CAN SCE Interrupt </em>/<br>#define EXTI9_5_IRQChannel           ((u8)0x17)  /<em> External Line[9:5] Interrupts </em>/<br>#define TIM1_BRK_IRQChannel          ((u8)0x18)  /<em> TIM1 Break Interrupt </em>/<br>#define TIM1_UP_IRQChannel           ((u8)0x19)  /<em> TIM1 Update Interrupt </em>/<br>#define TIM1_TRG_COM_IRQChannel      ((u8)0x1A)  /<em> TIM1 Trigger and Commutation Interrupt </em>/<br>#define TIM1_CC_IRQChannel           ((u8)0x1B)  /<em> TIM1 Capture Compare Interrupt </em>/<br>#define TIM2_IRQChannel              ((u8)0x1C)  /<em> TIM2 global Interrupt </em>/<br>#define TIM3_IRQChannel              ((u8)0x1D)  /<em> TIM3 global Interrupt </em>/<br>#define TIM4_IRQChannel              ((u8)0x1E)  /<em> TIM4 global Interrupt </em>/<br>#define I2C1_EV_IRQChannel           ((u8)0x1F)  /<em> I2C1 Event Interrupt </em>/<br>#define I2C1_ER_IRQChannel           ((u8)0x20)  /<em> I2C1 Error Interrupt </em>/<br>#define I2C2_EV_IRQChannel           ((u8)0x21)  /<em> I2C2 Event Interrupt </em>/<br>#define I2C2_ER_IRQChannel           ((u8)0x22)  /<em> I2C2 Error Interrupt </em>/<br>#define SPI1_IRQChannel              ((u8)0x23)  /<em> SPI1 global Interrupt </em>/<br>#define SPI2_IRQChannel              ((u8)0x24)  /<em> SPI2 global Interrupt </em>/<br>#define USART1_IRQChannel            ((u8)0x25)  /<em> USART1 global Interrupt </em>/<br>#define USART2_IRQChannel            ((u8)0x26)  /<em> USART2 global Interrupt </em>/<br>#define USART3_IRQChannel            ((u8)0x27)  /<em> USART3 global Interrupt </em>/<br>#define EXTI15_10_IRQChannel         ((u8)0x28)  /<em> External Line[15:10] Interrupts </em>/<br>#define RTCAlarm_IRQChannel          ((u8)0x29)  /<em> RTC Alarm through EXTI Line Interrupt </em>/<br>#define USBWakeUp_IRQChannel         ((u8)0x2A)  /<em> USB WakeUp from suspend through EXTI Line Interrupt </em>/<br>#define TIM8_BRK_IRQChannel          ((u8)0x2B)  /<em> TIM8 Break Interrupt </em>/<br>#define TIM8_UP_IRQChannel           ((u8)0x2C)  /<em> TIM8 Update Interrupt </em>/<br>#define TIM8_TRG_COM_IRQChannel      ((u8)0x2D)  /<em> TIM8 Trigger and Commutation Interrupt </em>/<br>#define TIM8_CC_IRQChannel           ((u8)0x2E)  /<em> TIM8 Capture Compare Interrupt </em>/<br>#define ADC3_IRQChannel              ((u8)0x2F)  /<em> ADC3 global Interrupt </em>/<br>#define FSMC_IRQChannel              ((u8)0x30)  /<em> FSMC global Interrupt </em>/<br>#define SDIO_IRQChannel              ((u8)0x31)  /<em> SDIO global Interrupt </em>/<br>#define TIM5_IRQChannel              ((u8)0x32)  /<em> TIM5 global Interrupt </em>/<br>#define SPI3_IRQChannel              ((u8)0x33)  /<em> SPI3 global Interrupt </em>/<br>#define UART4_IRQChannel             ((u8)0x34)  /<em> UART4 global Interrupt </em>/<br>#define UART5_IRQChannel             ((u8)0x35)  /<em> UART5 global Interrupt </em>/<br>#define TIM6_IRQChannel              ((u8)0x36)  /<em> TIM6 global Interrupt </em>/<br>#define TIM7_IRQChannel              ((u8)0x37)  /<em> TIM7 global Interrupt </em>/<br>#define DMA2_Channel1_IRQChannel     ((u8)0x38)  /<em> DMA2 Channel 1 global Interrupt </em>/<br>#define DMA2_Channel2_IRQChannel     ((u8)0x39)  /<em> DMA2 Channel 2 global Interrupt </em>/<br>#define DMA2_Channel3_IRQChannel     ((u8)0x3A)  /<em> DMA2 Channel 3 global Interrupt </em>/<br>#define DMA2_Channel4_5_IRQChannel   ((u8)0x3B)  /<em> DMA2 Channel 4 and DMA2 Channel 5 global Interrupt </em>/</pre><div>系统中断这里没有申明，所以导致一些系统中断无法使用，比如 systick的中断 这个在&nbsp;<a href="http://www.ichanging.org/systick_interrupt_led.html" target="_blank" rel="noopener">stm32上最方便的定时器Systick[操作寄存器+库函数]</a>&nbsp;已经做了分析&nbsp;</div><div> </div><div><strong>ICER[2]:中断清除寄存器组</strong></div><div>结构同<strong>ISER[2]</strong>，但是作用相反。 中断的清楚不是通过向ISER[2]中对应位写0实现的，而是在ICER[2]对应位写1清除的。</div><div> </div><div><strong>ISPR[2]:中断挂起控制寄存器组</strong></div><div>每一位对应的中断和ISER是一样的。通过置1来挂起正在进行的中断，而执行同级或者更高级别的中断。</div><div> </div><div><strong>ICPR[2]:中断解挂寄存器组</strong></div><div>结构和ISPR[2]相同，作用相反。置1将相应中断解挂。</div><div> </div><div><strong>IABR[2]:中断激活标志位寄存器组</strong></div><div>中断和ISER[2]对应，如果为1，则表示该位所对应的中断正在执行。这是只读寄存器，由硬件自动清零。</div><div> </div><div><strong>IPR[15]:中断优先级控制的寄存器组</strong></div><div>IPR寄存器组由15个32位寄存器组成。每个可屏蔽的中断占用8位，这样可以表示的可屏蔽中断为 15<em>4 =60个。而每个可屏蔽中断占用的8位并没有全部使用，而是只使用了高4位。这4位又分为抢占优先级和子优先级。抢占优先级在前，子优先级在后。而这两个优先级各占几位又要根据SCB-&gt;AIRCR中中断分组的设置来决定。</em></div><div> </div><div>IPR寄存器描述：</div><div><img src="/uploads/2012/07/929251674.png" alt="EXTICR1.png"></div><div> </div><div> </div><div>stm32将中断分为5组，组0~4. 该分组由SCB-&gt;AIRCR寄存器的[10:8]三位来定义。具体关系如下：</div><div> </div><div><table border="1" cellpadding="1" cellspacing="1" style="width: 800px; ">                <thead>                    <tr>                        <th scope="col">                            组</th>                        <th>                            AIRCR[10:8]</th>                        <th>                            分配情况</th>                        <th>                            分配结果</th>                    </tr>                </thead>                <tbody>                    <tr>                        <td style="text-align: center; ">0</td>                        <td style="text-align: center; ">111</td>                        <td style="text-align: center; ">.xxxx0000</td>                        <td style="text-align: center; ">0位 表示 &nbsp;抢占优先级，4位 &nbsp;表示 &nbsp;相应优先级</td>                    </tr>                    <tr>                        <td style="text-align: center; ">1</td>                        <td style="text-align: center; ">110</td>                        <td style="text-align: center; ">y.xxx0000</td>                        <td style="text-align: center; ">1位 表示&nbsp;&nbsp;抢占优先级，3位 表示&nbsp;&nbsp;相应优先级</td>                    </tr>                    <tr>                        <td style="text-align: center; ">2</td>                        <td style="text-align: center; ">101</td>                        <td style="text-align: center; ">yy.xx0000</td>                        <td style="text-align: center; ">2为 表示&nbsp;&nbsp;抢占优先级，2位 表示&nbsp;&nbsp;相应优先级</td>                    </tr>                    <tr>                        <td style="text-align: center; ">3</td>                        <td style="text-align: center; ">100</td>                        <td style="text-align: center; ">yyy.x0000</td>                        <td style="text-align: center; ">3位 表示&nbsp;&nbsp;抢占优先级，1位 表示&nbsp;&nbsp;相应优先级</td>                    </tr>                    <tr>                        <td style="text-align: center; ">4</td>                        <td style="text-align: center; ">011</td>                        <td style="text-align: center; ">yyyy.0000</td>                        <td style="text-align: center; "><span style="text-align: center; ">4位</span> 表示&nbsp;&nbsp;抢占优先级，0位 表示&nbsp;&nbsp;相应优先级</td>                    </tr>                </tbody>            </table><div> </div><div>中断管理实现如下：</div><div><pre class="brush:cpp;">//设置向量表偏移地址<br>//NVIC_VectTab:基址<br>//Offset:偏移量<br><br>void Nvic_SetVectorTable(u32 NVIC_VectTab, u32 Offset)<br>{<br>      //检查参数合法性<br>    assert_param(IS_NVIC_VECTTAB(NVIC_VectTab));<br>    assert_param(IS_NVIC_OFFSET(Offset));<br>    SCB-&gt;VTOR = NVIC_VectTab|(Offset &amp; (u32)0x1FFFFF80);//设置NVIC的向量表偏移寄存器<br>    //用于标识向量表是在CODE区还是在RAM区<br><br>}<br><br>//设置NVIC分组<br>//NVIC_Group:NVIC分组 0~4 总共5组<br><br>void Nvic_PriorityGroupConfig(u8 NVIC_Group)<br>{<br>    u32 temp,temp1;<br><br>      //配置向量表<br>    #ifdef  VECT_TAB_RAM<br>        Nvic_SetVectorTable(NVIC_VectTab_RAM, 0x0);<br>    #else<br>        Nvic_SetVectorTable(NVIC_VectTab_FLASH, 0x0);<br>    #endif<br><br>    temp1=(~NVIC_Group)&amp;0x07;//取后三位<br>    temp1&lt;&lt;=8;<br>    temp=SCB-&gt;AIRCR;  //读取先前的设置<br>    temp&amp;=0X0000F8FF; //清空先前分组<br>    temp|=0X05FA0000; //写入钥匙<br>    temp|=temp1;<br>    SCB-&gt;AIRCR=temp;  //设置分组<br>}<br><br>//设置NVIC<br>//NVIC_PreemptionPriority:抢占优先级<br>//NVIC_SubPriority       :响应优先级<br>//NVIC_Channel           :中断编号<br>//NVIC_Group             :中断分组 0~4<br>//注意优先级不能超过设定的组的范围!否则会有意想不到的错误<br>//组划分:<br>//组0:0位抢占优先级,4位响应优先级<br>//组1:1位抢占优先级,3位响应优先级<br>//组2:2位抢占优先级,2位响应优先级<br>//组3:3位抢占优先级,1位响应优先级<br>//组4:4位抢占优先级,0位响应优先级<br>//NVIC_SubPriority和NVIC_PreemptionPriority的原则是,数值越小,越优先<br><br>void Nvic_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel,u8 NVIC_Group)<br>{<br>    u32 temp;<br><br>    u8 IPRADDR=NVIC_Channel/4;  //每组只能存4个,得到组地址<br>    u8 IPROFFSET=NVIC_Channel%4;//在组内的偏移<br>    IPROFFSET=IPROFFSET8+4;    //得到偏移的确切位置<br>    Nvic_PriorityGroupConfig(NVIC_Group);//设置分组<br>    temp=NVIC_PreemptionPriority&lt;&lt;(4-NVIC_Group);<br>    temp|=NVIC_SubPriority&amp;(0x0f&gt;&gt;NVIC_Group);<br>    temp&amp;=0xf;//取低四位<br><br>    if(NVIC_Channel&lt;32)NVIC-&gt;ISER[0]|=1&lt;&lt;NVIC_Channel;//使能中断位(要清除的话,相反操作就OK)<br>    else NVIC-&gt;ISER[1]|=1&lt;&lt;(NVIC_Channel-32);<br>    NVIC-&gt;IPR[IPRADDR]|=temp&lt;&lt;IPROFFSET;//设置响应优先级和抢断优先级<br>}</pre></div></div><div> </div></div></div>
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&text=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&is_video=false&description=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 NVIC中断管理实现[直接操作寄存器]&body=Check out this article: http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&title=stm32 NVIC中断管理实现[直接操作寄存器]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/&name=stm32 NVIC中断管理实现[直接操作寄存器]&description=&lt;div&gt;&amp;nbsp; &amp;nbsp; cortex-m3支持256个中端，其中包含了16个内核中断，240个外部中断。stm32只有84个中断，包括16个内核中断和68个可屏蔽中断。stm32f103上只有60个中断，f107上才有68个中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;中断是stm32很基础的一个功能，学会使用中断，才可以更好的使用其他的外设。理解stm32的中断，必须要先从stm32的&lt;strong&gt;中断优先级分组&lt;/strong&gt;是怎么回事。要理解优先级分组，就要先理解什么是&lt;strong&gt;先占优先级&lt;/strong&gt;，和&lt;strong&gt;次占优先级&lt;/strong&gt;。 &amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;strong&gt;先占优先级&lt;/strong&gt;的概念等同于51单片机中的中断。假设有两中断先后触发，已经在执行的中断先占优先级如果没有后触发的中断 先占优先级更高，就会先处理先占优先级高的中断。也就是说又有较高的先占优先级的中断可以打断先占优先级较低的中断。这是实现中断嵌套的基础。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;strong&gt;次占优先级&lt;/strong&gt;只在同一先占优先级的中断同时触发时起作用，先占优先级相同，则优先执行次占优先级较高的中断。次占优先级不会造成中断嵌套。 如果中断的两个优先级都一致，则优先执行位于中断向量表中位置较高的中断。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;em&gt;还需要注意的一点是 这里的中断优先级 高是指 &amp;nbsp;是指是否更接近0级，0级优先级是最高的。&lt;/em&gt;&lt;/strong&gt;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;那么最低的优先级可以是多少？这就涉及了优先级分组的概念。 stm32 通过一个中断向量控制器（NVIC），来分配先占优先级和次占优先级的数量。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;arm cortex-m3 内核中拥有一个3位宽度的的PRIGROUP数据区，用来指示一个8位数据序列中的小数点的位置从而表示中断优先级的分组。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;举个例子可以更好的理解：&amp;nbsp;如果PRIGROUP 数据位000 &amp;nbsp;即为0 &amp;nbsp;说明8位数据序列中小数位置在第1位的左边 &amp;nbsp;为xxxxxxx.y &amp;nbsp; 用于表示中断优先级的分组的含义就是 &amp;nbsp; 用7位的数据宽度来表示 &amp;nbsp;先占优先级的数量 即为128 &amp;nbsp;用1位的数据宽度来表示 次占优先级数量 即为 2&amp;nbsp;&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。 stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 AD模数转换[操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。 stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.213Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 AD模数转换[操作寄存器+库函数]">
+<meta name="twitter:description" content="stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。 stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 AD模数转换[操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/05/stm32-低功耗设计-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/04/stm32-窗口看门狗-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&text=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&is_video=false&description=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 AD模数转换[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&name=stm32 AD模数转换[操作寄存器+库函数]&description=&lt;div&gt;stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样，执行注入通道采样后，再执行之前的规则通道采样，和中断类似。本例只使用规则通道实现独立模式的中断采样，这里不再赘述两种通道区别。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的ADC可以由外部事件触发(例如定时器捕获，EXTI线)和软件触发(即在配置相关寄存器时，直接开启采样）。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;&lt;br&gt;        本例实现AD采样PB0口，使用串口输出PB0口电压值。PB0口接变阻器以改变调整电压。&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;效果如下：&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.39v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.38v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.40v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.38v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.39v&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;p&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 AD模数转换[操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-05T05:31:39.000Z" itemprop="datePublished">2012-07-05</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。</div><div> </div><div>stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样，执行注入通道采样后，再执行之前的规则通道采样，和中断类似。本例只使用规则通道实现独立模式的中断采样，这里不再赘述两种通道区别。</div><div> </div><div>stm32的ADC可以由外部事件触发(例如定时器捕获，EXTI线)和软件触发(即在配置相关寄存器时，直接开启采样）。</div><div> </div><div><div><strong><br>        本例实现AD采样PB0口，使用串口输出PB0口电压值。PB0口接变阻器以改变调整电压。</strong></div><div>效果如下：</div><div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.39v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.38v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.40v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.38v</div><div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADValue = 1.39v</div><div> </div><p><a id="more"></a></p></div></div><div><strong>直接操作寄存器</strong></div><div> </div><div>首先需要配置ADC的时钟分频值，在RCC-&gt;CFGR的[15:14]位：</div>
+
+<ul>
+<li>00：PCLK2 2分频后作为ADC时钟 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;01：PCLK2 4分频后作为ADC时钟</li>
+<li><p>10：PCLK2 6分频后作为ADC时钟 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11：PCLK2 8分频后作为ADC时钟<div>设定各通道的采样时间ADCx-&gt;SMPR,该寄存器给每个通道3位来选择8种采样周期：</div></p>
+</li>
+<li><p>000：1.5周期 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 100：41.5周期</p>
+</li>
+<li>001：7.5周期 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 101：55.5周期</li>
+<li>010：13.5周期 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 110：71.5周期</li>
+<li>011：28.5周期 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;111：239.5周期<div>采样时间算法为:&nbsp;(采样周期+12.5)/分频后的时钟</div><div> </div><div>ADC采样得到的只是一个相对值，将 转换值/4096*参考电压 即可得到采样电压 这里的4096是因为stm32的adc为12位精度，表示参考电压时即为 2^12=4096</div><div> </div><div>代码如下： &nbsp;<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="noopener">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “usart.h”<br>#include “adc.h”<br>#include “stdio.h”    </pre></div></li>
+</ul>
+<p>#define LED1 PAout(4)</p>
+<p>#define LED2 PAout(5)</p>
+<p>#define VREF 3.3         //参考电压<br>void Gpio_Init(void);</p>
+<p>int main(void)<br>{<br>    u16 ADValue;<br>    float temp;</p>
+<pre><code>Rcc_Init(9);              //系统时钟设置
+Usart1_Init(72,9600);    //设置串口时钟和波特率
+
+Adc1_Init(8,7);      //使用8通道采样，采样时间系数为7（111），据手册可得采样时间为 (239.5+12.5)/12= 21 (us)
+Gpio_Init();
+
+while(1){
+
+    ADValue = Get_Adc(ADC_1,8);
+    temp = (float)VREF*(ADValue/4096);       //ADC精度为12位精度，即达到 VREF电压时为 2^12 = 4096
+
+    printf(&quot;\r\n ADValue = %.2fv\r\n&quot;,temp);
+
+    LED2 = !LED2;
+
+    delay(100000);   //延时100ms
+
+}        
+</code></pre><p>}</p>
+<p>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR|=1&lt;&lt;2;    //使能PORTA时钟<br>    RCC-&gt;APB2ENR|=1&lt;&lt;3;    //使能PORTB时钟     </p>
+<pre><code>GPIOA-&amp;gt;CRL&amp;amp;=0xFF0FFFF0; 
+GPIOA-&amp;gt;CRL|=0xFF3FFFF0; // PA0设置为模拟输入,PA4推挽输出
+
+GPIOB-&amp;gt;CRL&amp;amp;=0xFFFFFFF0; 
+GPIOB-&amp;gt;CRL|=0xFFFFFFF0; // PB0设置为模拟输入
+
+//USART1 串口I/O设置
+
+GPIOA -&amp;gt; CRH&amp;amp;=0xFFFFF00F;   //设置USART1 的Tx(PA.9)为第二功能推挽，50MHz；Rx(PA.10)为浮空输入
+GPIOA -&amp;gt; CRH|=0x000008B0;      
+</code></pre><p>}<br><div>Library/src/adc.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;         </pre></div></p>
+<p>#include “adc.h”</p>
+<p>//ADC1采样初始化<br>//独立工作模式<br>//参数说明：<br>//            ADC_CH_x    选择使用通道（0~17)，目前暂支持0~15通道<br>//            ADC_CH_SMP     设定采样周期（0~7）<br>//采样周期算法：</p>
+<p>void Adc1_Init(u8 ADC_CH_x,u8 ADC_CH_SMP)<br>{<br>    RCC -&gt; APB2ENR |= 1&lt;&lt;9;           //开启ADC1时钟<br>    RCC -&gt; APB2RSTR |= 1&lt;&lt;9;          //复位ADC1<br>    RCC -&gt; APB2RSTR &amp;= ~(1&lt;&lt;9);      //ADC1复位结束</p>
+<pre><code>RCC -&amp;gt; CFGR &amp;amp;= ~(3&amp;lt;&amp;lt;14);        //分频因子清零
+RCC -&amp;gt; CFGR |= 2&amp;lt;&amp;lt;14;            //设定分频因数为2,PCLK2 6分频后作为ADC时钟
+
+ADC1 -&amp;gt; CR1 &amp;amp;= 0xF0FFFF;        //工作模式清零
+ADC1 -&amp;gt;    CR1 |= 0&amp;lt;&amp;lt;16;            //设定为独立模式
+ADC1 -&amp;gt; CR1 &amp;amp;= ~(1&amp;lt;&amp;lt;8);            //非扫描工作模式
+ADC1 -&amp;gt; CR2 &amp;amp;= ~(1&amp;lt;&amp;lt;1);            //关闭连续转换
+
+ADC1 -&amp;gt; CR2 &amp;amp;= ~(7&amp;lt;&amp;lt;17);        //清除规则通道启动事件
+ADC1 -&amp;gt; CR2 |= 7&amp;lt;&amp;lt;17;            //设定规则通道启动事件为软件启动（SWSTART）
+
+ADC1 -&amp;gt; CR2 |= 1&amp;lt;&amp;lt;20;            //使用外部事件触发 SWSTART
+ADC1 -&amp;gt; CR2 &amp;amp;= ~(1&amp;lt;&amp;lt;11);        //设置对齐模式为右对齐
+
+ADC1 -&amp;gt; SQR1 &amp;amp;= ~(0xF&amp;lt;&amp;lt;20);        //清零规则序列的数量
+ADC1 -&amp;gt; SQR1 |= 15&amp;lt;&amp;lt;20;            //设置规则序列的数量为16
+
+ADC1 -&amp;gt; SMPR2 &amp;amp;= 0x00000000;    //清零通道采样时间
+ADC1 -&amp;gt; SMPR1 &amp;amp;= 0xFF000000;    
+
+if(ADC_CH_x &amp;lt;= 9 ){
+    ADC1 -&amp;gt; SMPR2 |= 7&amp;lt;&amp;lt;(ADC_CH_x*3);            //设置通道x采样时间，提高采样时间可以提高采样精度 
+}
+
+if(ADC_CH_x &amp;gt; 9 ){
+    ADC1 -&amp;gt; SMPR1 |= 7&amp;lt;&amp;lt;((ADC_CH_x-10)*3);        
+}
+
+ADC1 -&amp;gt; CR2 |= 1&amp;lt;&amp;lt;0;            //开启AD转换
+ADC1 -&amp;gt; CR2 |= 1&amp;lt;&amp;lt;3;            //使能复位校准，由硬件清零
+while((ADC1 -&amp;gt; CR2)&amp;amp; (1&amp;lt;&amp;lt;3));    //等待校准结束
+ADC1 -&amp;gt; CR2 |= 1&amp;lt;&amp;lt;2;            //开启AD校准，由硬件清零
+while((ADC1 -&amp;gt; CR2)&amp;amp; (1&amp;lt;&amp;lt;2));    //等待校准结束
+</code></pre><p>}</p>
+<p>//取得数模转换的值<br>//参数说明：（参数定义于adc.h）<br>//         ADC_x  （0~3）,选择数模转换器<br>//         ADC_CH_x    (0~15),选择通道<br>u16 Get_Adc(u8 ADC_x,u8 ADC_CH_x)<br>{<br>    u16 data = 0;</p>
+<pre><code>switch(ADC_x)    
+{
+    case 1 : {
+
+        ADC1 -&amp;gt; SQR3 &amp;amp;= 0xFFFFFFE0;              //清除通道选择
+        ADC1 -&amp;gt; SQR3 |= ADC_CH_x;                //选择通道
+        ADC1 -&amp;gt; CR2  |= 1&amp;lt;&amp;lt;22;                //开启AD转换
+        while(!(ADC1 -&amp;gt; SR &amp;amp; 1&amp;lt;&amp;lt;1));            //等待转换结束
+
+        data = ADC1-&amp;gt;DR;
+        break;
+    }
+    case 2 : {break;}
+    case 3 : {break;}
+}
+
+return data;
+</code></pre><p>}<br><div>Library/inc/adc.h</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;    </pre></div></p>
+<p>#define  ADC_1 0x01</p>
+<p>#define  ADC_2 0x02</p>
+<p>#define  ADC_3 0x03</p>
+<p>void Adc1_Init(u8 ADC_CH_x,u8 ADC_CH_SMP);<br>u16 Get_Adc(u8 ADC_x,u8 ADC_CH_x);<br><div> </div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>main.c</div><div><pre class="brush:cpp;">#include “stm32f10x.h”</pre></div></p>
+<p>#include “stdio.h”</p>
+<p>#define     PRINTF_ON  1</p>
+<p>#define  VREF       3.3        // 参考电压</p>
+<p>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void USART_Configuration(void);<br>void ADC_Configuration(void);</p>
+<p>int main(void)<br>{<br>    float ADValue = 0.00;<br>    u32 delayTime = 0;</p>
+<pre><code>  RCC_Configuration();
+  GPIO_Configuration();
+USART_Configuration();
+ADC_Configuration();
+
+while(1)
+{
+    if(delayTime++ &amp;gt;=2000000)
+    {
+        delayTime = 0;
+        ADValue = VREF*ADC_GetConversionValue(ADC1)/0x0fff;
+        printf(&quot;\r\n ADValue = %.2fv\r\n&quot;,ADValue);
+
+    }
+}
+</code></pre><p>}</p>
+<p>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;<br>      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ;<br>      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;<br>      GPIO_Init(GPIOA , &amp;GPIO_InitStructure); </p>
+<pre><code>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;            
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure); 
+
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;            
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure); 
+</code></pre><p>}</p>
+<p>void ADC_Configuration(void)<br>{<br>    ADC_InitTypeDef ADC_InitStructure;    </p>
+<pre><code>RCC_ADCCLKConfig(RCC_PCLK2_Div4);    //配置ADC时钟分频
+
+ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+ADC_InitStructure.ADC_ScanConvMode = ENABLE;
+ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+ADC_InitStructure.ADC_NbrOfChannel = 1;
+ADC_Init(ADC1,&amp;amp;ADC_InitStructure);
+
+ADC_RegularChannelConfig(ADC1,ADC_Channel_8,1,ADC_SampleTime_55Cycles5);
+ADC_Cmd(ADC1,ENABLE);
+ADC_ResetCalibration(ADC1);
+while(ADC_GetResetCalibrationStatus(ADC1));
+ADC_StartCalibration(ADC1);
+while(ADC_GetCalibrationStatus(ADC1));
+ADC_SoftwareStartConvCmd(ADC1,ENABLE);
+</code></pre><p>}</p>
+<p>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;</p>
+<pre><code>  /* 复位系统时钟设置*/
+  RCC_DeInit();
+  /* 开启HSE*/
+  RCC_HSEConfig(RCC_HSE_ON);
+  /* 等待HSE起振并稳定*/
+  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+/* 判断HSE起是否振成功，是则进入if()内部 */
+  if(HSEStartUpStatus == SUCCESS)
+  {
+    /* 选择HCLK（AHB）时钟源为SYSCLK 1分频 */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
+    /* 选择PCLK2时钟源为 HCLK（AHB） 1分频 */
+    RCC_PCLK2Config(RCC_HCLK_Div1); 
+    /* 选择PCLK1时钟源为 HCLK（AHB） 2分频 */
+    RCC_PCLK1Config(RCC_HCLK_Div2);
+    /* 设置FLASH延时周期数为2 */
+    FLASH_SetLatency(FLASH_Latency_2);
+    /* 使能FLASH预取缓存 */
+    FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+    /* 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz * 9 = 72MHz */
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+    /* 使能PLL */ 
+    RCC_PLLCmd(ENABLE);
+    /* 等待PLL输出稳定 */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+    /* 选择SYSCLK时钟源为PLL */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    /* 等待PLL成为SYSCLK时钟源 */
+    while(RCC_GetSYSCLKSource() != 0x08);
+  } 
+  /* 打开APB2总线上的GPIOA时钟*/
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOB|RCC_APB2Periph_ADC1, ENABLE);
+
+//RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
+</code></pre><p>}</p>
+<p>void USART_Configuration(void)<br>{<br>    USART_InitTypeDef USART_InitStructure;<br>    USART_ClockInitTypeDef USART_ClockInitStructure;</p>
+<pre><code>USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;
+USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;
+USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;                                                                                                                                                      
+USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;
+USART_ClockInit(USART1 , &amp;amp;USART_ClockInitStructure);
+
+USART_InitStructure.USART_BaudRate = 9600;
+USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+USART_InitStructure.USART_StopBits = USART_StopBits_1;
+USART_InitStructure.USART_Parity = USART_Parity_No;
+USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+USART_InitStructure.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;
+USART_Init(USART1,&amp;amp;USART_InitStructure);
+
+ USART_Cmd(USART1,ENABLE);
+</code></pre><p>}</p>
+<p>#if     PRINTF_ON</p>
+<p>int fputc(int ch,FILE *f)<br>{<br>    USART_SendData(USART1,(u8) ch);<br>    while(USART_GetFlagStatus(USART1,USART_FLAG_TC) == RESET);<br>    return ch;<br>}</p>
+<p>#endif</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&text=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&is_video=false&description=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 AD模数转换[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&title=stm32 AD模数转换[操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/05/stm32-AD模数转换-操作寄存器-库函数/&name=stm32 AD模数转换[操作寄存器+库函数]&description=&lt;div&gt;stm32f103最少有2个AD模数转换器，每个ADC都有18个通道，可以测量16个外部和2个内部模拟量。最大转换频率为1Mhz，也就是转换时间为1us（在 ADCCLK = 14Mhz,采样周期为1.5个时钟周期时）。最大时钟超过14Mhz，将导致ADC转换准确度降低。stm32的ADC是12位精度的。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的ADC转换有两种通道，规则通道和注入通道，注入通道可以抢占式地打断规则通道的采样，执行注入通道采样后，再执行之前的规则通道采样，和中断类似。本例只使用规则通道实现独立模式的中断采样，这里不再赘述两种通道区别。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的ADC可以由外部事件触发(例如定时器捕获，EXTI线)和软件触发(即在配置相关寄存器时，直接开启采样）。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;strong&gt;&lt;br&gt;        本例实现AD采样PB0口，使用串口输出PB0口电压值。PB0口接变阻器以改变调整电压。&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;效果如下：&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.39v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.38v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.40v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.38v&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;ADValue = 1.39v&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;p&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

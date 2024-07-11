@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。 stm32的通用定时器由一个通过可编程预分频器驱动的16位自动装载计数器构成。通用定时器可以用于测量输入信号的脉冲长度（输入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32 TIM定时器[操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。 stm32的通用定时器由一个通过可编程预分频器驱动的16位自动装载计数器构成。通用定时器可以用于测量输入信号的脉冲长度（输入">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/4218520034.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/184638805.png">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/07/1047329330.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.226Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32 TIM定时器[操作寄存器+库函数]">
+<meta name="twitter:description" content="stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。 stm32的通用定时器由一个通过可编程预分频器驱动的16位自动装载计数器构成。通用定时器可以用于测量输入信号的脉冲长度（输入">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/07/4218520034.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32 TIM定时器[操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/04/stm32-TIM定时器-PWM脉冲输出-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/07/02/stm32-NVIC中断管理实现-直接操作寄存器/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&text=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&is_video=false&description=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 TIM定时器[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&name=stm32 TIM定时器[操作寄存器+库函数]&description=&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的通用定时器由一个通过可编程预分频器驱动的&lt;strong&gt;16位自动装载计数器&lt;/strong&gt;构成。通用定时器可以用于测量输入信号的脉冲长度（输入捕获）或者产生输出波形（输出比较和PWM）等。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用计时器的使用，需要先配置一个时基单元，就是设定一个基准时间，确定计数一次耗去的时间，可以设定在几个微妙到几个毫秒之间。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用定时器的都有4个独立通道（TIMx_CH1~4），这些通道可以用来作为：&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;输入捕获&lt;/li&gt;
+&lt;li&gt;输出比较&lt;/li&gt;
+&lt;li&gt;PWM生成&lt;/li&gt;
+&lt;li&gt;单脉冲模式输出&lt;div&gt;时基单元核心部件是一个16位分频器，通过对定时器时钟的分频实现确定时间基准的功能。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;根据手册可以知道 基准时钟的计算公式： &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;T = (分频寄存器+1)/TIM时钟&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;需要注意的是TIM时钟的大小，以TIM2为例，虽然其挂载在APB1总线上，PCLK时钟为36Mhz，但TIM2得到的却是72Mhz。所有挂载在APB1总线上的通用定时器时钟频率都为72Mhz;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用寄存器的四个通道，每一个通道相当于一个中断触发源，可以设置一个计数值，当TIM计数值和此计数值相等时，触发中断。&amp;nbsp;&lt;/div&gt;&lt;div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32 TIM定时器[操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-07-03T03:09:28.000Z" itemprop="datePublished">2012-07-03</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div> </div><div>stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。</div><div> </div><div>stm32的通用定时器由一个通过可编程预分频器驱动的<strong>16位自动装载计数器</strong>构成。通用定时器可以用于测量输入信号的脉冲长度（输入捕获）或者产生输出波形（输出比较和PWM）等。</div><div> </div><div>通用计时器的使用，需要先配置一个时基单元，就是设定一个基准时间，确定计数一次耗去的时间，可以设定在几个微妙到几个毫秒之间。</div><div> </div><div>通用定时器的都有4个独立通道（TIMx_CH1~4），这些通道可以用来作为：</div>
+
+<ul>
+<li>输入捕获</li>
+<li>输出比较</li>
+<li>PWM生成</li>
+<li>单脉冲模式输出<div>时基单元核心部件是一个16位分频器，通过对定时器时钟的分频实现确定时间基准的功能。</div><div> </div><div>根据手册可以知道 基准时钟的计算公式： &nbsp;&nbsp;&nbsp;&nbsp;</div><div> </div><div>T = (分频寄存器+1)/TIM时钟&nbsp;</div><div> </div><div>需要注意的是TIM时钟的大小，以TIM2为例，虽然其挂载在APB1总线上，PCLK时钟为36Mhz，但TIM2得到的却是72Mhz。所有挂载在APB1总线上的通用定时器时钟频率都为72Mhz;</div><div> </div><div>通用寄存器的四个通道，每一个通道相当于一个中断触发源，可以设置一个计数值，当TIM计数值和此计数值相等时，触发中断。&nbsp;</div><div><a id="more"></a></div><div> </div><div><strong>本例实现以TIM2为例产生一组不同频率的时钟，使4个LED不同频率闪烁</strong></div></li>
+</ul>
+<!--more-->
+<div> </div><div><strong>直接操作寄存器</strong></div><div> </div><div>首先是控制寄存器（TIMx_CR1）,该寄存器各位描述如下：</div><div><img src="/uploads/2012/07/4218520034.png" alt="timx_cr1.png"></div><div> </div><div>需要注意的是</div><div>ARPE位 :要开启自动重装必须将此为置1；</div><div>DIR位： &nbsp;0：计数器向上计数； &nbsp; &nbsp;1：计数器向下计数。 注：当计数器配置为中央对齐模式或编码器模式时，该位为只读。</div><div>CEN位：计数器使能位</div><div> </div><div>计数器中断使能寄存器：</div><div> </div><div><img src="/uploads/2012/07/184638805.png" alt="timx_dier.png"></div><div> </div><div>TIE:触发中断使能位；</div><div>UIE:允许更新中断位，允许由更新事件来产生中断;</div>
+
+<ul>
+<li>更新事件包括: 计数器向上/向下溢出，计数器初始化</li>
+<li><p>触发时间包括：计数器启动，停止，初始化<div>CC1IE~CC4IE：允许捕获/比较1~4中断</div><div> </div><div>TDE,UDE,CC1DE~CC4DE为DMA相关中断设置，这里不讨论。</div><div> </div><div>预分频寄存器（TIMx_PSC），低16位有效,该寄存器用于设置时钟进行分频，然后提供给计数器作为时钟。</div><div> </div><div>自动重装载寄存器（TIMx_ARR）,低16位有效。</div><div> </div><div>状态寄存器（TIMx_SR），该寄存器用于标识当前与定时器相关的各种事件和中断是否发生。</div><div>描述如下：</div><div><img src="/uploads/2012/07/1047329330.png" alt="timx_sr.png"></div><div> </div><div>UIF：更新中断标记 (Update interrupt flag) &nbsp;当产生更新事件时该位由硬件置’1’。它由软件清’0’。</div></p>
+</li>
+<li><p>若TIMx_CR1寄存器的UDIS=0、URS=0，当TIMx_EGR寄存器的UG=1时产生更新事件(软件对计数器CNT重新初始化)；</p>
+</li>
+<li>&nbsp;若TIMx_CR1寄存器的UDIS=0、URS=0，当计数器CNT被触发事件重初始化时产生更新事件。<div> </div><div>CC1IF~CC4IF：捕获/比较1~4 中断标记 (Capture/Compare 1 interrupt flag)</div><div> </div><div>TIF：触发器中断标记 (Trigger interrupt flag) &nbsp;</div><div>当发生触发事件(当从模式控制器处于除门控模式外的其它模式时，在TRGI输入端检测到有效边沿，或门控模式下的任一边沿)时由硬件对该位置’1’。它由软件清’0’。</div><div> </div><div>代码如下：<span style="text-align: left; ">（system.h 和&nbsp;</span><span style="text-align: left; ">stm32f10x_it.h</span><span style="text-align: left; ">&nbsp;等相关代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="noopener">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div> </div><div>User/main.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br>#include “tim.h”     </pre></div></li>
+</ul>
+<p>void Gpio_Init(void);</p>
+<p>int main(void)<br>{                  </p>
+<pre><code>Rcc_Init(9);              //系统时钟设置
+//Usart1_Init(72,9600);    //设置系统时钟和波特率
+
+// 相关TIM_x,CCR_x参数定义tim.h文件
+
+Tim_Init(TIM_2,65535,7199);  //初始化TIM2定时器，设定重装值和分频值
+
+Tim_CCR_Set(TIM_2,CCR_1,40000); 
+Tim_CCR_Set(TIM_2,CCR_2,20000);
+Tim_CCR_Set(TIM_2,CCR_3,10000);
+Tim_CCR_Set(TIM_2,CCR_4,5000);
+
+Nvic_Init(0,0,TIM2_IRQChannel,0);      //设置抢占优先级为0，响应优先级为0，中断分组为0
+
+Gpio_Init();
+
+while(1);
+</code></pre><p>}</p>
+<p>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR|=1&lt;&lt;2;    //使能PORTA时钟            </p>
+<pre><code>GPIOA-&amp;gt;CRL&amp;amp;=0x0000FFFF; // PA0~3设置为浮空输入，PA4~7设置为推挽输出
+GPIOA-&amp;gt;CRL|=0x33334444; 
+//GPIOA-&amp;gt;ODR &amp;amp;=0xFFFFFFF0;
+
+//USART1 串口I/O设置
+
+//GPIOA -&amp;gt; CRH&amp;amp;=0xFFFFF00F;   //设置USART1 的Tx(PA.9)为第二功能推挽，50MHz；Rx(PA.10)为浮空输入
+//GPIOA -&amp;gt; CRH|=0x000008B0;      
+</code></pre><p>}<br><div> </div><div>User/stm32f10x_it.c</div><div><pre class="brush:cpp;">#include “stm32f10x_it.h”</pre></div></p>
+<p>#include “system.h”</p>
+<p>#define LED0 PAout(4)</p>
+<p>#define LED1 PAout(5)</p>
+<p>#define LED2 PAout(6)</p>
+<p>#define LED3 PAout(7)</p>
+<p>void TIM2_IRQHandler(void)<br>{<br>    if(TIM2-&gt;SR&amp;0x02)   //捕获比较中断1触发<br>    {<br>        LED0 = !LED0;    </p>
+<pre><code>    TIM2 -&amp;gt;CCR1 = TIM2 -&amp;gt; CNT + 40000;     //更新捕获/比较1的值
+
+    TIM2-&amp;gt;SR &amp;amp;= 0xFD;  //清除捕获比较中断
+}
+
+if(TIM2-&amp;gt;SR&amp;amp;0x04)   //捕获比较中断2触发
+{
+    LED1 = !LED1;        
+    TIM2 -&amp;gt;CCR2 = TIM2 -&amp;gt; CNT + 20000;
+
+    TIM2-&amp;gt;SR &amp;amp;= 0xFB;  //清除捕获比较中断
+}
+
+if(TIM2-&amp;gt;SR&amp;amp;0x08)   //捕获比较中断3触发
+{
+    LED2 = !LED2;    
+
+    TIM2 -&amp;gt;CCR3 = TIM2 -&amp;gt; CNT + 10000;
+    TIM2-&amp;gt;SR &amp;amp;= 0xF7;  //清除捕获比较中断
+
+}
+
+if(TIM2-&amp;gt;SR&amp;amp;0x10)   //捕获比较中断4触发
+{
+    LED3 = !LED3;
+
+    TIM2 -&amp;gt;CCR4 = TIM2 -&amp;gt; CNT + 5000;    
+    TIM2-&amp;gt;SR &amp;amp;= 0x0F;  //清除捕获比较中断
+
+}
+
+TIM2-&amp;gt;SR &amp;amp;= ~(1&amp;lt;&amp;lt;0);    //清除中断
+</code></pre><p>}</p>
+<p><div>Library/src/tim.c</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;     </pre></div></p>
+<p>#include “tim.h” </p>
+<p>//通用定时器初始化<br>//参数说明：TIM_x 为选择定时器 TIM_1为通用寄存器1又一次类推（定义于tim.h）, arr为自动重装值 ；psc 为时钟预分频数<br>//待完善 目前只支持TIM2<br>void Tim_Init(u8 TIM_x,u16 arr,u16 psc)<br>{<br>    switch(TIM_x)<br>    {<br>         case 1 :{</p>
+<pre><code>        RCC-&amp;gt;APB2ENR |=1&amp;lt;&amp;lt;11;
+
+        break;
+    }
+
+    case 2 :{
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;0;
+
+        TIM2-&amp;gt;ARR = arr;            //设定自动重装值
+        TIM2-&amp;gt;PSC = psc;            //设定预分频值
+        TIM2-&amp;gt;DIER |= 1&amp;lt;&amp;lt;0;            //允许更新中断
+        TIM2-&amp;gt;DIER |= 1&amp;lt;&amp;lt;6;            //允许触发中断
+
+        TIM2-&amp;gt;CR1 |= 0x81;            //使能定时器，自动重装允许                         
+
+        break;
+    }
+
+    case 3 :{
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;1;
+
+        break;
+    }
+    case 4 :{
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;2;                
+
+        break;
+    }
+
+    case 5 :{
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;3;        
+
+        break;
+    }
+     case 6 :{
+
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;4;
+
+        break;
+    }    
+     case 7 :{
+
+        RCC-&amp;gt;APB1ENR |=1&amp;lt;&amp;lt;5;    
+
+        break;
+    }
+
+     case 8 :{
+
+        RCC-&amp;gt;APB2ENR |=1&amp;lt;&amp;lt;13;
+
+        break;
+    }
+
+}
+</code></pre><p>}</p>
+<p>//捕获比较值设定函数<br>//参数说明：<br>//            TIM_x 为选择定时器 TIM_1为通用寄存器1又一次类推（定义于tim.h）<br>//            CCR_x 为选择捕获/比较寄存器（1~4）（定义于tim.h）<br>//            val   为要设定的捕获/比较寄存器的值<br>// 待完善，目前只支持TIM2</p>
+<p>void Tim_CCR_Set(u8 TIM_x,u8 CCR_x,u32 val)<br>{<br>    switch(TIM_x)<br>    {<br>         case 1 :{<br>            break;<br>        }</p>
+<pre><code>    case 2 :{
+
+        TIM2-&amp;gt;DIER |= 1 &amp;lt;&amp;lt; CCR_x;            //开启相应允许捕获/比较中断
+
+        switch(CCR_x){
+
+            case 1: {
+                TIM2 -&amp;gt;CCR1 = val;         //设置捕获/比较1的值 
+                break;
+            }
+
+            case 2: {
+                TIM2 -&amp;gt;CCR2 = val;         //设置捕获/比较2的值 
+                break;
+            }
+
+            case 3: {
+                TIM2 -&amp;gt;CCR3 = val;         //设置捕获/比较3的值 
+                break;
+            }
+
+            case 4: {
+                TIM2 -&amp;gt;CCR4 = val;         //设置捕获/比较4的值 
+                break;
+            }
+        }
+
+        break;
+    }
+
+    case 3 :{
+        break;
+    }
+    case 4 :{
+        break;
+    }
+
+    case 5 :{
+        break;
+    }
+     case 6 :{
+        break;
+    }    
+     case 7 :{
+        break;
+    }
+
+     case 8 :{
+        break;
+    }
+
+}
+</code></pre><p>}<br><div>Library/inc/tim.h</div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;</pre></div></p>
+<p>#define  TIM_1  0x01</p>
+<p>#define  TIM_2  0x02</p>
+<p>#define  TIM_3  0x03</p>
+<p>#define  TIM_4  0x04</p>
+<p>#define  TIM_5  0x05</p>
+<p>#define  TIM_6  0x06</p>
+<p>#define  TIM_7  0x07</p>
+<p>#define  TIM_8  0x08</p>
+<p>#define  CCR_1  0x01</p>
+<p>#define  CCR_2  0x02</p>
+<p>#define  CCR_3  0x03</p>
+<p>#define  CCR_4  0x04</p>
+<p>void Tim_Init(u8 TIM_x,u16 arr,u16 psc);<br>void Tim_CCR_Set(u8 TIM_x,u8 CCR_x,u32 val);<br><div> </div><div> </div><div><strong>库函数操作</strong></div><div> </div><div>通用定时器有4个通道，每个通道都有6种工作模式：</div><div><table border="1" cellpadding="2" cellspacing="2" style="width: 700px; ">        <caption>            TIM_OCMODE定义</caption>        <thead>            <tr>                <th scope="col">                    TIM_OCMode</th>                <th>                    描述</th>            </tr>        </thead>        <tbody>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_Timging</td>                <td>TIM输出比较时间模式,中断时管脚无变化</td>            </tr>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_Active</td>                <td>TIM输出比较时间模式,中断时管脚强制为有效电平</td>            </tr>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_Inactive</td>                <td>TIM输出比较时间模式,中断时管脚强制为无效电平</td>            </tr>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_Toggle</td>                <td>TIM输出比较时间模式,中断时管脚状态翻转，高变低，低变高</td>            </tr>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_PWM1</td>                <td>TIM脉冲宽度调制模式1</td>            </tr>            <tr>                <td>&nbsp;&nbsp;&nbsp;&nbsp;TIM_OCMODE_PWM2</td>                <td>TIM脉冲宽度调制模式2</td>            </tr>        </tbody>    </table><div> </div><div>PS:至于有效电平是高还是低，要看CCER寄存器的CCxP位设置。两种PWM模式，区别在于通道的电平极性是相反的。</div><div> </div><div> </div></div><div>main.c</div><pre class="brush:cpp;">#include “stm32f10x.h”</pre></p>
+<p>vu16 CCR1_Val = 40000;<br>vu16 CCR2_Val = 20000;<br>vu16 CCR3_Val = 10000;<br>vu16 CCR4_Val = 5000;              </p>
+<p>void RCC_Configuration(void);<br>void GPIO_Configuration(void);<br>void NVIC_Configuration(void);<br>void TIM_Configuration(void);</p>
+<p>int main(void)<br>{</p>
+<pre><code>  RCC_Configuration();
+  GPIO_Configuration();
+ NVIC_Configuration();
+TIM_Configuration();
+while(1);
+</code></pre><p>}</p>
+<p>void TIM_Configuration(void)<br>{<br>    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;<br>    TIM_OCInitTypeDef TIM_OCInitStructure;<br>    TIM_TimeBaseStructure.TIM_Period = 65535;<br>    TIM_TimeBaseStructure.TIM_Prescaler = 7199;<br>    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;<br>    TIM_TimeBaseInit(TIM2,&amp;TIM_TimeBaseStructure);</p>
+<pre><code>//TIM_PrescalerConfig(TIM2,7199,TIM_PSCReloadMode_Immediate);
+
+TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
+TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+TIM_OCInitStructure.TIM_Pulse = CCR1_Val;
+TIM_OC1Init(TIM2,&amp;amp;TIM_OCInitStructure);
+TIM_OCInitStructure.TIM_Pulse = CCR2_Val;
+TIM_OC2Init(TIM2,&amp;amp;TIM_OCInitStructure);
+TIM_OCInitStructure.TIM_Pulse = CCR3_Val;
+TIM_OC3Init(TIM2,&amp;amp;TIM_OCInitStructure);
+ TIM_OCInitStructure.TIM_Pulse = CCR4_Val;
+TIM_OC4Init(TIM2,&amp;amp;TIM_OCInitStructure);
+
+TIM_OC1PreloadConfig(TIM2,TIM_OCPreload_Disable);
+TIM_OC2PreloadConfig(TIM2,TIM_OCPreload_Disable);
+TIM_OC3PreloadConfig(TIM2,TIM_OCPreload_Disable);
+TIM_OC4PreloadConfig(TIM2,TIM_OCPreload_Disable);
+
+TIM_ITConfig(TIM2,TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4,ENABLE);
+
+TIM_Cmd(TIM2,ENABLE);
+</code></pre><p>}</p>
+<p>void NVIC_Configuration(void)<br>{<br>    NVIC_InitTypeDef NVIC_InitStructure;</p>
+<pre><code>#ifdef    VECT_TAB_RAM
+    NVIC_SetVectorTable(NVIC_VectTab_RAM,0x0);
+#else
+    NVIC_SetVectorTable(NVIC_VectTab_FLASH,0x0);
+#endif
+
+NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+NVIC_Init(&amp;amp;NVIC_InitStructure);
+</code></pre><p>}</p>
+<p>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;</p>
+<pre><code>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+GPIO_Init(GPIOA , &amp;amp;GPIO_InitStructure); 
+</code></pre><p>}</p>
+<p>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;</p>
+<pre><code>  /* 复位系统时钟设置*/
+  RCC_DeInit();
+  /* 开启HSE*/
+  RCC_HSEConfig(RCC_HSE_ON);
+  /* 等待HSE起振并稳定*/
+  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+/* 判断HSE起是否振成功，是则进入if()内部 */
+  if(HSEStartUpStatus == SUCCESS)
+  {
+    /* 选择HCLK（AHB）时钟源为SYSCLK 1分频 */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
+    /* 选择PCLK2时钟源为 HCLK（AHB） 1分频 */
+    RCC_PCLK2Config(RCC_HCLK_Div1); 
+    /* 选择PCLK1时钟源为 HCLK（AHB） 2分频 */
+    RCC_PCLK1Config(RCC_HCLK_Div2);
+    /* 设置FLASH延时周期数为2 */
+    FLASH_SetLatency(FLASH_Latency_2);
+    /* 使能FLASH预取缓存 */
+    FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+    /* 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz * 9 = 72MHz */
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+    /* 使能PLL */ 
+    RCC_PLLCmd(ENABLE);
+    /* 等待PLL输出稳定 */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+    /* 选择SYSCLK时钟源为PLL */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    /* 等待PLL成为SYSCLK时钟源 */
+    while(RCC_GetSYSCLKSource() != 0x08);
+  } 
+  /* 打开APB2总线上的GPIOA时钟*/
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
+
+RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
+</code></pre><p>}<br><div>stm32f10x_it.c</div></p><pre class="brush:cpp;">#include “stm32f10x_it.h”<p></p>
+<p>extern vu16 CCR1_Val;<br>extern vu16 CCR2_Val;<br>extern vu16 CCR3_Val;<br>extern vu16 CCR4_Val;</p>
+<p>void TIM2_IRQHandler(void)<br>{<br>    vu16 capture=0;<br>    if(TIM_GetITStatus(TIM2,TIM_IT_CC1) != RESET)<br>    {<br>        GPIO_WriteBit(GPIOA , GPIO_Pin_4,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_4)));<br>        capture = TIM_GetCapture1(TIM2);<br>        TIM_SetCompare1(TIM2,capture + CCR1_Val);<br>        TIM_ClearITPendingBit(TIM2,TIM_IT_CC1);<br>    }<br>    else if(TIM_GetITStatus(TIM2,TIM_IT_CC2) != RESET)<br>    {<br>        GPIO_WriteBit(GPIOA , GPIO_Pin_5,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_5)));<br>        capture = TIM_GetCapture2(TIM2);<br>        TIM_SetCompare2(TIM2,capture + CCR2_Val);<br>        TIM_ClearITPendingBit(TIM2,TIM_IT_CC2);<br>    }<br>    else if(TIM_GetITStatus(TIM2,TIM_IT_CC3) != RESET)<br>    {<br>        GPIO_WriteBit(GPIOA , GPIO_Pin_6,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_6)));<br>        capture = TIM_GetCapture3(TIM2);<br>        TIM_SetCompare3(TIM2,capture + CCR3_Val);<br>        TIM_ClearITPendingBit(TIM2,TIM_IT_CC3);<br>    }<br>    else<br>    {<br>        GPIO_WriteBit(GPIOA , GPIO_Pin_7,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_7)));<br>        capture = TIM_GetCapture4(TIM2);<br>        TIM_SetCompare4(TIM2,capture + CCR4_Val);<br>        TIM_ClearITPendingBit(TIM2,TIM_IT_CC4);<br>    }<br>}<br></p></pre><p></p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&text=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&is_video=false&description=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32 TIM定时器[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&title=stm32 TIM定时器[操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/07/03/stm32-TIM定时器-操作寄存器-库函数/&name=stm32 TIM定时器[操作寄存器+库函数]&description=&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32配备了2个高级定时器TIM1和TIM8，4个通用定时器 TIM2,TIM3,TIM4和TIM5，还有两个基本定时器TIM6和TIM7。 高级定时器常用于电机控制，因为其加入了死区控制，紧急制动，定时器同步等高级特性。基本定时器可以为数模转化器提供准确的时间基准。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;stm32的通用定时器由一个通过可编程预分频器驱动的&lt;strong&gt;16位自动装载计数器&lt;/strong&gt;构成。通用定时器可以用于测量输入信号的脉冲长度（输入捕获）或者产生输出波形（输出比较和PWM）等。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用计时器的使用，需要先配置一个时基单元，就是设定一个基准时间，确定计数一次耗去的时间，可以设定在几个微妙到几个毫秒之间。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用定时器的都有4个独立通道（TIMx_CH1~4），这些通道可以用来作为：&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;输入捕获&lt;/li&gt;
+&lt;li&gt;输出比较&lt;/li&gt;
+&lt;li&gt;PWM生成&lt;/li&gt;
+&lt;li&gt;单脉冲模式输出&lt;div&gt;时基单元核心部件是一个16位分频器，通过对定时器时钟的分频实现确定时间基准的功能。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;根据手册可以知道 基准时钟的计算公式： &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;T = (分频寄存器+1)/TIM时钟&amp;nbsp;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;需要注意的是TIM时钟的大小，以TIM2为例，虽然其挂载在APB1总线上，PCLK时钟为36Mhz，但TIM2得到的却是72Mhz。所有挂载在APB1总线上的通用定时器时钟频率都为72Mhz;&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;通用寄存器的四个通道，每一个通道相当于一个中断触发源，可以设置一个计数值，当TIM计数值和此计数值相等时，触发中断。&amp;nbsp;&lt;/div&gt;&lt;div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

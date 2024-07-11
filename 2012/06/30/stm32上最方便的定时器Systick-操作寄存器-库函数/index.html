@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。 Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。 Sys">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32上最方便的定时器Systick[操作寄存器+库函数]">
+<meta property="og:url" content="http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/index.html">
+<meta property="og:site_name" content="Neil Pan">
+<meta property="og:description" content="Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。 Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。 Sys">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://neil-pan.com/uploads/2012/06/4088536781.png">
+<meta property="og:updated_time" content="2024-07-11T12:49:21.242Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stm32上最方便的定时器Systick[操作寄存器+库函数]">
+<meta name="twitter:description" content="Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。 Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。 Sys">
+<meta name="twitter:image" content="http://neil-pan.com/uploads/2012/06/4088536781.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>stm32上最方便的定时器Systick[操作寄存器+库函数]</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2012/07/01/stm32的按键扫描-操作寄存器-库函数/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover='$("#i-prev").toggle();' onmouseout='$("#i-prev").toggle();'></i></a></li>
+        
+        
+        <li><a class="icon" href="/2012/06/29/用stm32点个灯-操作寄存器-库函数/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&text=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&is_video=false&description=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32上最方便的定时器Systick[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&name=stm32上最方便的定时器Systick[操作寄存器+库函数]&description=&lt;div&gt;Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SysTick 可以产生中断、设置中断优先级，有专门的中断处理函数SysTick_Handler().库函数作为ST公司自己的推出的框架， 在中断这方面做了更为细致的处理。&lt;/div&gt;&lt;div&gt;库函数包含的头文件是&amp;nbsp;stm32f10x.h &amp;nbsp;这个文件中 列出了完整的stm32中断向量表（截取部分）：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;/&lt;strong&gt;**&lt;/strong&gt;  Cortex-M3 Processor Exceptions Numbers &lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;***&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;/&lt;br&gt;  NonMaskableInt_IRQn         = -14,    /&lt;em&gt;!&amp;lt; 2 Non Maskable Interrupt                             &lt;/em&gt;/&lt;br&gt;  MemoryManagement_IRQn       = -12,    /&lt;em&gt;!&amp;lt; 4 Cortex-M3 Memory Management Interrupt              &lt;/em&gt;/&lt;br&gt;  BusFault_IRQn               = -11,    /&lt;em&gt;!&amp;lt; 5 Cortex-M3 Bus Fault Interrupt                      &lt;/em&gt;/&lt;br&gt;  UsageFault_IRQn             = -10,    /&lt;em&gt;!&amp;lt; 6 Cortex-M3 Usage Fault Interrupt                    &lt;/em&gt;/&lt;br&gt;  SVCall_IRQn                 = -5,     /&lt;em&gt;!&amp;lt; 11 Cortex-M3 SV Call Interrupt                       &lt;/em&gt;/&lt;br&gt;  DebugMonitor_IRQn           = -4,     /&lt;em&gt;!&amp;lt; 12 Cortex-M3 Debug Monitor Interrupt                 &lt;/em&gt;/&lt;br&gt;  PendSV_IRQn                 = -2,     /&lt;em&gt;!&amp;lt; 14 Cortex-M3 Pend SV Interrupt                       &lt;/em&gt;/&lt;br&gt;  SysTick_IRQn                = -1,     /&lt;em&gt;!&amp;lt; 15 Cortex-M3 System Tick Interrupt                   &lt;/em&gt;/&lt;br&gt;&lt;br&gt;/&lt;strong&gt;**&lt;/strong&gt;  STM32 specific Interrupt Numbers &lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;*&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;/&lt;br&gt;  WWDG_IRQn                   = 0,      /&lt;em&gt;!&amp;lt; Window WatchDog Interrupt                            &lt;/em&gt;/&lt;br&gt;  PVD_IRQn                    = 1,      /&lt;em&gt;!&amp;lt; PVD through EXTI Line detection Interrupt            &lt;/em&gt;/&lt;br&gt;  TAMPER_IRQn                 = 2,      /&lt;em&gt;!&amp;lt; Tamper Interrupt                                     &lt;/em&gt;/&lt;br&gt;  RTC_IRQn                    = 3,      /&lt;em&gt;!&amp;lt; RTC global Interrupt                                 &lt;/em&gt;/&lt;br&gt;  FLASH_IRQn                  = 4,      /&lt;em&gt;!&amp;lt; FLASH global Interrupt                               &lt;/em&gt;/&lt;br&gt;  RCC_IRQn                    = 5,      /&lt;em&gt;!&amp;lt; RCC global Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI0_IRQn                  = 6,      /&lt;em&gt;!&amp;lt; EXTI Line0 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI1_IRQn                  = 7,      /&lt;em&gt;!&amp;lt; EXTI Line1 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI2_IRQn                  = 8,      /&lt;em&gt;!&amp;lt; EXTI Line2 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI3_IRQn                  = 9,      /&lt;em&gt;!&amp;lt; EXTI Line3 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI4_IRQn                  = 10,     /&lt;em&gt;!&amp;lt; EXTI Line4 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  DMA1_Channel1_IRQn          = 11,     /&lt;em&gt;!&amp;lt; DMA1 Channel 1 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel2_IRQn          = 12,     /&lt;em&gt;!&amp;lt; DMA1 Channel 2 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel3_IRQn          = 13,     /&lt;em&gt;!&amp;lt; DMA1 Channel 3 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel4_IRQn          = 14,     /&lt;em&gt;!&amp;lt; DMA1 Channel 4 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel5_IRQn          = 15,     /&lt;em&gt;!&amp;lt; DMA1 Channel 5 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel6_IRQn          = 16,     /&lt;em&gt;!&amp;lt; DMA1 Channel 6 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel7_IRQn          = 17,     /&lt;em&gt;!&amp;lt; DMA1 Channel 7 global Interrupt                      &lt;/em&gt;/&lt;/pre&gt;&lt;div&gt;其中就包含了对系统级中断的处理，有SysTick的中断定义。&lt;/div&gt;&lt;div&gt;在 库函数的Cmsis\core_cm3.h文件中的中断配置函数也区分了系统中断 和 其他中断的区分处理 ：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;static &lt;strong&gt;INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)&lt;br&gt;{&lt;br&gt;  if(IRQn &amp;lt; 0) {&lt;br&gt;    SCB-&amp;gt;SHP[((uint32_t)(IRQn) &amp;amp; 0xF)-4] = ((priority &amp;lt;&amp;lt; (8 - &lt;/strong&gt;NVIC_PRIO_BITS)) &amp;amp; 0xff); } /&lt;em&gt; set Priority for Cortex-M3 System Interrupts &lt;/em&gt;/&lt;br&gt;  else {&lt;br&gt;    NVIC-&amp;gt;IP[(uint32_t)(IRQn)] = ((priority &amp;lt;&amp;lt; (8 - &lt;strong&gt;NVIC_PRIO_BITS)) &amp;amp; 0xff);    }        /&lt;em&gt; set Priority for device specific Interrupts  &lt;/em&gt;/&lt;br&gt;}&lt;br&gt;&lt;/strong&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;其中 SysTick_Config（）函数也在这个文件中：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;static INLINE uint32_t SysTick_Config(uint32_t ticks)&lt;br&gt;{&lt;br&gt;  if (ticks &amp;gt; SysTick_LOAD_RELOAD_Msk)  return (1);            /&lt;em&gt; Reload value impossible &lt;/em&gt;/&lt;br&gt;&lt;br&gt;  SysTick-&amp;gt;LOAD  = (ticks &amp;amp; SysTick_LOAD_RELOAD_Msk) - 1;      /&lt;em&gt; set reload register &lt;/em&gt;/&lt;br&gt;  NVIC_SetPriority (SysTick_IRQn, (1&amp;lt;&amp;lt;__NVIC_PRIO_BITS) - 1);  /&lt;em&gt; set Priority for Cortex-M0 System Interrupts &lt;/em&gt;/&lt;br&gt;  SysTick-&amp;gt;VAL   = 0;                                          /&lt;em&gt; Load the SysTick Counter Value &lt;/em&gt;/&lt;br&gt;  SysTick-&amp;gt;CTRL  = SysTick_CTRL_CLKSOURCE_Msk |&lt;br&gt;                   SysTick_CTRL_TICKINT_Msk   |&lt;br&gt;                   SysTick_CTRL_ENABLE_Msk;                    /&lt;em&gt; Enable SysTick IRQ and SysTick Timer &lt;/em&gt;/&lt;br&gt;  return (0);                                                  /&lt;em&gt; Function successful &lt;/em&gt;/&lt;br&gt;}&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;所以库函数中可以将SysTick作为一个中断操作。&lt;/div&gt;&lt;div&gt;但是直接操作寄存器，包含的头文件是&amp;nbsp;stm32f10x_lib.h ，中断向量表在stm32f10x_nvic.h 中（截取部分）：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;/&lt;em&gt; IRQ Channels ————————————————————–&lt;/em&gt;/&lt;br&gt;#define WWDG_IRQChannel              ((u8)0x00)  /&lt;em&gt; Window WatchDog Interrupt &lt;/em&gt;/&lt;br&gt;#define PVD_IRQChannel               ((u8)0x01)  /&lt;em&gt; PVD through EXTI Line detection Interrupt &lt;/em&gt;/&lt;br&gt;#define TAMPER_IRQChannel            ((u8)0x02)  /&lt;em&gt; Tamper Interrupt &lt;/em&gt;/&lt;br&gt;#define RTC_IRQChannel               ((u8)0x03)  /&lt;em&gt; RTC global Interrupt &lt;/em&gt;/&lt;br&gt;#define FLASH_IRQChannel             ((u8)0x04)  /&lt;em&gt; FLASH global Interrupt &lt;/em&gt;/&lt;br&gt;#define RCC_IRQChannel               ((u8)0x05)  /&lt;em&gt; RCC global Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI0_IRQChannel             ((u8)0x06)  /&lt;em&gt; EXTI Line0 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI1_IRQChannel             ((u8)0x07)  /&lt;em&gt; EXTI Line1 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI2_IRQChannel             ((u8)0x08)  /&lt;em&gt; EXTI Line2 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI3_IRQChannel             ((u8)0x09)  /&lt;em&gt; EXTI Line3 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI4_IRQChannel             ((u8)0x0A)  /&lt;em&gt; EXTI Line4 Interrupt &lt;/em&gt;/&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;并没有对systick做定义，所以直接操作寄存器，需要通过查询标志位的方式，查看Systick的状态。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;span style=&quot;text-align: left; &quot;&gt;本例将实现用Systick 产生一个100ms的定时器，让GPIO_Pin_5管脚led灯闪烁。&lt;/span&gt;&lt;/strong&gt;&lt;/div&gt;"><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+      <div class="content index width mx-auto px2 my4">
+    
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        stm32上最方便的定时器Systick[操作寄存器+库函数]
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Neil Pan</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2012-06-30T01:16:50.000Z" itemprop="datePublished">2012-06-30</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+
+  <!-- Google Adsense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7002319867557344",
+      enable_page_level_ads: true
+    });
+  </script> 
+
+  <div class="content" itemprop="articleBody">
+    <div>Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。</div><div> </div><div>Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。</div><div> </div><div>SysTick 可以产生中断、设置中断优先级，有专门的中断处理函数SysTick_Handler().库函数作为ST公司自己的推出的框架， 在中断这方面做了更为细致的处理。</div><div>库函数包含的头文件是&nbsp;stm32f10x.h &nbsp;这个文件中 列出了完整的stm32中断向量表（截取部分）：</div><div><pre class="brush:cpp;">/<strong>**</strong>  Cortex-M3 Processor Exceptions Numbers <strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/<br>  NonMaskableInt_IRQn         = -14,    /<em>!&lt; 2 Non Maskable Interrupt                             </em>/<br>  MemoryManagement_IRQn       = -12,    /<em>!&lt; 4 Cortex-M3 Memory Management Interrupt              </em>/<br>  BusFault_IRQn               = -11,    /<em>!&lt; 5 Cortex-M3 Bus Fault Interrupt                      </em>/<br>  UsageFault_IRQn             = -10,    /<em>!&lt; 6 Cortex-M3 Usage Fault Interrupt                    </em>/<br>  SVCall_IRQn                 = -5,     /<em>!&lt; 11 Cortex-M3 SV Call Interrupt                       </em>/<br>  DebugMonitor_IRQn           = -4,     /<em>!&lt; 12 Cortex-M3 Debug Monitor Interrupt                 </em>/<br>  PendSV_IRQn                 = -2,     /<em>!&lt; 14 Cortex-M3 Pend SV Interrupt                       </em>/<br>  SysTick_IRQn                = -1,     /<em>!&lt; 15 Cortex-M3 System Tick Interrupt                   </em>/<br><br>/<strong>**</strong>  STM32 specific Interrupt Numbers <strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>*</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/<br>  WWDG_IRQn                   = 0,      /<em>!&lt; Window WatchDog Interrupt                            </em>/<br>  PVD_IRQn                    = 1,      /<em>!&lt; PVD through EXTI Line detection Interrupt            </em>/<br>  TAMPER_IRQn                 = 2,      /<em>!&lt; Tamper Interrupt                                     </em>/<br>  RTC_IRQn                    = 3,      /<em>!&lt; RTC global Interrupt                                 </em>/<br>  FLASH_IRQn                  = 4,      /<em>!&lt; FLASH global Interrupt                               </em>/<br>  RCC_IRQn                    = 5,      /<em>!&lt; RCC global Interrupt                                 </em>/<br>  EXTI0_IRQn                  = 6,      /<em>!&lt; EXTI Line0 Interrupt                                 </em>/<br>  EXTI1_IRQn                  = 7,      /<em>!&lt; EXTI Line1 Interrupt                                 </em>/<br>  EXTI2_IRQn                  = 8,      /<em>!&lt; EXTI Line2 Interrupt                                 </em>/<br>  EXTI3_IRQn                  = 9,      /<em>!&lt; EXTI Line3 Interrupt                                 </em>/<br>  EXTI4_IRQn                  = 10,     /<em>!&lt; EXTI Line4 Interrupt                                 </em>/<br>  DMA1_Channel1_IRQn          = 11,     /<em>!&lt; DMA1 Channel 1 global Interrupt                      </em>/<br>  DMA1_Channel2_IRQn          = 12,     /<em>!&lt; DMA1 Channel 2 global Interrupt                      </em>/<br>  DMA1_Channel3_IRQn          = 13,     /<em>!&lt; DMA1 Channel 3 global Interrupt                      </em>/<br>  DMA1_Channel4_IRQn          = 14,     /<em>!&lt; DMA1 Channel 4 global Interrupt                      </em>/<br>  DMA1_Channel5_IRQn          = 15,     /<em>!&lt; DMA1 Channel 5 global Interrupt                      </em>/<br>  DMA1_Channel6_IRQn          = 16,     /<em>!&lt; DMA1 Channel 6 global Interrupt                      </em>/<br>  DMA1_Channel7_IRQn          = 17,     /<em>!&lt; DMA1 Channel 7 global Interrupt                      </em>/</pre><div>其中就包含了对系统级中断的处理，有SysTick的中断定义。</div><div>在 库函数的Cmsis\core_cm3.h文件中的中断配置函数也区分了系统中断 和 其他中断的区分处理 ：</div><div><pre class="brush:cpp;">static <strong>INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)<br>{<br>  if(IRQn &lt; 0) {<br>    SCB-&gt;SHP[((uint32_t)(IRQn) &amp; 0xF)-4] = ((priority &lt;&lt; (8 - </strong>NVIC_PRIO_BITS)) &amp; 0xff); } /<em> set Priority for Cortex-M3 System Interrupts </em>/<br>  else {<br>    NVIC-&gt;IP[(uint32_t)(IRQn)] = ((priority &lt;&lt; (8 - <strong>NVIC_PRIO_BITS)) &amp; 0xff);    }        /<em> set Priority for device specific Interrupts  </em>/<br>}<br></strong></pre></div><div>其中 SysTick_Config（）函数也在这个文件中：</div><div><pre class="brush:cpp;">static INLINE uint32_t SysTick_Config(uint32_t ticks)<br>{<br>  if (ticks &gt; SysTick_LOAD_RELOAD_Msk)  return (1);            /<em> Reload value impossible </em>/<br><br>  SysTick-&gt;LOAD  = (ticks &amp; SysTick_LOAD_RELOAD_Msk) - 1;      /<em> set reload register </em>/<br>  NVIC_SetPriority (SysTick_IRQn, (1&lt;&lt;__NVIC_PRIO_BITS) - 1);  /<em> set Priority for Cortex-M0 System Interrupts </em>/<br>  SysTick-&gt;VAL   = 0;                                          /<em> Load the SysTick Counter Value </em>/<br>  SysTick-&gt;CTRL  = SysTick_CTRL_CLKSOURCE_Msk |<br>                   SysTick_CTRL_TICKINT_Msk   |<br>                   SysTick_CTRL_ENABLE_Msk;                    /<em> Enable SysTick IRQ and SysTick Timer </em>/<br>  return (0);                                                  /<em> Function successful </em>/<br>}</pre></div><div>所以库函数中可以将SysTick作为一个中断操作。</div><div>但是直接操作寄存器，包含的头文件是&nbsp;stm32f10x_lib.h ，中断向量表在stm32f10x_nvic.h 中（截取部分）：</div><div><pre class="brush:cpp;">/<em> IRQ Channels ————————————————————–</em>/<br>#define WWDG_IRQChannel              ((u8)0x00)  /<em> Window WatchDog Interrupt </em>/<br>#define PVD_IRQChannel               ((u8)0x01)  /<em> PVD through EXTI Line detection Interrupt </em>/<br>#define TAMPER_IRQChannel            ((u8)0x02)  /<em> Tamper Interrupt </em>/<br>#define RTC_IRQChannel               ((u8)0x03)  /<em> RTC global Interrupt </em>/<br>#define FLASH_IRQChannel             ((u8)0x04)  /<em> FLASH global Interrupt </em>/<br>#define RCC_IRQChannel               ((u8)0x05)  /<em> RCC global Interrupt </em>/<br>#define EXTI0_IRQChannel             ((u8)0x06)  /<em> EXTI Line0 Interrupt </em>/<br>#define EXTI1_IRQChannel             ((u8)0x07)  /<em> EXTI Line1 Interrupt </em>/<br>#define EXTI2_IRQChannel             ((u8)0x08)  /<em> EXTI Line2 Interrupt </em>/<br>#define EXTI3_IRQChannel             ((u8)0x09)  /<em> EXTI Line3 Interrupt </em>/<br>#define EXTI4_IRQChannel             ((u8)0x0A)  /<em> EXTI Line4 Interrupt </em>/</pre></div><div>并没有对systick做定义，所以直接操作寄存器，需要通过查询标志位的方式，查看Systick的状态。</div><div> </div><div><strong><span style="text-align: left; ">本例将实现用Systick 产生一个100ms的定时器，让GPIO_Pin_5管脚led灯闪烁。</span></strong></div>
+
+<a id="more"></a>
+<div> </div><div><strong>操作寄存器</strong></div><div>在stm32f10x_map.h中，包含了对SysTick的结构体定义：</div><div><div>typedef struct</div><div>{</div><div>&nbsp; vu32 CTRL;</div><div>&nbsp; vu32 LOAD;</div><div>&nbsp; vu32 VAL;</div><div>&nbsp; vuc32 CALIB;</div><div>} SysTick_TypeDef;</div><div>手册上对SysTick的介绍并不详细，各个寄存器的各位定义如下：</div><div><img src="/uploads/2012/06/4088536781.png" alt="systick.png"></div><div>systick的时钟来自外部时钟，经倍频器后再8分频作为时钟信号。</div><div> </div><div>代码如下: &nbsp; &nbsp;<span style="text-align: left; ">（sys.h 代码参照&nbsp;</span><a href="http://www.ichanging.org/mdk-stm32Register-set.html" target="_blank" rel="noopener">stm32 直接操作寄存器开发环境配置</a><span style="text-align: left; ">）</span></div><div><pre class="brush:cpp;">#include &lt;stm32f10x_lib.h&gt;<br>#include “system.h”<br><br>//LED  按键端口定义<br>#define LED0 PAout(4)// PA4<br><br>void Gpio_Init(void);//初始化<br><br>void SysTick_Delay(u32 time);<br><br>int main(void)<br>{<br>    u32 temp;<br>    Rcc_Init(9); //系统时钟设置<br>    Gpio_Init();               //初始化与LED连接的硬件接口<br><br>    SysTick_Delay(100000);<br><br>    while(1)<br>    {<br>        do<br>        {<br>            temp=SysTick-&gt;CTRL;<br>        }while(temp&amp;0x01&amp;&amp;!(temp&amp;(1&lt;&lt;16)));  //查询COUNTFLAG标志位，等待时间到达<br><br>        LED0 = !LED0;<br>    }<br>}<br><br>void SysTick_Delay(u32 us)<br>{<br><br>    u8 us_radix=72/8;//us延时倍乘数  SYSTICk的时钟固定为HCLK时钟的1/8，这里使用系统时钟72MHz<br>    SysTick-&gt;CTRL&amp;=0xfffffffb;//bit2清空,选择外部时钟  HCLK/8<br>    SysTick-&gt;LOAD=us*us_radix; //时间加载<br>    SysTick-&gt;VAL=0x00;        //清空计数器<br>    SysTick-&gt;CTRL=0x01;      //开始倒数<br><br>    //SysTick-&gt;CTRL=0x00;       //关闭计数器<br>    //SysTick-&gt;VAL =0X00;       //清空计数器<br>}<br><br>void Gpio_Init(void)<br>{<br>    RCC-&gt;APB2ENR|=1&lt;&lt;2;    //使能PORTA时钟<br><br>    GPIOA-&gt;CRL&amp;=0XFFF0FFFF;<br>    GPIOA-&gt;CRL|=0X00030000;//PA4 推挽输出<br>    GPIOA-&gt;ODR|=1&lt;&lt;4;      //PA4 输出高<br><br>}<br></pre></div><div> </div></div></div><div><strong>库函数操作</strong></div><div> </div><div>在旧版本的库函数中，有较多的可配置内容。但是在固件库V3.5中，对Systick寄存器的只有一个函数:&nbsp;</div><div> </div><div>&nbsp; SysTick_Config(uint32_t ticks); &nbsp; &nbsp;//注意这是一个24位计数器，超出24位则返回配置错误，返回1</div><div> </div><div>该函数设置了自动重载入计数器(LOAD)的值，SysTick IRQ的优先级，复位了计数器(VAL)的值，开始计数并打开SysTick IRQ中断。SysTick时钟默认使用系统时钟（72MHz）。 &nbsp;</div>
+
+<p>在标准外设库中移除了SysTick的驱动，因此用户必须调用CMSIS定义的函数。 驱动已经包含在了Cmsis文件夹中；</p>
+<p>但是查看源代码可以知道，在标准外设库(Libraries/src)中有一个misc.c文件，其中提供了一个修改SysTick默认时钟的函数：</p>
+<pre class="brush:cpp;">/**
+  * @brief  Configures the SysTick clock source.
+  * @param  SysTick_CLKSource: specifies the SysTick clock source.
+  *   This parameter can be one of the following values:
+  *     @arg SysTick_CLKSource_HCLK_Div8: AHB clock divided by 8 selected as SysTick clock source.
+  *     @arg SysTick_CLKSource_HCLK: AHB clock selected as SysTick clock source.
+  * @retval None
+  */
+void SysTick_CLKSourceConfig(uint32_t SysTick_CLKSource)
+{
+  /* Check the parameters */
+  assert_param(IS_SYSTICK_CLK_SOURCE(SysTick_CLKSource));
+  if (SysTick_CLKSource == SysTick_CLKSource_HCLK)
+  {
+    SysTick-&gt;CTRL |= SysTick_CLKSource_HCLK;
+  }
+  else
+  {
+    SysTick-&gt;CTRL &amp;= SysTick_CLKSource_HCLK_Div8;
+  }
+}
+</pre>
+
+<p>可以选择systick 的时钟是否是HCLK（AHB）时钟 或者是HCLK的八分频时钟。</p>
+<p>库函数操作代码如下：</p>
+<!--more-->
+<p>main.c：</p>
+<p><pre class="brush:cpp;">#include “stm32f10x.h”</pre></p>
+<p>void RCC_Configuration(void);<br>void GPIO_Configuration(void);</p>
+<p>int main(void)<br>{</p>
+<pre><code>  RCC_Configuration();
+  GPIO_Configuration();
+
+if(SysTick_Config(1*7200000))     //配置错误返回1,max 16777216   默认72Mhz 时钟 ,100ms延时
+{                            
+    GPIO_SetBits(GPIOA , GPIO_Pin_4);     //错误处理                                 
+}
+while(1);
+</code></pre><p>}</p>
+<p>void GPIO_Configuration(void)<br>{<br>      GPIO_InitTypeDef GPIO_InitStructure;</p>
+<pre><code>GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4|GPIO_Pin_5;
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;            
+GPIO_Init(GPIOA , &amp;GPIO_InitStructure); 
+</code></pre><p>}</p>
+<p>void RCC_Configuration(void)<br>{<br>    /<em> 定义枚举类型变量 HSEStartUpStatus </em>/<br>    ErrorStatus HSEStartUpStatus;</p>
+<pre><code>  /* 复位系统时钟设置*/
+  RCC_DeInit();
+  /* 开启HSE*/
+  RCC_HSEConfig(RCC_HSE_ON);
+  /* 等待HSE起振并稳定*/
+  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+/* 判断HSE起是否振成功，是则进入if()内部 */
+  if(HSEStartUpStatus == SUCCESS)
+  {
+    /* 选择HCLK（AHB）时钟源为SYSCLK 1分频 */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
+    /* 选择PCLK2时钟源为 HCLK（AHB） 1分频 */
+    RCC_PCLK2Config(RCC_HCLK_Div1); 
+    /* 选择PCLK1时钟源为 HCLK（AHB） 2分频 */
+    RCC_PCLK1Config(RCC_HCLK_Div2);
+    /* 设置FLASH延时周期数为2 */
+    //FLASH_SetLatency(FLASH_Latency_2);
+    /* 使能FLASH预取缓存 */
+    //  FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+    /* 选择锁相环（PLL）时钟源为HSE 1分频，倍频数为9，则PLL输出频率为 8MHz * 9 = 72MHz */
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+    /* 使能PLL */ 
+    RCC_PLLCmd(ENABLE);
+    /* 等待PLL输出稳定 */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+    /* 选择SYSCLK时钟源为PLL */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    /* 等待PLL成为SYSCLK时钟源 */
+    while(RCC_GetSYSCLKSource() != 0x08);
+  } 
+  /* 打开APB2总线上的GPIOA时钟*/
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+</code></pre><p>}<br><div>&nbsp;stm3210x_it.c &nbsp;//中断处理函数</div></p>
+<p>#include “stm32f10x_it.h”</p>
+<p>void SysTick_Handler(void)<br>{<br>    GPIO_WriteBit(GPIOA , GPIO_Pin_5,(BitAction)(1-GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_5)));    //翻转GPIO_Pin_5的电平<br>}<br></p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&text=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&is_video=false&description=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=stm32上最方便的定时器Systick[操作寄存器+库函数]&body=Check out this article: http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&title=stm32上最方便的定时器Systick[操作寄存器+库函数]"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://neil-pan.com/2012/06/30/stm32上最方便的定时器Systick-操作寄存器-库函数/&name=stm32上最方便的定时器Systick[操作寄存器+库函数]&description=&lt;div&gt;Systick 是stm32上一个用处很多的内设，所有基于arm-cortex m3 的芯片都有这个定时器，所以考虑到平台的可移植性时，可以多使用Systick。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;Systick 是一个24位数据宽度的倒计数定时器，其计数范围只能到 1677215（2^24），当计数到0时会从RELOAD寄存器 中自动重装定时初值。只要不把SysTick的控制及状态寄存器中的使能位清除，计数器就不会停止。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;SysTick 可以产生中断、设置中断优先级，有专门的中断处理函数SysTick_Handler().库函数作为ST公司自己的推出的框架， 在中断这方面做了更为细致的处理。&lt;/div&gt;&lt;div&gt;库函数包含的头文件是&amp;nbsp;stm32f10x.h &amp;nbsp;这个文件中 列出了完整的stm32中断向量表（截取部分）：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;/&lt;strong&gt;**&lt;/strong&gt;  Cortex-M3 Processor Exceptions Numbers &lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;***&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;/&lt;br&gt;  NonMaskableInt_IRQn         = -14,    /&lt;em&gt;!&amp;lt; 2 Non Maskable Interrupt                             &lt;/em&gt;/&lt;br&gt;  MemoryManagement_IRQn       = -12,    /&lt;em&gt;!&amp;lt; 4 Cortex-M3 Memory Management Interrupt              &lt;/em&gt;/&lt;br&gt;  BusFault_IRQn               = -11,    /&lt;em&gt;!&amp;lt; 5 Cortex-M3 Bus Fault Interrupt                      &lt;/em&gt;/&lt;br&gt;  UsageFault_IRQn             = -10,    /&lt;em&gt;!&amp;lt; 6 Cortex-M3 Usage Fault Interrupt                    &lt;/em&gt;/&lt;br&gt;  SVCall_IRQn                 = -5,     /&lt;em&gt;!&amp;lt; 11 Cortex-M3 SV Call Interrupt                       &lt;/em&gt;/&lt;br&gt;  DebugMonitor_IRQn           = -4,     /&lt;em&gt;!&amp;lt; 12 Cortex-M3 Debug Monitor Interrupt                 &lt;/em&gt;/&lt;br&gt;  PendSV_IRQn                 = -2,     /&lt;em&gt;!&amp;lt; 14 Cortex-M3 Pend SV Interrupt                       &lt;/em&gt;/&lt;br&gt;  SysTick_IRQn                = -1,     /&lt;em&gt;!&amp;lt; 15 Cortex-M3 System Tick Interrupt                   &lt;/em&gt;/&lt;br&gt;&lt;br&gt;/&lt;strong&gt;**&lt;/strong&gt;  STM32 specific Interrupt Numbers &lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt;*&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;/&lt;br&gt;  WWDG_IRQn                   = 0,      /&lt;em&gt;!&amp;lt; Window WatchDog Interrupt                            &lt;/em&gt;/&lt;br&gt;  PVD_IRQn                    = 1,      /&lt;em&gt;!&amp;lt; PVD through EXTI Line detection Interrupt            &lt;/em&gt;/&lt;br&gt;  TAMPER_IRQn                 = 2,      /&lt;em&gt;!&amp;lt; Tamper Interrupt                                     &lt;/em&gt;/&lt;br&gt;  RTC_IRQn                    = 3,      /&lt;em&gt;!&amp;lt; RTC global Interrupt                                 &lt;/em&gt;/&lt;br&gt;  FLASH_IRQn                  = 4,      /&lt;em&gt;!&amp;lt; FLASH global Interrupt                               &lt;/em&gt;/&lt;br&gt;  RCC_IRQn                    = 5,      /&lt;em&gt;!&amp;lt; RCC global Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI0_IRQn                  = 6,      /&lt;em&gt;!&amp;lt; EXTI Line0 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI1_IRQn                  = 7,      /&lt;em&gt;!&amp;lt; EXTI Line1 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI2_IRQn                  = 8,      /&lt;em&gt;!&amp;lt; EXTI Line2 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI3_IRQn                  = 9,      /&lt;em&gt;!&amp;lt; EXTI Line3 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  EXTI4_IRQn                  = 10,     /&lt;em&gt;!&amp;lt; EXTI Line4 Interrupt                                 &lt;/em&gt;/&lt;br&gt;  DMA1_Channel1_IRQn          = 11,     /&lt;em&gt;!&amp;lt; DMA1 Channel 1 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel2_IRQn          = 12,     /&lt;em&gt;!&amp;lt; DMA1 Channel 2 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel3_IRQn          = 13,     /&lt;em&gt;!&amp;lt; DMA1 Channel 3 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel4_IRQn          = 14,     /&lt;em&gt;!&amp;lt; DMA1 Channel 4 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel5_IRQn          = 15,     /&lt;em&gt;!&amp;lt; DMA1 Channel 5 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel6_IRQn          = 16,     /&lt;em&gt;!&amp;lt; DMA1 Channel 6 global Interrupt                      &lt;/em&gt;/&lt;br&gt;  DMA1_Channel7_IRQn          = 17,     /&lt;em&gt;!&amp;lt; DMA1 Channel 7 global Interrupt                      &lt;/em&gt;/&lt;/pre&gt;&lt;div&gt;其中就包含了对系统级中断的处理，有SysTick的中断定义。&lt;/div&gt;&lt;div&gt;在 库函数的Cmsis\core_cm3.h文件中的中断配置函数也区分了系统中断 和 其他中断的区分处理 ：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;static &lt;strong&gt;INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)&lt;br&gt;{&lt;br&gt;  if(IRQn &amp;lt; 0) {&lt;br&gt;    SCB-&amp;gt;SHP[((uint32_t)(IRQn) &amp;amp; 0xF)-4] = ((priority &amp;lt;&amp;lt; (8 - &lt;/strong&gt;NVIC_PRIO_BITS)) &amp;amp; 0xff); } /&lt;em&gt; set Priority for Cortex-M3 System Interrupts &lt;/em&gt;/&lt;br&gt;  else {&lt;br&gt;    NVIC-&amp;gt;IP[(uint32_t)(IRQn)] = ((priority &amp;lt;&amp;lt; (8 - &lt;strong&gt;NVIC_PRIO_BITS)) &amp;amp; 0xff);    }        /&lt;em&gt; set Priority for device specific Interrupts  &lt;/em&gt;/&lt;br&gt;}&lt;br&gt;&lt;/strong&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;其中 SysTick_Config（）函数也在这个文件中：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;static INLINE uint32_t SysTick_Config(uint32_t ticks)&lt;br&gt;{&lt;br&gt;  if (ticks &amp;gt; SysTick_LOAD_RELOAD_Msk)  return (1);            /&lt;em&gt; Reload value impossible &lt;/em&gt;/&lt;br&gt;&lt;br&gt;  SysTick-&amp;gt;LOAD  = (ticks &amp;amp; SysTick_LOAD_RELOAD_Msk) - 1;      /&lt;em&gt; set reload register &lt;/em&gt;/&lt;br&gt;  NVIC_SetPriority (SysTick_IRQn, (1&amp;lt;&amp;lt;__NVIC_PRIO_BITS) - 1);  /&lt;em&gt; set Priority for Cortex-M0 System Interrupts &lt;/em&gt;/&lt;br&gt;  SysTick-&amp;gt;VAL   = 0;                                          /&lt;em&gt; Load the SysTick Counter Value &lt;/em&gt;/&lt;br&gt;  SysTick-&amp;gt;CTRL  = SysTick_CTRL_CLKSOURCE_Msk |&lt;br&gt;                   SysTick_CTRL_TICKINT_Msk   |&lt;br&gt;                   SysTick_CTRL_ENABLE_Msk;                    /&lt;em&gt; Enable SysTick IRQ and SysTick Timer &lt;/em&gt;/&lt;br&gt;  return (0);                                                  /&lt;em&gt; Function successful &lt;/em&gt;/&lt;br&gt;}&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;所以库函数中可以将SysTick作为一个中断操作。&lt;/div&gt;&lt;div&gt;但是直接操作寄存器，包含的头文件是&amp;nbsp;stm32f10x_lib.h ，中断向量表在stm32f10x_nvic.h 中（截取部分）：&lt;/div&gt;&lt;div&gt;&lt;pre class=&quot;brush:cpp;&quot;&gt;/&lt;em&gt; IRQ Channels ————————————————————–&lt;/em&gt;/&lt;br&gt;#define WWDG_IRQChannel              ((u8)0x00)  /&lt;em&gt; Window WatchDog Interrupt &lt;/em&gt;/&lt;br&gt;#define PVD_IRQChannel               ((u8)0x01)  /&lt;em&gt; PVD through EXTI Line detection Interrupt &lt;/em&gt;/&lt;br&gt;#define TAMPER_IRQChannel            ((u8)0x02)  /&lt;em&gt; Tamper Interrupt &lt;/em&gt;/&lt;br&gt;#define RTC_IRQChannel               ((u8)0x03)  /&lt;em&gt; RTC global Interrupt &lt;/em&gt;/&lt;br&gt;#define FLASH_IRQChannel             ((u8)0x04)  /&lt;em&gt; FLASH global Interrupt &lt;/em&gt;/&lt;br&gt;#define RCC_IRQChannel               ((u8)0x05)  /&lt;em&gt; RCC global Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI0_IRQChannel             ((u8)0x06)  /&lt;em&gt; EXTI Line0 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI1_IRQChannel             ((u8)0x07)  /&lt;em&gt; EXTI Line1 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI2_IRQChannel             ((u8)0x08)  /&lt;em&gt; EXTI Line2 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI3_IRQChannel             ((u8)0x09)  /&lt;em&gt; EXTI Line3 Interrupt &lt;/em&gt;/&lt;br&gt;#define EXTI4_IRQChannel             ((u8)0x0A)  /&lt;em&gt; EXTI Line4 Interrupt &lt;/em&gt;/&lt;/pre&gt;&lt;/div&gt;&lt;div&gt;并没有对systick做定义，所以直接操作寄存器，需要通过查询标志位的方式，查看Systick的状态。&lt;/div&gt;&lt;div&gt; &lt;/div&gt;&lt;div&gt;&lt;strong&gt;&lt;span style=&quot;text-align: left; &quot;&gt;本例将实现用Systick 产生一个100ms的定时器，让GPIO_Pin_5管脚led灯闪烁。&lt;/span&gt;&lt;/strong&gt;&lt;/div&gt;"><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2024 <a href="#">Neil Pan</a>
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+         
+          <li><a href="https://about.me/neilpan">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H068PLD02X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H068PLD02X');
+    </script>
+
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'neil-pan';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
