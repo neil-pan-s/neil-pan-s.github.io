@@ -65,7 +65,7 @@
       this.el.find('.ti-container, .ti-cursor, .ti-placeholder').remove();
       this._elCheck();
       this.s.strings = this._toArray(this.s.strings);
-      this.el.html('<i class="ti-placeholder" style="display:inline-block;line-height:0;visibility:hidden;overflow:hidden;">.</i><span ' + this.style class="ti-container"></span>');
+      this.el.html('<i class="ti-placeholder" style="display:inline-block;line-height:0;visibility:hidden;overflow:hidden;">.</i><span ' + this.style + ' class="ti-container"></span>');
       this.tel = this.el.find('span');
 
       this.insert = function(c) {
@@ -147,8 +147,43 @@
 
         // "_print" the character
         // if an opening HTML tag is found and we're not already pringing inside a tag
-        if (this.s.html && (string[0].indexOf('<') !="=" -1 && string[0].indexof('< ')="==" -1) (!this.intag)) { loop the string to find where tag ends for (var i="string.length" - 1;>= 0; i--) {
-            if (string[i].indexOf('</')>');
+        if (this.s.html && (string[0].indexOf('<') !== -1 && string[0].indexOf('</') === -1) && (!this.inTag)) {
+
+          // loop the string to find where the tag ends
+          for (var i = string.length - 1; i >= 0; i--) {
+            if (string[i].indexOf('</') !== -1) {
+              this.tagCount = 1;
+              this.tagDuration = i;
+            }
+          }
+
+          this._makeNode(string[0]);
+        } else {
+          this._print(string[0]);
+        }
+
+        // shorten it
+        string.splice(0, 1);
+
+        // if there's more to it, run again until fully printed
+        if (string.length) {
+          this.type(string, false);
+        } else {
+          this._executeQueue();
+        }
+
+      }.bind(this), this.typePace);
+    },
+
+    pause: function(time) {
+      time = time === undefined ? this.s.breakDelay : time;
+      this._to(function() {
+        this._executeQueue();
+      }.bind(this), time);
+    },
+
+    break: function() {
+      this.insert('<br>');
       this._executeQueue();
     },
 
@@ -208,7 +243,8 @@
                 break;
               }
 
-              if (a[o] === '<') { if (a[o - 1] !="=" '>') {
+              if (a[o] === '<') {
+                if (a[o - 1] !== '>') {
                   if (a[o - 1] === ';') {
                     for (var p = o - 1; p > -1; p--) {
                       if (a[p] === '&') {
@@ -232,9 +268,19 @@
         }
 
         // if we've found an empty set of HTML tags...
-        if (this.tel.html().indexOf('></')> -1) {
-          for (var i = this.tel.html().indexOf('>= 0; i--) {
-            if (a[i] === '<') { a.splice(i, a.length - i); break; } this.tel.html(a.join('')); characters still in the string. if (amount> (chars === undefined ? 0 : 2)) {
+        if (this.tel.html().indexOf('></') > -1) {
+          for (var i = this.tel.html().indexOf('></') - 2; i >= 0; i--) {
+            if (a[i] === '<') {
+              a.splice(i, a.length - i);
+              break;
+            }
+          }
+        }
+
+        this.tel.html(a.join(''));
+
+        // characters still in the string.
+        if (amount > (chars === undefined ? 0 : 2)) {
           this.delete(chars === undefined ? undefined : chars - 1);
         } else {
           this._executeQueue();
@@ -328,7 +374,7 @@
 
     _cursor: function() {
       if (this.s.cursor) {
-        this.el.append('<span ' + this.style 'class="ti-cursor">|</span>');
+        this.el.append('<span ' + this.style + 'class="ti-cursor">|</span>');
         var s = this.s.cursorSpeed;
         var t = this;
         (function loop() {
@@ -368,7 +414,12 @@
           var en = false;
           for (var j = 0; j < array[i].length; j++) {
 
-            if (array[i][j] === '<' || array[i][j]="==" '&') { p[0]="j;" en="array[i][j]" =="=" '&' ? true : false; } if (array[i][j]="==" '>' || (array[i][j] === ';' && en)) {
+            if (array[i][j] === '<' || array[i][j] === '&') {
+              p[0] = j;
+              en = array[i][j] === '&' ? true : false;
+            }
+
+            if (array[i][j] === '>' || (array[i][j] === ';' && en)) {
               p[1] = j;
               j = 0;
               tag = (array[i].slice(p[0], p[1] + 1)).join('');
@@ -436,4 +487,3 @@
   };
 
 }(jQuery));
-</'></')>

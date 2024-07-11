@@ -26,13 +26,13 @@
       return this.elem.is(':disabled');
     };
     iOSCheckbox.prototype.wrapCheckboxWithDivs = function() {
-      this.elem.wrap("<div class="" + this.containerClass + "">");
+      this.elem.wrap("<div class='" + this.containerClass + "' />");
       this.container = this.elem.parent();
-      this.offLabel = $("<label class="" + this.labelOffClass + "">\n  <span>" + this.uncheckedLabel + "</span>\n</label>").appendTo(this.container);
+      this.offLabel = $("<label class='" + this.labelOffClass + "'>\n  <span>" + this.uncheckedLabel + "</span>\n</label>").appendTo(this.container);
       this.offSpan = this.offLabel.children('span');
-      this.onLabel = $("<label class="" + this.labelOnClass + "">\n  <span>" + this.checkedLabel + "</span>\n</label>").appendTo(this.container);
+      this.onLabel = $("<label class='" + this.labelOnClass + "'>\n  <span>" + this.checkedLabel + "</span>\n</label>").appendTo(this.container);
       this.onSpan = this.onLabel.children('span');
-      return this.handle = $("<div class="" + this.handleClass + "">\n  <div class="" + this.handleRightClass + "">\n    <div class="" + this.handleCenterClass + "">\n  </div>\n</div>").appendTo(this.container);
+      return this.handle = $("<div class='" + this.handleClass + "'>\n  <div class='" + this.handleRightClass + "'>\n    <div class='" + this.handleCenterClass + "' />\n  </div>\n</div>").appendTo(this.container);
     };
     iOSCheckbox.prototype.disableTextSelection = function() {
       if ($.browser.msie) {
@@ -246,4 +246,39 @@
   $.iphoneStyle = this.iOSCheckbox = iOSCheckbox;
   $.fn.iphoneStyle = function() {
     var args, checkbox, dataName, existingControl, method, params, _i, _len, _ref, _ref2, _ref3, _ref4;
-    args = 1 </div></div>
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    dataName = (_ref = (_ref2 = args[0]) != null ? _ref2.dataName : void 0) != null ? _ref : iOSCheckbox.defaults.dataName;
+    _ref3 = this.filter(':checkbox');
+    for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+      checkbox = _ref3[_i];
+      existingControl = $(checkbox).data(dataName);
+      if (existingControl != null) {
+        method = args[0], params = 2 <= args.length ? __slice.call(args, 1) : [];
+        if ((_ref4 = existingControl[method]) != null) {
+          _ref4.apply(existingControl, params);
+        }
+      } else {
+        new iOSCheckbox(checkbox, args[0]);
+      }
+    }
+    return this;
+  };
+  $.fn.iOSCheckbox = function(options) {
+    var opts;
+    if (options == null) {
+      options = {};
+    }
+    opts = $.extend({}, options, {
+      resizeHandle: false,
+      disabledClass: 'iOSCheckDisabled',
+      containerClass: 'iOSCheckContainer',
+      labelOnClass: 'iOSCheckLabelOn',
+      labelOffClass: 'iOSCheckLabelOff',
+      handleClass: 'iOSCheckHandle',
+      handleCenterClass: 'iOSCheckHandleCenter',
+      handleRightClass: 'iOSCheckHandleRight',
+      dataName: 'iOSCheckbox'
+    });
+    return this.iphoneStyle(opts);
+  };
+}).call(this);
